@@ -392,8 +392,7 @@ async function loadAll(){
     document.getElementById('main-content').style.display='block';
     renderAll();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     setDbStatus('disconnected');
     console.error('Load error:',err);
     // Still show the page with empty data
@@ -402,8 +401,7 @@ async function loadAll(){
     const mainEl=document.getElementById('main-content');
     if(mainEl)mainEl.style.display='block';
     try{renderAll();}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};console.warn('Render error:',e);}
+console.warn('Render error:',e);}
   }
 }
 

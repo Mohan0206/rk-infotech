@@ -428,8 +428,7 @@ async function loadData(){
     setStatus('connected');
     render();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setStatus('disconnected');toast('❌','Error: '+err.message);}
+setStatus('disconnected');toast('❌','Error: '+err.message);}
 }
 
 // ─── FILTERS ───
@@ -602,8 +601,7 @@ async function saveInvoice(){
     else{const{error}=await db.from('invoices').insert([data]);if(error)throw error;toast('✅',`${invNum(data.date)} Invoice बनाया गया!`);}
     closeModal('inv-modal');await loadData();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Save Invoice';btn.disabled=false;}
 }
 
@@ -707,8 +705,7 @@ async function confirmAddPayment(){
     if(error)throw error;
     closeModal('addpay-modal');await loadData();toast('✅','₹'+amount.toLocaleString()+' payment added!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── WHATSAPP ───
@@ -786,7 +783,7 @@ function printInvoice(id){
     ${inv.notes?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;font-size:12px;color:#555;border-left:3px solid #FF6B2B;white-space:pre-line;margin-bottom:18px">${inv.notes}</div>`:''}
     <div style="margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px"><div>Customer Signature: _________________</div><div>For ${COMPANY.name}: _________________</div></div>
     <div style="text-align:center;margin-top:12px;font-size:11px;color:#ccc">Thank you! · ${COMPANY.phone}</div>
-    <script>window.print();<\/script></body></html>`);
+    <scr'+'ipt>window.print();</scr'+'ipt></body></html>`);
 }
 
 // ─── DELETE ───
@@ -794,8 +791,7 @@ async function deleteInv(id){
   if(!confirm('Invoice delete करें?'))return;
   try{const{error}=await db.from('invoices').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadData();}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── EXPORT ───

@@ -476,8 +476,7 @@ async function loadData(){
     setStatus('connected');
     render();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setStatus('disconnected');toast('❌','Error: '+err.message);}
+setStatus('disconnected');toast('❌','Error: '+err.message);}
 }
 
 // ─── FILTER ───
@@ -629,8 +628,7 @@ async function saveQuot(status=null){
     else{const{error}=await db.from('quotations').insert([data]);if(error)throw error;toast('✅','Quotation बनाई गई!');}
     closeModal('quot-modal');await loadData();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='📤 Save & Send';btn.disabled=false;}
 }
 
@@ -697,8 +695,7 @@ async function confirmApprove(){
     closeModal('approve-modal');await loadData();
     toast('🎉','Approved! Job auto-created!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── REJECT ───
@@ -715,8 +712,7 @@ async function confirmReject(){
     await db.from('quotations').update({status:'Rejected',rejected_reason:reason}).eq('id',rejectId);
     closeModal('reject-modal');await loadData();toast('📉','Rejected: '+reason);
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── WHATSAPP ───
@@ -762,7 +758,7 @@ function printQuot(id){
     </div>
     ${q.notes?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;font-size:12px;color:#555;border-left:3px solid #FF6B2B;white-space:pre-line;margin-bottom:18px"><strong>Terms & Conditions:</strong><br>${q.notes}</div>`:''}
     <div style="margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px"><div>Customer Signature: _________________</div><div>For ${COMPANY.name}: _________________</div></div>
-    <script>window.print();<\/script></body></html>`);
+    <scr'+'ipt>window.print();</scr'+'ipt></body></html>`);
 }
 
 // ─── DELETE ───
@@ -770,8 +766,7 @@ async function deleteQuot(id){
   if(!confirm('Quotation delete करें?'))return;
   try{const{error}=await db.from('quotations').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadData();}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── MODAL ───

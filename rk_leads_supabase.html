@@ -498,8 +498,7 @@ async function loadData(){
     setStatus('connected');
     render();
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     setStatus('disconnected');
     toast('❌','Error: '+err.message);
   }
@@ -654,8 +653,7 @@ async function saveLead(){
     closeModal('form-modal');
     await loadData();
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+ toast('❌','Error: '+err.message); }
   finally { btn.textContent='💾 Save'; btn.disabled=false; }
 }
 
@@ -668,8 +666,7 @@ async function deleteLead(id,name){
     toast('🗑️',`${name} deleted`);
     await loadData();
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+ toast('❌','Error: '+err.message); }
 }
 
 // ─── DETAIL ───
@@ -718,8 +715,7 @@ async function moveStage(id,stage){
     await loadData();
     toast('✅',`Stage → ${stage}`);
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+ toast('❌','Error: '+err.message); }
 }
 
 // ─── LOST ───
@@ -732,8 +728,7 @@ async function confirmLost(){
     if(error) throw error;
     closeModal('lost-modal'); await loadData(); toast('📉',`Lost: ${reason}`);
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+ toast('❌','Error: '+err.message); }
 }
 
 // ─── CONVERT ───
@@ -768,8 +763,7 @@ async function confirmConvert(){
     await loadData();
     toast('🎉',`${l.name} → Customer बन गया!`);
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+ toast('❌','Error: '+err.message); }
 }
 
 // ─── VIEW ───

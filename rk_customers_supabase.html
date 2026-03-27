@@ -418,8 +418,7 @@ async function loadCustomers(){
     setStatus('connected');
     render();
   } catch(err) {
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     setStatus('disconnected');
     toast('❌', 'Database error: '+err.message);
     document.getElementById('cust-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--red)">❌ Database connect नहीं हो पाया। Internet check करें।</td></tr>`;
@@ -604,8 +603,7 @@ async function saveCustomer(){
     closeModal();
     await loadCustomers();
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     toast('❌', 'Error: '+err.message);
   } finally {
     btn.textContent = '💾 Save';
@@ -622,8 +620,7 @@ async function deleteCustomer(id, name){
     toast('🗑️', `${name} deleted`);
     await loadCustomers();
   } catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     toast('❌', 'Error: '+err.message);
   }
 }

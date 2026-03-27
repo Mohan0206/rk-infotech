@@ -701,8 +701,7 @@ async function checkPhone(){
     document.getElementById('step-pin').style.display='block';
     pinBuf='';updatePins();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};showErr('phone-err','Error: '+e.message);}
+showErr('phone-err','Error: '+e.message);}
 }
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent='❌ '+msg;el.classList.add('show');}
@@ -767,8 +766,7 @@ async function loadAllData(){
     if(profR?.data?.length)updateProfileUI(profR.data[0]);
     renderHome();renderAttendanceCard();renderTasks();renderReport();renderPerformance();renderMeetings();renderHelp();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     tasks=[];meetings=[];reports=[];helpList=[];announcements=[];recog=[];todayAtt=null;
     renderHome();renderAttendanceCard();renderTasks();renderReport();renderPerformance();
   }
@@ -816,8 +814,7 @@ async function doPunch(){
     renderAttendanceCard();
     toast(punchType==='in'?'✅ Time IN recorded! '+fmtTime(now):'✅ Time OUT recorded! '+fmtTime(now));
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+toast('❌ Error: '+e.message);}
 }
 
 async function loadAttHistory(){
@@ -986,8 +983,7 @@ async function submitReport(){
     document.getElementById('report-submitted').style.display='block';
     toast('✅ Report submit हो गई!');
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+toast('❌ Error: '+e.message);}
 }
 
 // ── PERFORMANCE ──
@@ -1095,8 +1091,7 @@ async function submitHelp(){
     toast('💌 Request submit हो गई! Admin जल्द reply करेंगे।');
     await loadAllData();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+toast('❌ Error: '+e.message);}
 }
 
 // ── PROFILE PHOTO ──
@@ -1109,8 +1104,7 @@ async function loadProfilePhoto(){
     const{data}=await db.from('employee_photos').select('*').eq('employee_id',ACC.employee_id).eq('photo_type','profile').order('created_at',{ascending:false}).limit(1);
     if(data&&data.length){updateProfileUI(data[0]);profilePhotoData=data[0];}
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
 }
 
 function updateProfileUI(photo){
@@ -1191,8 +1185,7 @@ async function openProfileCamera(){
     document.getElementById('profile-cam-preview').style.display='none';
     document.getElementById('profile-cam-save').style.display='none';
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera: '+e.message);}
+toast('❌ Camera: '+e.message);}
 }
 
 function closeProfileCam(){
@@ -1264,8 +1257,7 @@ async function saveProfilePhoto(b64,file){
       created_at:new Date().toISOString()
     }]).catch(()=>{});
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     hideProfileProgress();
     toast('❌ Error: '+e.message);
     console.error('Profile save error:',e);
@@ -1326,8 +1318,7 @@ async function loadTaskPhotosForList(taskIds){
     const container=document.getElementById('tasks-container');
     if(container&&container.innerHTML)renderTasksHTML();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
 }
 
 function renderTasksHTML(){
@@ -1402,8 +1393,7 @@ async function startTaskCamera(){
     taskCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false});
     document.getElementById('task-cam-video').srcObject=taskCamStream;
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera: '+e.message);}
+toast('❌ Camera: '+e.message);}
 }
 
 function captureTaskPhoto(){
@@ -1456,8 +1446,7 @@ async function saveTaskPhotos(){
       const{error}=await db.storage.from('employee-photos').upload(path,blob,{contentType:'image/jpeg'});
       if(!error){const{data:u}=db.storage.from('employee-photos').getPublicUrl(path);url=u.publicUrl;}
     }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
     // Save to DB with all tracking info
     await db.from('employee_photos').insert([{
       employee_id:ACC.employee_id,

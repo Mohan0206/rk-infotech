@@ -417,8 +417,7 @@ async function loadData(){
     setDbStatus('connected');
     render();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setDbStatus('disconnected');toast('❌','Error: '+err.message);}
+setDbStatus('disconnected');toast('❌','Error: '+err.message);}
 }
 
 // ─── FILTERS ───
@@ -615,8 +614,7 @@ async function saveAmc(){
     else{const{error}=await db.from('amcs').insert([data]);if(error)throw error;toast('✅',c.name+' AMC बनाया गया!');}
     closeModal('amc-modal');await loadData();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Save AMC';btn.disabled=false;}
 }
 
@@ -711,8 +709,7 @@ async function saveVisit(){
     if(error)throw error;
     closeModal('visit-modal');await loadData();toast('🔧','Visit recorded!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── RENEW ───
@@ -743,8 +740,7 @@ async function confirmRenew(){
     if(error)throw error;
     closeModal('renew-modal');await loadData();toast('🔄',a.customer_name+' AMC renewed!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── WHATSAPP ───
@@ -764,8 +760,7 @@ async function deleteAmc(id){
   if(!confirm('AMC delete करें?'))return;
   try{const{error}=await db.from('amcs').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadData();}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
 }
 
 // ─── VIEW ───

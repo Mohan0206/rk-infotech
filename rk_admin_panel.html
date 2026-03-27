@@ -487,8 +487,7 @@ async function loadData(){
     renderTasks();
     populateSelects();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     // Table might not exist yet — create it
     setDbStatus('loading');
     await createTables();
@@ -506,8 +505,7 @@ async function createTables(){
   try{
     await db.from('employee_access').select('id').limit(1);
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     toast('⚠️','Tables बनाने के लिए Supabase dashboard में SQL run करें');
   }
 }
@@ -651,8 +649,7 @@ async function saveEmpAccess(){
     closeModal('emp-modal');await loadData();
     toast('✅',emp?.name+' का access set हो गया!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Save Access';btn.disabled=false;}
 }
 
@@ -663,8 +660,7 @@ async function toggleAccess(empId,status){
     await loadData();
     toast(status==='Active'?'✅':'🚫',status==='Active'?'Access enabled!':'Access disabled!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',err.message);}
+toast('❌',err.message);}
 }
 
 function copyCredentials(empId){
@@ -758,24 +754,21 @@ async function saveTask(){
     else{const{error}=await db.from('employee_tasks').insert([data]);if(error)throw error;toast('✅',emp?.name+' को task assign हुआ!');}
     closeModal('task-modal');await loadData();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Task Save करें';btn.disabled=false;}
 }
 
 async function updateTaskStatus(id,status){
   try{await db.from('employee_tasks').update({status}).eq('id',id);await loadData();toast('✅','Status updated!');}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',err.message);}
+toast('❌',err.message);}
 }
 
 async function deleteTask(id){
   if(!confirm('Task delete करें?'))return;
   try{await db.from('employee_tasks').delete().eq('id',id);await loadData();toast('🗑️','Deleted');}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',err.message);}
+toast('❌',err.message);}
 }
 
 // ─── ACTIVITY ───
@@ -800,8 +793,7 @@ async function loadActivity(){
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${(a.created_at||'').replace('T',' ').substring(0,16)}</td>
       <td><span style="color:${typeColors[a.type]||'var(--text3)'}">● ${a.type||'—'}</span></td></tr>`).join('');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     document.getElementById('act-stats').innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Activity log table नहीं है अभी</div>';
     document.getElementById('activity-tbody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:30px">Employee activity यहाँ दिखेगी जब वो login करेंगे</td></tr>';
   }

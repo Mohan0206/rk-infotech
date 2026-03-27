@@ -467,8 +467,7 @@ async function loadAll(){
     document.getElementById('ov-date').textContent=new Date().toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     renderCurrentSection();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+e.message);}
+toast('❌','Error: '+e.message);}
 }
 
 function renderCurrentSection(){renderSection(currentSec);}
@@ -567,8 +566,7 @@ async function loadAndRenderSitePhotos(){
     document.getElementById('site-photo-count').textContent=allSitePhotos.length+' photos total';
     renderSitePhotos();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
 }
 
 function renderSitePhotos(){
@@ -665,8 +663,7 @@ async function loadTaskSitePhotos(){
       .order('created_at',{ascending:false}).limit(100);
     return data||[];
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};return [];}
+return [];}
 }
 
 // ── DAILY REPORTS ──
@@ -728,8 +725,7 @@ function renderHelp(){
 
 function openReply(id){replyHelpId=id;const h=helpReqs.find(x=>x.id===id);if(!h)return;document.getElementById('reply-original').textContent=h.message;document.getElementById('reply-msg').value=h.admin_reply||'';document.getElementById('reply-status').value=h.status||'In Review';openModal('reply-modal');}
 async function saveReply(){const msg=document.getElementById('reply-msg').value;const status=document.getElementById('reply-status').value;try{await db.from('help_requests').update({admin_reply:msg,status}).eq('id',replyHelpId);closeModal('reply-modal');await loadAll();toast('✅','Reply sent!');}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 
 // ── MEETINGS ──
 function renderMeetings(){
@@ -759,11 +755,9 @@ function openMeetingModal(id=null){
   openModal('meeting-modal');
 }
 async function saveMeeting(){const title=document.getElementById('m-title').value.trim();const date=document.getElementById('m-date').value;if(!title||!date){toast('❌','Title और Date ज़रूरी है');return;}const data={title,type:document.getElementById('m-type').value,date,time:document.getElementById('m-time').value,location:document.getElementById('m-location').value,duration:document.getElementById('m-duration').value,description:document.getElementById('m-desc').value,minutes:document.getElementById('m-minutes').value};try{if(editMeetId){await db.from('meetings').update(data).eq('id',editMeetId);}else{await db.from('meetings').insert([{...data,created_at:new Date().toISOString()}]);}closeModal('meeting-modal');await loadAll();toast('✅','Meeting saved!');}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 async function deleteMeeting(id){if(!confirm('Meeting delete करें?'))return;try{await db.from('meetings').delete().eq('id',id);await loadAll();toast('🗑️','Deleted');}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 
 // ── ANNOUNCEMENTS ──
 function renderAnnouncements(){
@@ -780,11 +774,9 @@ function renderAnnouncements(){
 }
 function openAnnModal(){document.getElementById('an-title').value='';document.getElementById('an-body').value='';document.getElementById('an-type').value='general';document.getElementById('an-expiry').value='';openModal('ann-modal');}
 async function saveAnn(){const t=document.getElementById('an-title').value.trim();const b=document.getElementById('an-body').value.trim();if(!t||!b){toast('❌','Title और message ज़रूरी है');return;}try{await db.from('announcements').insert([{title:t,body:b,type:document.getElementById('an-type').value,expiry_date:document.getElementById('an-expiry').value||null,created_at:new Date().toISOString()}]);closeModal('ann-modal');await loadAll();toast('📢','Announcement published!');}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 async function deleteAnn(id){if(!confirm('Delete?'))return;try{await db.from('announcements').delete().eq('id',id);await loadAll();}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 
 // ── RECOGNITION ──
 function renderRecognition(){
@@ -798,8 +790,7 @@ function renderRecognition(){
 function openRecogModal(empId=null){document.getElementById('r-emp').value=empId||'';document.getElementById('r-badge').value='⭐';document.getElementById('r-title').value='';document.getElementById('r-msg').value='';document.querySelectorAll('.badge-opt').forEach(b=>b.style.borderColor='var(--border)');document.querySelector('.badge-opt').style.borderColor='var(--accent)';openModal('recog-modal');}
 function selBadge(b){document.getElementById('r-badge').value=b;document.querySelectorAll('.badge-opt').forEach(el=>{el.style.borderColor=el.textContent===b?'var(--accent)':'var(--border)';});}
 async function saveRecog(){const empId=parseInt(document.getElementById('r-emp').value);const emp=employees.find(e=>e.id===empId);if(!empId){toast('❌','Employee चुनें');return;}try{await db.from('recognition').insert([{employee_id:empId,employee_name:emp?.name||'',badge:document.getElementById('r-badge').value,title:document.getElementById('r-title').value,message:document.getElementById('r-msg').value,created_at:new Date().toISOString()}]);closeModal('recog-modal');await loadAll();toast('⭐',emp?.name+' को recognize किया!');}catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+toast('❌',e.message);}}
 
 // ── MODALS ──
 function openModal(id){document.getElementById(id).classList.add('open');}

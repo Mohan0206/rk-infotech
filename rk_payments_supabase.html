@@ -763,8 +763,7 @@ async function loadData(){
     populateFilters();
     renderCurrentSection();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+
     setDbStatus('disconnected');
     console.error(err);
     const pl=document.getElementById('page-loader');if(pl)pl.style.display='none';
@@ -1297,8 +1296,7 @@ async function saveTxn(){
     closeModal('txn-modal');await loadData();
     toast('✅',desc+' saved!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Save';btn.disabled=false;}
 }
 
@@ -1306,8 +1304,7 @@ async function deleteTxn(id){
   if(!confirm('Transaction delete करें?'))return;
   try{await db.from('payments').delete().eq('id',id);await loadData();toast('🗑️','Deleted');}
   catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',err.message);}
+toast('❌',err.message);}
 }
 
 // ─── BANK MODAL ───
@@ -1350,8 +1347,7 @@ async function saveBank(){
     else{const{error}=await db.from('bank_accounts').insert([data]);if(error)throw error;toast('✅',name+' added!');}
     closeModal('bank-modal');await loadData();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💾 Bank Save करें';btn.disabled=false;}
 }
 
@@ -1384,8 +1380,7 @@ async function saveSalaryPayment(){
     if(bankId&&bank)await db.from('bank_accounts').update({current_balance:(bank.current_balance||0)-amount}).eq('id',bankId);
     closeModal('salary-modal');await loadData();toast('✅',emp?.name+' को salary paid!');
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+toast('❌','Error: '+err.message);}
   finally{btn.textContent='💰 Salary Pay करें';btn.disabled=false;}
 }
 

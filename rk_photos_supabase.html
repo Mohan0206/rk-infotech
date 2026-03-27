@@ -503,8 +503,7 @@ async function loadData(){
     document.getElementById('emp-switcher').innerHTML='<option value="">-- Employee चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
     renderCurrentSection();
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+toast('❌ Error: '+e.message);}
 }
 
 function switchEmployee(id){
@@ -581,8 +580,7 @@ async function handleFileUpload(input,section){
       const{data,error}=await db.storage.from(BUCKET).upload(path,file,{upsert:true});
       if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
     }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
     // Fallback to base64
     if(!url){
       setProgress(section,60,'Converting...');
@@ -600,8 +598,7 @@ async function handleFileUpload(input,section){
     loadEmployeeProfile(empId);
     toast('✅ Profile photo saved!');
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};hideProgress(section);toast('❌ '+e.message);}
+hideProgress(section);toast('❌ '+e.message);}
 }
 
 async function removePhoto(type){
@@ -623,8 +620,7 @@ async function openCamera(section){
     streams[section]=stream;
     document.getElementById(`${section}-video`).srcObject=stream;
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera access denied: '+e.message);}
+toast('❌ Camera access denied: '+e.message);}
 }
 
 function closeCamera(section){
@@ -665,8 +661,7 @@ async function saveCapture(section){
       const{data,error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg'});
       if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
     }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
     if(pType==='profile'){
       const old=allPhotos.find(p=>p.employee_id===empId&&p.photo_type==='profile');
       if(old)await db.from('employee_photos').delete().eq('id',old.id);
@@ -680,8 +675,7 @@ async function saveCapture(section){
     if(section==='profile')loadEmployeeProfile(empId);
     toast('✅ Photo saved!');
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ '+e.message);}
+toast('❌ '+e.message);}
 }
 
 // ── SELFIE ATTENDANCE ──
@@ -712,8 +706,7 @@ async function saveSelfieAttendance(){
       const{error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg'});
       if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
     }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
     // Save photo record
     await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp?.name||'',photo_type:'attendance',photo_url:url,photo_base64:base64,description:'Selfie Attendance',date:today(),created_at:new Date().toISOString()}]);
     // Update/create attendance log
@@ -728,8 +721,7 @@ async function saveSelfieAttendance(){
     renderSelfieSection();
     toast('✅ Selfie attendance saved!');
   }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ '+e.message);}
+toast('❌ '+e.message);}
 }
 
 function renderSelfieSection(){
@@ -846,8 +838,7 @@ async function saveUploadedPhotos(){
       const{error}=await db.storage.from(BUCKET).upload(path,q.file,{upsert:true});
       if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
     }catch(e){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
     await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp?.name||'',photo_type:uploadType,photo_url:url,photo_base64:q.base64,file_name:q.name,description:desc,date,created_at:new Date().toISOString()}]);
     done++;
     setProgress('upload',Math.round(done/uploadQueue.length*100),`${done}/${uploadQueue.length} uploaded...`);

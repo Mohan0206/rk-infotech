@@ -466,8 +466,7 @@ async function loadAll(){
     document.getElementById('report-content').style.display='block';
     renderCurrentSection();
   }catch(err){
-    // Always hide loaders
-    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setDbStatus('disconnected');document.getElementById('loader').innerHTML=`<div style="color:var(--red)">❌ ${err.message}</div><button onclick="loadAll()" style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;">Retry</button>`;}
+setDbStatus('disconnected');document.getElementById('loader').innerHTML=`<div style="color:var(--red)">❌ ${err.message}</div><button onclick="loadAll()" style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;">Retry</button>`;}
 }
 
 // ─── SECTIONS ───
