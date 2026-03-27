@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RK Infotech — Photo System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+
+/* TOPNAV MODERN */
+.topnav{background:rgba(8,12,20,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 22px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;gap:8px;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;flex-shrink:0;color:var(--text);text-decoration:none;}
+.logo-icon,.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#E55A2B);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 12px rgba(255,107,53,0.3);}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:center;}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-link{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;white-space:nowrap;text-decoration:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);font-weight:600;}
+.db-pill{display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);flex-shrink:0;}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 58px);}
+.sidebar{width:220px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding:10px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all 0.12s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);}
+.sb-ico{font-size:14px;width:16px;text-align:center;}
+
+.main{flex:1;padding:20px;min-width:0;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.section{display:none;}
+.section.active{display:block;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#f08040;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+select.input{cursor:pointer;}
+
+/* EMPLOYEE PROFILES */
+.emp-profiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
+.emp-profile-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;cursor:pointer;transition:all 0.15s;text-align:center;}
+.emp-profile-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.ep-photo-wrap{width:100%;padding-top:100%;position:relative;background:var(--bg2);overflow:hidden;}
+.ep-photo-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.ep-photo-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:36px;font-weight:800;}
+.ep-info{padding:12px;}
+.ep-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;margin-bottom:2px;}
+.ep-role{font-size:11px;color:var(--text3);}
+.ep-badge{display:inline-flex;gap:4px;margin-top:6px;}
+
+/* PHOTO UPLOAD */
+.upload-area{background:var(--bg2);border:2px dashed var(--border2);border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+.upload-area:hover{border-color:var(--accent);background:var(--accentBg);}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-ico{font-size:36px;margin-bottom:8px;opacity:0.6;}
+.upload-text{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.upload-sub{font-size:12px;color:var(--text3);}
+
+/* CAMERA */
+.camera-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;}
+.camera-video{width:100%;max-height:280px;object-fit:cover;display:block;background:#000;}
+.camera-controls{padding:12px;display:flex;gap:8px;justify-content:center;}
+.capture-btn{padding:14px 28px;border-radius:50px;background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(240,79,79,0.3);}
+.capture-preview{width:100%;border-radius:10px;max-height:200px;object-fit:cover;display:none;border:2px solid var(--green);}
+
+/* PHOTO GRID */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.photo-item{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--bg3);cursor:pointer;transition:all 0.15s;}
+.photo-item:hover{transform:scale(1.03);}
+.photo-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-item-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:8px 8px 6px;opacity:0;transition:opacity 0.2s;}
+.photo-item:hover .photo-item-overlay{opacity:1;}
+.photo-item-del{position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(240,79,79,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:#fff;border:none;opacity:0;transition:opacity 0.2s;}
+.photo-item:hover .photo-item-del{opacity:1;}
+.photo-type-badge{font-size:10px;color:#fff;font-weight:600;}
+.photo-date{font-size:9px;color:rgba(255,255,255,0.6);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 15px;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+/* TABS */
+.photo-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:4px;margin-bottom:16px;flex-wrap:wrap;}
+.photo-tab{padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.photo-tab.active{background:var(--accent);color:#fff;}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:600;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:95%;max-height:80vh;object-fit:contain;border-radius:10px;}
+.lightbox-close{position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;border:none;}
+.lightbox-info{font-size:13px;color:rgba(255,255,255,0.6);text-align:center;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+
+/* UPLOAD PROGRESS */
+.upload-progress{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px;margin-top:10px;display:none;}
+.prog-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 0.3s;}
+
+/* SELFIE ATT */
+.selfie-att-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:20px;text-align:center;margin-bottom:14px;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:11px 18px;font-size:13px;box-shadow:var(--shadow);z-index:999;opacity:0;transition:all 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-row{grid-template-columns:1fr 1fr;}.emp-profiles{grid-template-columns:repeat(2,1fr);}.photo-grid{grid-template-columns:repeat(3,1fr);}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lightbox-info" id="lb-info"></div>
+</div>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn active" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-sec">Sections</div>
+    <button class="sb-item active" onclick="showSec('profiles',this)"><span class="sb-ico">👥</span>All Employees</button>
+    <button class="sb-item" onclick="showSec('profile',this)"><span class="sb-ico">🧑</span>Profile Photo</button>
+    <button class="sb-item" onclick="showSec('selfie',this)"><span class="sb-ico">🤳</span>Selfie Attendance</button>
+    <button class="sb-item" onclick="showSec('jobphotos',this)"><span class="sb-ico">🔧</span>Job Photos</button>
+    <button class="sb-item" onclick="showSec('documents',this)"><span class="sb-ico">📄</span>Documents</button>
+    <button class="sb-item" onclick="showSec('gallery',this)"><span class="sb-ico">🖼️</span>All Photos</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- ALL EMPLOYEES -->
+    <div class="section active" id="sec-profiles">
+      <div class="page-hdr">
+        <div><div class="page-title">👥 Employee Photos</div><div class="page-sub">सारे employees की photos</div></div>
+      </div>
+      <div class="stats-row" id="profile-stats"></div>
+      <div class="emp-profiles" id="emp-profiles-grid"></div>
+    </div>
+
+    <!-- PROFILE PHOTO -->
+    <div class="section" id="sec-profile">
+      <div class="page-hdr">
+        <div><div class="page-title">🧑 Profile Photo</div><div class="page-sub" id="profile-emp-name">Employee चुनें</div></div>
+      </div>
+      <!-- Current Photo -->
+      <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap">
+        <div style="width:140px;height:140px;border-radius:18px;overflow:hidden;border:3px solid var(--border);flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:40px;font-weight:800" id="current-profile-wrap">👤</div>
+        <div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px" id="profile-emp-name2">—</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px" id="profile-emp-role">—</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('profile-file-inp').click()">📁 File Upload</button>
+            <button class="btn btn-ghost btn-sm" onclick="openCamera('profile')">📷 Camera से</button>
+            <button class="btn btn-ghost btn-sm" onclick="removePhoto('profile')" id="profile-remove-btn" style="display:none">🗑️ Remove</button>
+          </div>
+          <input type="file" id="profile-file-inp" accept="image/*" style="display:none" onchange="handleFileUpload(this,'profile')">
+        </div>
+      </div>
+      <!-- Camera -->
+      <div id="profile-camera-section" style="display:none">
+        <div class="camera-wrap">
+          <video id="profile-video" class="camera-video" autoplay playsinline muted></video>
+          <canvas id="profile-canvas" style="display:none"></canvas>
+        </div>
+        <img id="profile-preview" class="capture-preview" alt="">
+        <div class="camera-controls">
+          <button class="btn btn-ghost" onclick="closeCamera('profile')">❌ Cancel</button>
+          <button class="capture-btn" onclick="capturePhoto('profile')">📸 Capture</button>
+          <button class="btn btn-primary" id="profile-save-capture" style="display:none" onclick="saveCapture('profile')">✅ Save</button>
+        </div>
+      </div>
+      <!-- Upload Progress -->
+      <div class="upload-progress" id="profile-progress">
+        <div style="font-size:13px;color:var(--text2)" id="profile-prog-text">Uploading...</div>
+        <div class="prog-bar"><div class="prog-fill" id="profile-prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- SELFIE ATTENDANCE -->
+    <div class="section" id="sec-selfie">
+      <div class="page-hdr">
+        <div><div class="page-title">🤳 Selfie Attendance</div><div class="page-sub">Photo के साथ attendance mark करें</div></div>
+      </div>
+      <div class="selfie-att-card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px" id="selfie-emp-label">Employee चुनें ऊपर से</div>
+        <!-- Camera for selfie -->
+        <div id="selfie-camera-wrap">
+          <div class="camera-wrap">
+            <video id="selfie-video" class="camera-video" autoplay playsinline muted></video>
+            <canvas id="selfie-canvas" style="display:none"></canvas>
+          </div>
+          <img id="selfie-preview" class="capture-preview" alt="" style="width:100%;border-radius:10px;margin-bottom:8px;">
+          <div class="camera-controls">
+            <button class="capture-btn" onclick="captureSelfie()">📸 Selfie लो</button>
+            <button class="btn btn-primary" id="selfie-save-btn" style="display:none" onclick="saveSelfieAttendance()">✅ Attendance Mark करें</button>
+            <button class="btn btn-ghost" id="selfie-retake-btn" style="display:none" onclick="retakeSelfie()">🔄 Retake</button>
+          </div>
+        </div>
+        <!-- Today's selfie attendance -->
+        <div style="margin-top:16px" id="today-selfie-status"></div>
+      </div>
+      <!-- Selfie History -->
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">📅 Selfie History</div>
+      <div class="photo-grid" id="selfie-grid"></div>
+    </div>
+
+    <!-- JOB PHOTOS -->
+    <div class="section" id="sec-jobphotos">
+      <div class="page-hdr">
+        <div><div class="page-title">🔧 Job Photos</div><div class="page-sub">Site work और installation photos</div></div>
+        <button class="btn btn-primary" onclick="openUploadModal('job')">+ Photos Add करें</button>
+      </div>
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" style="width:auto" id="job-emp-filter" onchange="renderJobPhotos()"><option value="">सब Employees</option></select>
+        <input class="input" type="date" id="job-date-filter" onchange="renderJobPhotos()" style="width:auto">
+      </div>
+      <div class="photo-grid" id="job-photos-grid"></div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="section" id="sec-documents">
+      <div class="page-hdr">
+        <div><div class="page-title">📄 Documents</div><div class="page-sub">ID card, certificates, other docs</div></div>
+        <button class="btn btn-primary" onclick="openUploadModal('document')">+ Document Add करें</button>
+      </div>
+      <!-- Employee filter -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <select class="input" style="width:auto" id="doc-emp-filter" onchange="renderDocuments()"><option value="">सब Employees</option></select>
+      </div>
+      <div id="doc-list"></div>
+    </div>
+
+    <!-- ALL GALLERY -->
+    <div class="section" id="sec-gallery">
+      <div class="page-hdr">
+        <div><div class="page-title">🖼️ All Photos Gallery</div><div class="page-sub">सारी photos एक जगह</div></div>
+      </div>
+      <div class="photo-tabs">
+        <button class="photo-tab active" onclick="filterGallery('all',this)">सब</button>
+        <button class="photo-tab" onclick="filterGallery('profile',this)">🧑 Profile</button>
+        <button class="photo-tab" onclick="filterGallery('attendance',this)">🤳 Attendance</button>
+        <button class="photo-tab" onclick="filterGallery('job',this)">🔧 Job</button>
+        <button class="photo-tab" onclick="filterGallery('document',this)">📄 Documents</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <select class="input" style="width:auto" id="gallery-emp-filter" onchange="renderGallery()"><option value="">सब Employees</option></select>
+      </div>
+      <div class="photo-grid" id="gallery-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="overlay" id="upload-modal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="upload-modal-title">Photos Upload करें</div><button class="modal-close" onclick="closeModal('upload-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Employee</label>
+        <select class="input" id="up-employee"></select>
+      </div>
+      <div class="form-group" id="up-job-grp" style="display:none">
+        <label class="form-label">Job / Site</label>
+        <input class="input" id="up-job" placeholder="Job reference...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="input" type="date" id="up-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input class="input" id="up-desc" placeholder="Camera installation, Site visit...">
+      </div>
+      <!-- File Upload -->
+      <div class="upload-area" onclick="document.getElementById('up-file').click()">
+        <input type="file" id="up-file" accept="image/*,application/pdf" multiple onchange="handleMultiUpload(this)" style="display:none">
+        <div class="upload-ico">📁</div>
+        <div class="upload-text">Files Select करें</div>
+        <div class="upload-sub">Images या PDF · Multiple files allowed</div>
+      </div>
+      <!-- Camera option -->
+      <div style="text-align:center;margin:10px 0;color:var(--text3);font-size:12px">— या —</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="openCamera('upload')">📷 Camera से Photo लो</button>
+      <div id="upload-camera-section" style="display:none;margin-top:10px">
+        <div class="camera-wrap">
+          <video id="upload-video" class="camera-video" autoplay playsinline muted></video>
+          <canvas id="upload-canvas" style="display:none"></canvas>
+        </div>
+        <img id="upload-preview" class="capture-preview" alt="">
+        <div class="camera-controls">
+          <button class="btn btn-ghost btn-sm" onclick="closeCamera('upload')">❌</button>
+          <button class="capture-btn" onclick="capturePhoto('upload')" style="padding:10px 20px;font-size:13px">📸 Capture</button>
+          <button class="btn btn-primary btn-sm" id="upload-save-capture" style="display:none" onclick="saveCapture('upload')">✅ Add</button>
+        </div>
+      </div>
+      <!-- Preview queue -->
+      <div id="upload-queue" style="margin-top:12px"></div>
+      <!-- Progress -->
+      <div class="upload-progress" id="upload-progress">
+        <div style="font-size:13px;color:var(--text2)" id="upload-prog-text">Uploading...</div>
+        <div class="prog-bar"><div class="prog-fill" id="upload-prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('upload-modal')">Cancel</button>
+      <button class="btn btn-primary" id="upload-save-btn" onclick="saveUploadedPhotos()">💾 Save Photos</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let employees=[],allPhotos=[],attLogs=[],uploadQueue=[],currentEmpId=null,currentSection='profiles',streams={},uploadType='job';
+const TODAY=new Date().toISOString().split('T')[0];
+const BUCKET='employee-photos';
+const AV_COLORS=['#FF6B2B','#3b8eff','#22c97a','#a78bfa','#f0b429'];
+
+function today(){return TODAY;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function getPhotoSrc(p){return p.photo_url||p.photo_base64||'';}
+
+// ── LOAD ──
+async function loadData(){
+  try{
+    const [eR,pR,aR]=await Promise.all([
+      db.from('employees').select('id,name,role,phone').eq('status','Active').order('name'),
+      db.from('employee_photos').select('*').order('created_at',{ascending:false}),
+      db.from('attendance_log').select('id,employee_id,employee_name,date,selfie_url,selfie_base64,time_in').order('date',{ascending:false}).limit(100)
+    ]);
+    employees=eR.data||[];allPhotos=pR.data||[];attLogs=aR.data||[];
+    // Populate selects
+    const opts='<option value="">सब Employees</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    ['job-emp-filter','doc-emp-filter','gallery-emp-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+    ['up-employee'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">-- चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');});
+    document.getElementById('emp-switcher').innerHTML='<option value="">-- Employee चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    renderCurrentSection();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+}
+
+function switchEmployee(id){
+  currentEmpId=id?parseInt(id):null;
+  if(currentEmpId){
+    const emp=employees.find(e=>e.id===currentEmpId);
+    showSec('profile',document.querySelector('.sb-item:nth-child(2)'));
+    loadEmployeeProfile(currentEmpId);
+  }
+}
+
+// ── PROFILES ──
+function renderProfiles(){
+  const stats=document.getElementById('profile-stats');
+  const withPhoto=employees.filter(e=>allPhotos.some(p=>p.employee_id===e.id&&p.photo_type==='profile')).length;
+  stats.innerHTML=`
+    <div class="stat"><div class="stat-val" style="color:var(--accent)">${employees.length}</div><div class="stat-lbl">👥 Total Employees</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--green)">${withPhoto}</div><div class="stat-lbl">📸 With Photo</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--yellow)">${employees.length-withPhoto}</div><div class="stat-lbl">🚫 No Photo</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--blue)">${allPhotos.length}</div><div class="stat-lbl">🖼️ Total Photos</div></div>
+  `;
+  const grid=document.getElementById('emp-profiles-grid');
+  grid.innerHTML=employees.map((e,i)=>{
+    const profile=allPhotos.find(p=>p.employee_id===e.id&&p.photo_type==='profile');
+    const jobCount=allPhotos.filter(p=>p.employee_id===e.id&&p.photo_type==='job').length;
+    const docCount=allPhotos.filter(p=>p.employee_id===e.id&&p.photo_type==='document').length;
+    const src=profile?getPhotoSrc(profile):'';
+    return `<div class="emp-profile-card" onclick="switchEmployee(${e.id});document.getElementById('emp-switcher').value=${e.id}">
+      <div class="ep-photo-wrap">
+        ${src?`<img src="${src}" alt="${e.name}">`:`<div class="ep-photo-placeholder" style="color:${AV_COLORS[i%AV_COLORS.length]}">${e.name.substring(0,2).toUpperCase()}</div>`}
+      </div>
+      <div class="ep-info">
+        <div class="ep-name">${e.name}</div>
+        <div class="ep-role">${e.role||'—'}</div>
+        <div class="ep-badge">
+          ${jobCount?`<span class="badge b-blue" style="font-size:10px">🔧 ${jobCount}</span>`:''}
+          ${docCount?`<span class="badge b-purple" style="font-size:10px">📄 ${docCount}</span>`:''}
+          ${!src?`<span class="badge b-grey" style="font-size:10px">No Photo</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── PROFILE PHOTO ──
+function loadEmployeeProfile(empId){
+  const emp=employees.find(e=>e.id===empId);if(!emp)return;
+  document.getElementById('profile-emp-name').textContent=emp.name;
+  document.getElementById('profile-emp-name2').textContent=emp.name;
+  document.getElementById('profile-emp-role').textContent=emp.role||'—';
+  const profile=allPhotos.find(p=>p.employee_id===empId&&p.photo_type==='profile');
+  const wrap=document.getElementById('current-profile-wrap');
+  if(profile&&getPhotoSrc(profile)){
+    wrap.innerHTML=`<img src="${getPhotoSrc(profile)}" alt="${emp.name}" style="width:100%;height:100%;object-fit:cover">`;
+    document.getElementById('profile-remove-btn').style.display='flex';
+  }else{
+    wrap.innerHTML=`<span style="color:${AV_COLORS[employees.indexOf(emp)%AV_COLORS.length]}">${emp.name.substring(0,2).toUpperCase()}</span>`;
+    document.getElementById('profile-remove-btn').style.display='none';
+  }
+}
+
+async function handleFileUpload(input,section){
+  const file=input.files[0];if(!file)return;
+  const empId=currentEmpId;if(!empId){toast('❌ Employee चुनें');return;}
+  const emp=employees.find(e=>e.id===empId);
+  showProgress(section);
+  try{
+    let url=null,base64=null;
+    // Try Supabase Storage first
+    try{
+      setProgress(section,40,'Uploading to cloud...');
+      const ext=file.name.split('.').pop();
+      const path=`${empId}/profile_${Date.now()}.${ext}`;
+      const{data,error}=await db.storage.from(BUCKET).upload(path,file,{upsert:true});
+      if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
+    }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+    // Fallback to base64
+    if(!url){
+      setProgress(section,60,'Converting...');
+      base64=await fileToBase64(file);
+    }
+    setProgress(section,80,'Saving...');
+    // Delete old profile photo
+    const old=allPhotos.find(p=>p.employee_id===empId&&p.photo_type==='profile');
+    if(old)await db.from('employee_photos').delete().eq('id',old.id);
+    // Save new
+    await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp.name,photo_type:'profile',photo_url:url,photo_base64:base64,file_name:file.name,date:today(),created_at:new Date().toISOString()}]);
+    setProgress(section,100,'Done!');
+    setTimeout(()=>hideProgress(section),1000);
+    await loadData();
+    loadEmployeeProfile(empId);
+    toast('✅ Profile photo saved!');
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};hideProgress(section);toast('❌ '+e.message);}
+}
+
+async function removePhoto(type){
+  if(!currentEmpId)return;
+  const p=allPhotos.find(x=>x.employee_id===currentEmpId&&x.photo_type===type);
+  if(!p)return;
+  if(!confirm('Photo delete करें?'))return;
+  await db.from('employee_photos').delete().eq('id',p.id);
+  await loadData();
+  loadEmployeeProfile(currentEmpId);
+  toast('🗑️ Photo removed');
+}
+
+// ── CAMERA ──
+async function openCamera(section){
+  document.getElementById(`${section}-camera-section`).style.display='block';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:section==='selfie'?'user':'environment'},audio:false});
+    streams[section]=stream;
+    document.getElementById(`${section}-video`).srcObject=stream;
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera access denied: '+e.message);}
+}
+
+function closeCamera(section){
+  if(streams[section])streams[section].getTracks().forEach(t=>t.stop());
+  delete streams[section];
+  document.getElementById(`${section}-camera-section`).style.display='none';
+  const prev=document.getElementById(`${section}-preview`);
+  if(prev)prev.style.display='none';
+  const saveBtn=document.getElementById(`${section}-save-capture`);
+  if(saveBtn)saveBtn.style.display='none';
+}
+
+function capturePhoto(section){
+  const video=document.getElementById(`${section}-video`);
+  const canvas=document.getElementById(`${section}-canvas`);
+  const preview=document.getElementById(`${section}-preview`);
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+  preview.src=dataUrl;preview.style.display='block';
+  video.style.display='none';
+  document.getElementById(`${section}-save-capture`).style.display='flex';
+}
+
+async function saveCapture(section){
+  const canvas=document.getElementById(`${section}-canvas`);
+  const base64=canvas.toDataURL('image/jpeg',0.85);
+  const empId=section==='upload'?parseInt(document.getElementById('up-employee').value):currentEmpId;
+  if(!empId){toast('❌ Employee चुनें');return;}
+  const emp=employees.find(e=>e.id===empId);
+  const pType=section==='profile'?'profile':section==='upload'?uploadType:'job';
+  try{
+    // Try storage upload
+    let url=null;
+    try{
+      const blob=await(await fetch(base64)).blob();
+      const path=`${empId}/${pType}_${Date.now()}.jpg`;
+      const{data,error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg'});
+      if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
+    }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+    if(pType==='profile'){
+      const old=allPhotos.find(p=>p.employee_id===empId&&p.photo_type==='profile');
+      if(old)await db.from('employee_photos').delete().eq('id',old.id);
+    }
+    await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp?.name||'',photo_type:pType,photo_url:url,photo_base64:base64,description:document.getElementById('up-desc')?.value||'',date:today(),created_at:new Date().toISOString()}]);
+    closeCamera(section);
+    if(section==='upload'){
+      closeModal('upload-modal');
+    }
+    await loadData();
+    if(section==='profile')loadEmployeeProfile(empId);
+    toast('✅ Photo saved!');
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ '+e.message);}
+}
+
+// ── SELFIE ATTENDANCE ──
+async function captureSelfie(){
+  capturePhoto('selfie');
+  document.getElementById('selfie-save-btn').style.display='flex';
+  document.getElementById('selfie-retake-btn').style.display='flex';
+}
+
+function retakeSelfie(){
+  const video=document.getElementById('selfie-video');
+  video.style.display='block';
+  document.getElementById('selfie-preview').style.display='none';
+  document.getElementById('selfie-save-btn').style.display='none';
+  document.getElementById('selfie-retake-btn').style.display='none';
+}
+
+async function saveSelfieAttendance(){
+  const empId=currentEmpId;if(!empId){toast('❌ Employee चुनें');return;}
+  const emp=employees.find(e=>e.id===empId);
+  const canvas=document.getElementById('selfie-canvas');
+  const base64=canvas.toDataURL('image/jpeg',0.8);
+  try{
+    let url=null;
+    try{
+      const blob=await(await fetch(base64)).blob();
+      const path=`${empId}/attendance_${today()}_${Date.now()}.jpg`;
+      const{error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg'});
+      if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
+    }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+    // Save photo record
+    await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp?.name||'',photo_type:'attendance',photo_url:url,photo_base64:base64,description:'Selfie Attendance',date:today(),created_at:new Date().toISOString()}]);
+    // Update/create attendance log
+    const existing=attLogs.find(a=>a.employee_id===empId&&a.date===today());
+    if(existing){
+      await db.from('attendance_log').update({selfie_url:url||null,selfie_base64:base64}).eq('id',existing.id);
+    }else{
+      await db.from('attendance_log').insert([{employee_id:empId,employee_name:emp?.name||'',date:today(),time_in:new Date().toISOString(),status:'present',selfie_url:url||null,selfie_base64:base64}]);
+    }
+    closeCamera('selfie');
+    await loadData();
+    renderSelfieSection();
+    toast('✅ Selfie attendance saved!');
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ '+e.message);}
+}
+
+function renderSelfieSection(){
+  const empId=currentEmpId;
+  if(!empId){document.getElementById('selfie-emp-label').textContent='ऊपर Employee चुनें';return;}
+  const emp=employees.find(e=>e.id===empId);
+  document.getElementById('selfie-emp-label').textContent=emp?.name||'—';
+  // Today's status
+  const todayAtt=attLogs.find(a=>a.employee_id===empId&&a.date===today());
+  const todaySrc=todayAtt?(todayAtt.selfie_url||todayAtt.selfie_base64):'';
+  document.getElementById('today-selfie-status').innerHTML=todaySrc?`
+    <div style="background:var(--greenBg);border:1px solid rgba(34,201,122,0.2);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px">
+      <img src="${todaySrc}" style="width:60px;height:60px;border-radius:9px;object-fit:cover">
+      <div><div style="font-size:13px;color:var(--green);font-weight:600">✅ आज की attendance marked!</div><div style="font-size:11px;color:var(--text3)">Time: ${new Date(todayAtt.time_in).toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>`:'<div style="font-size:13px;color:var(--text3)">आज की attendance नहीं है</div>';
+  // History
+  const selfies=allPhotos.filter(p=>p.employee_id===empId&&p.photo_type==='attendance').slice(0,12);
+  document.getElementById('selfie-grid').innerHTML=selfies.map(p=>photoCard(p)).join('');
+  openCamera('selfie');
+}
+
+// ── JOB PHOTOS ──
+function renderJobPhotos(){
+  const empF=document.getElementById('job-emp-filter')?.value||'';
+  const dateF=document.getElementById('job-date-filter')?.value||'';
+  let list=allPhotos.filter(p=>p.photo_type==='job');
+  if(empF)list=list.filter(p=>p.employee_id==empF);
+  if(dateF)list=list.filter(p=>p.date===dateF);
+  document.getElementById('job-photos-grid').innerHTML=list.length?list.map(p=>photoCard(p)).join(''):`<div style="text-align:center;padding:40px;color:var(--text3);grid-column:1/-1"><div style="font-size:36px;opacity:0.4">🔧</div><div style="font-size:13px;margin-top:10px">कोई job photo नहीं</div></div>`;
+}
+
+// ── DOCUMENTS ──
+function renderDocuments(){
+  const empF=document.getElementById('doc-emp-filter')?.value||'';
+  let list=allPhotos.filter(p=>p.photo_type==='document');
+  if(empF)list=list.filter(p=>p.employee_id==empF);
+  document.getElementById('doc-list').innerHTML=list.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">${list.map(p=>`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer" onclick="openLightbox('${getPhotoSrc(p)}','${p.employee_name} — ${p.description||'Document'} — ${p.date||''}')">
+      <div style="height:120px;background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:hidden">
+        ${getPhotoSrc(p)?`<img src="${getPhotoSrc(p)}" style="width:100%;height:100%;object-fit:cover">`:`<div style="font-size:36px">📄</div>`}
+      </div>
+      <div style="padding:10px 12px">
+        <div style="font-size:13px;color:var(--text);font-weight:600">${p.description||'Document'}</div>
+        <div style="font-size:11px;color:var(--text3)">${p.employee_name} · ${p.date||''}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;width:100%" onclick="event.stopPropagation();deletePhoto(${p.id})">🗑️ Delete</button>
+      </div>
+    </div>`).join('')}</div>`:`<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:36px;opacity:0.4">📄</div><div style="font-size:13px;margin-top:10px">कोई document नहीं</div></div>`;
+}
+
+// ── GALLERY ──
+let galleryFilter='all';
+function filterGallery(f,el){galleryFilter=f;document.querySelectorAll('.photo-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderGallery();}
+function renderGallery(){
+  const empF=document.getElementById('gallery-emp-filter')?.value||'';
+  let list=galleryFilter==='all'?allPhotos:allPhotos.filter(p=>p.photo_type===galleryFilter);
+  if(empF)list=list.filter(p=>p.employee_id==empF);
+  document.getElementById('gallery-grid').innerHTML=list.length?list.map(p=>photoCard(p)).join(''):`<div style="text-align:center;padding:40px;color:var(--text3);grid-column:1/-1"><div style="font-size:36px;opacity:0.4">🖼️</div><div style="font-size:13px;margin-top:10px">कोई photo नहीं</div></div>`;
+}
+
+function photoCard(p){
+  const typeCol={profile:'var(--blue)',attendance:'var(--green)',job:'var(--accent)',document:'var(--purple)'};
+  const typeIco={profile:'🧑',attendance:'🤳',job:'🔧',document:'📄'};
+  const src=getPhotoSrc(p);
+  return `<div class="photo-item" onclick="openLightbox('${src}','${p.employee_name} — ${p.description||p.photo_type} — ${p.date||''}')">
+    ${src?`<img src="${src}" alt="">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:32px">📷</div>`}
+    <button class="photo-item-del" onclick="event.stopPropagation();deletePhoto(${p.id})">✕</button>
+    <div class="photo-item-overlay">
+      <div class="photo-type-badge">${typeIco[p.photo_type]||'📷'} ${p.employee_name||''}</div>
+      <div class="photo-date">${p.date||''}</div>
+    </div>
+  </div>`;
+}
+
+// ── UPLOAD MODAL ──
+function openUploadModal(type){
+  uploadType=type;uploadQueue=[];
+  document.getElementById('upload-modal-title').textContent=type==='job'?'Job Photos Upload':'Documents Upload';
+  document.getElementById('up-job-grp').style.display=type==='job'?'block':'none';
+  document.getElementById('upload-queue').innerHTML='';
+  document.getElementById('up-date').value=today();
+  document.getElementById('up-desc').value='';
+  document.getElementById('upload-progress').style.display='none';
+  if(currentEmpId)document.getElementById('up-employee').value=currentEmpId;
+  closeCamera('upload');
+  openModal('upload-modal');
+}
+
+async function handleMultiUpload(input){
+  const files=Array.from(input.files);
+  for(const f of files){
+    const b64=await fileToBase64(f);
+    uploadQueue.push({file:f,base64:b64,name:f.name});
+  }
+  renderUploadQueue();
+}
+
+function renderUploadQueue(){
+  document.getElementById('upload-queue').innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px">${uploadQueue.map((q,i)=>`<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg3)"><img src="${q.base64}" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:#fff" onclick="uploadQueue.splice(${i},1);renderUploadQueue()">✕</div></div>`).join('')}</div><div style="font-size:12px;color:var(--text3);margin-top:5px">${uploadQueue.length} file${uploadQueue.length>1?'s':''} ready</div>`;
+}
+
+async function saveUploadedPhotos(){
+  if(!uploadQueue.length){toast('❌ Photos add करें!');return;}
+  const empId=parseInt(document.getElementById('up-employee').value);
+  if(!empId){toast('❌ Employee चुनें!');return;}
+  const emp=employees.find(e=>e.id===empId);
+  const desc=document.getElementById('up-desc').value;
+  const date=document.getElementById('up-date').value||today();
+  document.getElementById('upload-progress').style.display='block';
+  let done=0;
+  for(const q of uploadQueue){
+    let url=null;
+    try{
+      const path=`${empId}/${uploadType}_${Date.now()}_${q.name}`;
+      const{error}=await db.storage.from(BUCKET).upload(path,q.file,{upsert:true});
+      if(!error){const{data:u}=db.storage.from(BUCKET).getPublicUrl(path);url=u.publicUrl;}
+    }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+    await db.from('employee_photos').insert([{employee_id:empId,employee_name:emp?.name||'',photo_type:uploadType,photo_url:url,photo_base64:q.base64,file_name:q.name,description:desc,date,created_at:new Date().toISOString()}]);
+    done++;
+    setProgress('upload',Math.round(done/uploadQueue.length*100),`${done}/${uploadQueue.length} uploaded...`);
+  }
+  uploadQueue=[];
+  closeModal('upload-modal');
+  await loadData();
+  toast(`✅ ${done} photos saved!`);
+}
+
+// ── LIGHTBOX ──
+function openLightbox(src,info){if(!src)return;document.getElementById('lb-img').src=src;document.getElementById('lb-info').textContent=info||'';document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))closeLightbox();});
+
+// ── DELETE ──
+async function deletePhoto(id){if(!confirm('Photo delete करें?'))return;await db.from('employee_photos').delete().eq('id',id);await loadData();renderCurrentSection();toast('🗑️ Deleted');}
+
+// ── HELPERS ──
+function fileToBase64(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
+function showProgress(sec){document.getElementById(`${sec}-progress`).style.display='block';}
+function hideProgress(sec){document.getElementById(`${sec}-progress`).style.display='none';}
+function setProgress(sec,pct,text){const fill=document.getElementById(`${sec}-prog-fill`);const txt=document.getElementById(`${sec}-prog-text`);if(fill)fill.style.width=pct+'%';if(txt)txt.textContent=text;}
+
+// ── SECTIONS ──
+function showSec(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el)el.classList.add('active');
+  currentSection=sec;
+  renderSection(sec);
+}
+function renderCurrentSection(){renderSection(currentSection);}
+function renderSection(sec){
+  if(sec==='profiles')renderProfiles();
+  else if(sec==='profile'&&currentEmpId)loadEmployeeProfile(currentEmpId);
+  else if(sec==='selfie')renderSelfieSection();
+  else if(sec==='jobphotos')renderJobPhotos();
+  else if(sec==='documents')renderDocuments();
+  else if(sec==='gallery')renderGallery();
+}
+
+// ── MODAL ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el){el.classList.remove('open');closeCamera('upload');}});});
+
+loadData();
+</script>
+</body>
+</html>

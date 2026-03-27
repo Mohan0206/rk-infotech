@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Business Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --accent:#FF6B35;--accent2:#FF9060;
+  --blue:#3B82F6;--green:#10B981;--purple:#8B5CF6;
+  --yellow:#F59E0B;--red:#EF4444;--cyan:#06B6D4;
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Noto Sans Devanagari',sans-serif;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* AMBIENT */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.amb-orb{position:absolute;border-radius:50%;filter:blur(80px);}
+.amb-orb:nth-child(1){width:700px;height:700px;background:radial-gradient(circle,rgba(255,107,53,0.1),transparent);top:-300px;left:-200px;animation:oFloat1 14s ease-in-out infinite;}
+.amb-orb:nth-child(2){width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent);bottom:-200px;right:-200px;animation:oFloat2 18s ease-in-out infinite;}
+.amb-orb:nth-child(3){width:400px;height:400px;background:radial-gradient(circle,rgba(139,92,246,0.06),transparent);top:40%;left:40%;animation:oFloat3 22s ease-in-out infinite;}
+@keyframes oFloat1{0%,100%{transform:translate(0,0);}50%{transform:translate(80px,50px);}}
+@keyframes oFloat2{0%,100%{transform:translate(0,0);}50%{transform:translate(-60px,-70px);}}
+@keyframes oFloat3{0%,100%{transform:translate(0,0);}50%{transform:translate(40px,-40px);}}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;height:60px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,8,15,0.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);animation:slideDown 0.5s ease;}
+@keyframes slideDown{from{transform:translateY(-60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#E5501A);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 16px rgba(255,107,53,0.4);}
+.logo-text{font-weight:800;font-size:17px;color:var(--text);}
+.logo-text span{color:var(--accent);}
+.tb-center{display:flex;gap:3px;}
+.tb-link{padding:5px 12px;border-radius:8px;font-size:12.5px;color:var(--text2);cursor:pointer;border:none;background:none;font-family:inherit;transition:all 0.15s;}
+.tb-link:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.live-dot{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);}
+.live-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 2s infinite;}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.5);}70%{box-shadow:0 0 0 5px transparent;}}
+.tb-clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);}
+
+/* BANNER */
+.banner{position:relative;min-height:440px;display:flex;align-items:center;overflow:hidden;z-index:1;}
+.banner-slides{position:absolute;inset:0;}
+.bs{position:absolute;inset:0;opacity:0;transition:opacity 0.9s ease;display:flex;align-items:center;padding:0 48px;}
+.bs.active{opacity:1;}
+.bs:nth-child(1){background:linear-gradient(135deg,rgba(255,107,53,0.07) 0%,transparent 70%);}
+.bs:nth-child(2){background:linear-gradient(135deg,rgba(59,130,246,0.07) 0%,transparent 70%);}
+.bs:nth-child(3){background:linear-gradient(135deg,rgba(16,185,129,0.07) 0%,transparent 70%);}
+.bs:nth-child(4){background:linear-gradient(135deg,rgba(139,92,246,0.07) 0%,transparent 70%);}
+
+/* Grid lines effect */
+.banner::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+
+.sc{max-width:560px;position:relative;z-index:2;}
+.sc-tag{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px;letter-spacing:0.5px;animation:tagPop 0.4s ease both;}
+@keyframes tagPop{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.sc-h1{font-size:clamp(28px,4.5vw,50px);font-weight:800;line-height:1.12;letter-spacing:-1.5px;margin-bottom:14px;animation:h1Slide 0.5s ease 0.1s both;}
+@keyframes h1Slide{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.sc-p{font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:24px;animation:h1Slide 0.5s ease 0.2s both;}
+.sc-btns{display:flex;gap:10px;flex-wrap:wrap;animation:h1Slide 0.5s ease 0.3s both;}
+.sb{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;font-family:inherit;}
+.sb-ghost{background:rgba(255,255,255,0.07);color:var(--text2);border:1px solid var(--border2);}
+.sb-ghost:hover{background:rgba(255,255,255,0.12);color:var(--text);}
+.sb:hover{transform:translateY(-2px);}
+
+/* Banner floating cards */
+.bv{position:absolute;right:48px;top:50%;transform:translateY(-50%);width:340px;height:280px;pointer-events:none;}
+.bvc{position:absolute;border-radius:16px;padding:16px 18px;backdrop-filter:blur(20px);background:rgba(10,14,24,0.85);border:1px solid rgba(255,255,255,0.1);box-shadow:0 12px 48px rgba(0,0,0,0.5);}
+.bvc:nth-child(1){top:0;right:10px;width:190px;animation:fc1 5s ease-in-out infinite;}
+.bvc:nth-child(2){bottom:0;left:0;width:210px;animation:fc2 6s ease-in-out infinite 0.7s;}
+.bvc:nth-child(3){top:42%;right:0;width:160px;transform:translateY(-50%);animation:fc3 5.5s ease-in-out infinite 1.4s;}
+@keyframes fc1{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+@keyframes fc2{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes fc3{0%,100%{transform:translateY(-50%);}50%{transform:translateY(calc(-50% - 12px));}}
+.bvc-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+.bvc-val{font-size:24px;font-weight:800;line-height:1;margin-bottom:4px;}
+.bvc-sub{font-size:11px;color:var(--text2);}
+.bvc-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:10px;overflow:hidden;}
+.bvc-fill{height:100%;border-radius:2px;}
+
+/* Banner controls */
+.b-dots{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:10;}
+.b-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.3s;}
+.b-dot.active{width:24px;border-radius:4px;background:var(--accent);}
+.b-arrows{position:absolute;bottom:16px;right:40px;display:flex;gap:7px;z-index:10;}
+.b-arr{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all 0.15s;font-size:16px;}
+.b-arr:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* Floating icons */
+.float-icons{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.fi{position:absolute;animation:fiFloat linear infinite;user-select:none;}
+@keyframes fiFloat{0%{transform:translateY(110vh) rotate(0deg);opacity:0;}10%,90%{opacity:1;}100%{transform:translateY(-120px) rotate(720deg);opacity:0;}}
+
+/* MAIN */
+.main{padding:0 24px 48px;max-width:1300px;margin:0 auto;position:relative;z-index:1;}
+
+/* QUICK STATS */
+.qs-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:24px 0;animation:fadeUp 0.5s ease 0.2s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.qs{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.22s;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;overflow:hidden;}
+.qs::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
+.qs:hover::before{transform:scaleX(1);}
+.qs:hover{transform:translateY(-4px);box-shadow:0 10px 40px rgba(0,0,0,0.4);}
+.qs.c1::before{background:var(--accent);}
+.qs.c2::before{background:var(--blue);}
+.qs.c3::before{background:var(--green);}
+.qs.c4::before{background:var(--purple);}
+.qs.c5::before{background:var(--red);}
+.qs-ico{font-size:24px;}
+.qs-val{font-size:24px;font-weight:800;}
+.qs-lbl{font-size:11px;color:var(--text2);}
+
+/* SEC HEADER */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sh-t{font-size:18px;font-weight:800;letter-spacing:-0.3px;}
+.sh-t em{color:var(--accent);font-style:normal;}
+.sh-a{font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;transition:color 0.15s;background:none;border:none;font-family:inherit;}
+.sh-a:hover{color:var(--accent);}
+
+/* MODULES SLIDER */
+.slider-wrap{position:relative;margin-bottom:32px;animation:fadeUp 0.5s ease 0.4s both;}
+.mslider{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:4px 2px 8px;cursor:grab;}
+.mslider::-webkit-scrollbar{display:none;}
+.mslider:active{cursor:grabbing;}
+.mc{flex-shrink:0;width:155px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 14px;cursor:pointer;transition:all 0.25s;text-decoration:none;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden;}
+.mc:hover{transform:translateY(-6px) scale(1.03);border-color:var(--border2);box-shadow:0 16px 48px rgba(0,0,0,0.5);}
+.mc-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px;transition:transform 0.3s;}
+.mc:hover .mc-ico{transform:scale(1.2) rotate(-8deg);}
+.mc-name{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.mc-desc{font-size:10px;color:var(--text2);}
+.slbtn{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(10,14,24,0.95);border:1px solid var(--border2);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;color:var(--text2);font-size:18px;transition:all 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+.slbtn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.slbtn.l{left:-14px;}
+.slbtn.r{right:-14px;}
+
+/* QUICK ACTIONS */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:32px;animation:fadeUp 0.5s ease 0.5s both;}
+.qa{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden;}
+.qa::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.2s;border-radius:14px;}
+.qa:nth-child(1)::after{background:radial-gradient(circle at 50% -20%,rgba(255,107,53,0.1),transparent 70%);}
+.qa:nth-child(2)::after{background:radial-gradient(circle at 50% -20%,rgba(16,185,129,0.1),transparent 70%);}
+.qa:nth-child(3)::after{background:radial-gradient(circle at 50% -20%,rgba(59,130,246,0.1),transparent 70%);}
+.qa:nth-child(4)::after{background:radial-gradient(circle at 50% -20%,rgba(139,92,246,0.1),transparent 70%);}
+.qa:hover{transform:translateY(-4px);box-shadow:0 10px 36px rgba(0,0,0,0.4);}
+.qa:hover::after{opacity:1;}
+.qa-ico{font-size:28px;position:relative;z-index:1;}
+.qa-lbl{font-size:12px;font-weight:600;color:var(--text2);position:relative;z-index:1;}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;animation:fadeUp 0.5s ease 0.6s both;}
+
+/* ALERTS */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:11px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;}
+.alert:hover{transform:translateX(4px);}
+.al-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.al-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.al-sub{font-size:11px;color:var(--text2);}
+
+/* COMPANY CARD */
+.cc{background:linear-gradient(135deg,rgba(255,107,53,0.07),rgba(255,144,96,0.03));border:1px solid rgba(255,107,53,0.18);border-radius:16px;padding:24px;position:relative;overflow:hidden;}
+.cc::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,107,53,0.12),transparent);pointer-events:none;}
+.cc-logo{width:50px;height:50px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;box-shadow:0 6px 20px rgba(255,107,53,0.4);}
+.cc-name{font-size:21px;font-weight:800;margin-bottom:3px;}
+.cc-sub{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.cc-row{display:flex;flex-wrap:wrap;gap:12px;}
+.cc-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;}
+
+/* ACTIVITY FEED */
+.af{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:fadeUp 0.5s ease 0.65s both;}
+.af-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.af-hl{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.af-live{font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.af-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.15s;}
+.af-item:hover{background:rgba(255,255,255,0.02);}
+.af-item:last-child{border-bottom:none;}
+.af-d{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.af-txt{flex:1;font-size:13px;color:var(--text2);}
+.af-txt strong{color:var(--text);}
+.af-tm{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+
+/* FOOTER */
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--text3);margin-top:8px;}
+.f-logo{font-weight:700;color:var(--text2);display:flex;align-items:center;gap:7px;}
+.f-status{display:flex;align-items:center;gap:5px;}
+
+@media(max-width:768px){
+  .tb-center{display:none;}
+  .banner{min-height:360px;}
+  .bv{display:none;}
+  .bs{padding:0 20px;}
+  .qs-grid{grid-template-columns:repeat(3,1fr);}
+  .qa-grid{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+}
+@media(max-width:480px){.qs-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="amb-orb"></div>
+  <div class="amb-orb"></div>
+  <div class="amb-orb"></div>
+</div>
+
+<nav class="topbar">
+  <a href="#" class="logo">
+    <div class="logo-icon">📹</div>
+    <div class="logo-text">RK <span>Infotech</span></div>
+  </a>
+  <div class="tb-center">
+    <button class="tb-link" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="tb-link" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="tb-link" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="tb-link" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="tb-link" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="tb-link" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="tb-link" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+  </div>
+  <div class="tb-right">
+    <div class="live-dot">Live</div>
+    <div class="tb-clock" id="tb-clock">00:00:00</div>
+  </div>
+</nav>
+
+<!-- BANNER -->
+<div class="banner">
+  <div class="float-icons" id="fi"></div>
+  <div class="banner-slides" id="bslides">
+    <div class="bs active">
+      <div class="sc">
+        <div class="sc-tag" style="background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.25);color:var(--accent)">🚀 Complete Business System</div>
+        <h1 class="sc-h1" style="background:linear-gradient(120deg,#F0F4FF 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">RK Infotech<br>Management System</h1>
+        <p class="sc-p">Leads से Payment तक — पूरा business एक जगह। Professional, Fast, और 100% Digital।</p>
+        <div class="sc-btns">
+          <button class="sb" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(255,107,53,0.4);" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard खोलें</button>
+          <button class="sb sb-ghost" onclick="location.href='rk_leads_supabase.html'">🎯 New Lead Add करें</button>
+        </div>
+      </div>
+    </div>
+    <div class="bs">
+      <div class="sc">
+        <div class="sc-tag" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);color:var(--blue)">👷 Employee System</div>
+        <h1 class="sc-h1" style="background:linear-gradient(120deg,#F0F4FF 30%,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">GPS Attendance<br>&amp; Task Tracking</h1>
+        <p class="sc-p">Real-time location, selfie attendance, task tracking और performance score — सब digital!</p>
+        <div class="sc-btns">
+          <button class="sb" style="background:linear-gradient(135deg,#3B82F6,#6366F1);color:#fff;box-shadow:0 4px 20px rgba(59,130,246,0.4);" onclick="location.href='rk_employee_activity.html'">👷 Employee Portal</button>
+          <button class="sb sb-ghost" onclick="location.href='rk_activity_admin.html'">👁️ Admin Monitor</button>
+        </div>
+      </div>
+    </div>
+    <div class="bs">
+      <div class="sc">
+        <div class="sc-tag" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:var(--green)">💰 Finance Tracker</div>
+        <h1 class="sc-h1" style="background:linear-gradient(120deg,#F0F4FF 30%,#10B981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Payment &amp;<br>Finance System</h1>
+        <p class="sc-p">Cash, UPI, Bank — सारे payments track करो। Customer outstanding, salary, expenses — सब एक जगह।</p>
+        <div class="sc-btns">
+          <button class="sb" style="background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,0.4);" onclick="location.href='rk_payments_supabase.html'">💰 Payments देखें</button>
+          <button class="sb sb-ghost" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoice बनाएं</button>
+        </div>
+      </div>
+    </div>
+    <div class="bs">
+      <div class="sc">
+        <div class="sc-tag" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);color:var(--purple)">📸 GPS Photo System</div>
+        <h1 class="sc-h1" style="background:linear-gradient(120deg,#F0F4FF 30%,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Site Photos<br>GPS Tagged</h1>
+        <p class="sc-p">Task के साथ site photos, GPS location track, selfie attendance। Proof के साथ सब कुछ!</p>
+        <div class="sc-btns">
+          <button class="sb" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;box-shadow:0 4px 20px rgba(139,92,246,0.4);" onclick="location.href='rk_photos_supabase.html'">📸 Photos देखें</button>
+          <button class="sb sb-ghost" onclick="location.href='rk_admin_panel.html'">🔐 Admin Panel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating metric cards -->
+  <div class="bv">
+    <div class="bvc">
+      <div class="bvc-lbl">Total Revenue</div>
+      <div class="bvc-val" style="color:var(--green)" id="bv-rev">₹—</div>
+      <div class="bvc-sub">Payments IN</div>
+      <div class="bvc-bar"><div class="bvc-fill" style="width:75%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div>
+    </div>
+    <div class="bvc">
+      <div class="bvc-lbl">Active Jobs</div>
+      <div class="bvc-val" style="color:var(--blue)" id="bv-jobs">—</div>
+      <div class="bvc-sub">In progress</div>
+      <div class="bvc-bar"><div class="bvc-fill" style="width:55%;background:linear-gradient(90deg,#3B82F6,#60A5FA)"></div></div>
+    </div>
+    <div class="bvc">
+      <div class="bvc-lbl">Outstanding</div>
+      <div class="bvc-val" style="color:var(--yellow)" id="bv-pend">₹—</div>
+      <div class="bvc-sub">Pending amount</div>
+    </div>
+  </div>
+
+  <div class="b-dots" id="bdots">
+    <div class="b-dot active" onclick="goSlide(0)"></div>
+    <div class="b-dot" onclick="goSlide(1)"></div>
+    <div class="b-dot" onclick="goSlide(2)"></div>
+    <div class="b-dot" onclick="goSlide(3)"></div>
+  </div>
+  <div class="b-arrows">
+    <div class="b-arr" onclick="prevS()">‹</div>
+    <div class="b-arr" onclick="nextS()">›</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- QUICK STATS -->
+  <div class="qs-grid">
+    <a href="rk_leads_supabase.html" class="qs c1"><div class="qs-ico">🎯</div><div class="qs-val" id="qs1" style="color:var(--accent)">—</div><div class="qs-lbl">Total Leads</div></a>
+    <a href="rk_customers_supabase.html" class="qs c2"><div class="qs-ico">👥</div><div class="qs-val" id="qs2" style="color:var(--blue)">—</div><div class="qs-lbl">Customers</div></a>
+    <a href="rk_jobs_supabase.html" class="qs c3"><div class="qs-ico">📋</div><div class="qs-val" id="qs3" style="color:var(--green)">—</div><div class="qs-lbl">Active Jobs</div></a>
+    <a href="rk_invoices_supabase.html" class="qs c4"><div class="qs-ico">🧾</div><div class="qs-val" id="qs4" style="color:var(--purple)">—</div><div class="qs-lbl">Invoices</div></a>
+    <a href="rk_employees_supabase.html" class="qs c5"><div class="qs-ico">👷</div><div class="qs-val" id="qs5" style="color:var(--red)">—</div><div class="qs-lbl">Employees</div></a>
+  </div>
+
+  <!-- MODULES -->
+  <div class="sh" style="animation:fadeUp 0.5s ease 0.35s both"><div class="sh-t">🚀 सारे <em>Modules</em></div><div class="sh-a">← Drag or Swipe →</div></div>
+  <div class="slider-wrap">
+    <button class="slbtn l" onclick="scrollMod(-1)">‹</button>
+    <div class="mslider" id="mslider"></div>
+    <button class="slbtn r" onclick="scrollMod(1)">›</button>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="sh" style="animation:fadeUp 0.5s ease 0.45s both"><div class="sh-t">⚡ Quick <em>Actions</em></div></div>
+  <div class="qa-grid">
+    <a href="rk_leads_supabase.html" class="qa"><div class="qa-ico">🎯</div><div class="qa-lbl">New Lead</div></a>
+    <a href="rk_invoices_supabase.html" class="qa"><div class="qa-ico">🧾</div><div class="qa-lbl">New Invoice</div></a>
+    <a href="rk_jobs_supabase.html" class="qa"><div class="qa-ico">📋</div><div class="qa-lbl">New Job</div></a>
+    <a href="rk_payments_supabase.html" class="qa"><div class="qa-ico">💰</div><div class="qa-lbl">Add Payment</div></a>
+  </div>
+
+  <!-- TWO COL -->
+  <div class="two-col">
+    <div>
+      <div class="sh"><div class="sh-t">🔔 <em>Alerts</em></div><button class="sh-a" onclick="location.href='rk_dashboard_supabase.html'">Dashboard →</button></div>
+      <div id="alerts"></div>
+    </div>
+    <div>
+      <div class="sh"><div class="sh-t">🏢 <em>Company</em></div></div>
+      <div class="cc">
+        <div class="cc-logo">📹</div>
+        <div class="cc-name">RK Infotech</div>
+        <div class="cc-sub">CCTV Installation &amp; Services · Korba, CG</div>
+        <div class="cc-row">
+          <div class="cc-item">📱 9999999999</div>
+          <div class="cc-item">📧 rkinfotech@gmail.com</div>
+          <div class="cc-item">💳 rkinfotech@upi</div>
+          <div class="cc-item">📋 GST: 22XXXXX0000X1Z5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="sh" style="animation:fadeUp 0.5s ease 0.6s both"><div class="sh-t">📊 Recent <em>Activity</em></div><button class="sh-a" onclick="location.href='rk_activity_admin.html'">सब देखें →</button></div>
+  <div class="af">
+    <div class="af-hd">
+      <div class="af-hl">Live Feed <span class="af-live">● Live</span></div>
+      <div style="font-size:11px;color:var(--text3)" id="af-date"></div>
+    </div>
+    <div id="af-list"><div class="af-item"><div class="af-d" style="background:var(--text3)"></div><div class="af-txt">Loading...</div></div></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="f-logo">📹 RK <span style="color:var(--accent)">Infotech</span></div>
+  <div>Korba, Chhattisgarh · Business Management System</div>
+  <div class="f-status"><div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>System Online</div>
+</div>
+
+<script>
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+// Clock
+setInterval(()=>{
+  const n=new Date();
+  const cl=document.getElementById('tb-clock');
+  if(cl)cl.textContent=n.toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const ad=document.getElementById('af-date');
+  if(ad)ad.textContent=n.toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long'});
+},1000);
+
+// Floating icons
+const ICONS=['📹','🔧','💰','📊','🎯','📱','🔌','💡','🏠','🏢','📋','✅','🛡️','📡'];
+function spawnFI(){
+  const w=document.getElementById('fi');if(!w)return;
+  const el=document.createElement('div');
+  el.className='fi';
+  el.textContent=ICONS[Math.floor(Math.random()*ICONS.length)];
+  const dur=14+Math.random()*20;
+  el.style.cssText=`left:${Math.random()*100}%;font-size:${14+Math.random()*18}px;opacity:0.1;animation-duration:${dur}s;animation-delay:-${Math.random()*dur}s;`;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(),(dur+2)*1000);
+}
+for(let i=0;i<14;i++)spawnFI();
+setInterval(spawnFI,2800);
+
+// Banner
+let cur=0;
+const slides=document.querySelectorAll('.bs');
+const dots=document.querySelectorAll('.b-dot');
+function goSlide(n){
+  slides[cur].classList.remove('active');dots[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');dots[cur].classList.add('active');
+}
+function nextS(){goSlide(cur+1);}
+function prevS(){goSlide(cur-1);}
+let auto=setInterval(nextS,5500);
+document.querySelector('.banner').addEventListener('mouseenter',()=>clearInterval(auto));
+document.querySelector('.banner').addEventListener('mouseleave',()=>{auto=setInterval(nextS,5500);});
+let tx=0;
+document.querySelector('.banner').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.querySelector('.banner').addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50){d>0?nextS():prevS();}},{passive:true});
+
+// Modules
+const MODS=[
+  {i:'📊',n:'Dashboard',d:'Live overview',h:'rk_dashboard_supabase.html',bg:'rgba(255,107,53,0.12)',c:'#FF6B35'},
+  {i:'🎯',n:'Leads',d:'CRM pipeline',h:'rk_leads_supabase.html',bg:'rgba(245,158,11,0.12)',c:'#F59E0B'},
+  {i:'👥',n:'Customers',d:'Client records',h:'rk_customers_supabase.html',bg:'rgba(59,130,246,0.12)',c:'#3B82F6'},
+  {i:'📋',n:'Jobs',d:'Work orders',h:'rk_jobs_supabase.html',bg:'rgba(139,92,246,0.12)',c:'#8B5CF6'},
+  {i:'📝',n:'Quotations',d:'Price quotes',h:'rk_quotations_supabase.html',bg:'rgba(16,185,129,0.12)',c:'#10B981'},
+  {i:'🧾',n:'Invoices',d:'Bills & PDF',h:'rk_invoices_supabase.html',bg:'rgba(255,107,53,0.12)',c:'#FF6B35'},
+  {i:'💰',n:'Payments',d:'Finance',h:'rk_payments_supabase.html',bg:'rgba(16,185,129,0.12)',c:'#10B981'},
+  {i:'📦',n:'Inventory',d:'Stock mgmt',h:'rk_inventory_supabase.html',bg:'rgba(59,130,246,0.12)',c:'#3B82F6'},
+  {i:'🔧',n:'AMC',d:'Maintenance',h:'rk_amc_supabase.html',bg:'rgba(16,185,129,0.12)',c:'#10B981'},
+  {i:'👷',n:'Employees',d:'HR system',h:'rk_employees_supabase.html',bg:'rgba(139,92,246,0.12)',c:'#8B5CF6'},
+  {i:'📸',n:'Photos',d:'GPS photos',h:'rk_photos_supabase.html',bg:'rgba(245,158,11,0.12)',c:'#F59E0B'},
+  {i:'📈',n:'Reports',d:'Analytics',h:'rk_reports_supabase.html',bg:'rgba(16,185,129,0.12)',c:'#10B981'},
+  {i:'🔐',n:'Admin Panel',d:'Access ctrl',h:'rk_admin_panel.html',bg:'rgba(239,68,68,0.12)',c:'#EF4444'},
+  {i:'👁️',n:'Activity',d:'Monitoring',h:'rk_activity_admin.html',bg:'rgba(139,92,246,0.12)',c:'#8B5CF6'},
+  {i:'🧑',n:'Emp Portal',d:'Staff login',h:'rk_employee_activity.html',bg:'rgba(59,130,246,0.12)',c:'#3B82F6'},
+  {i:'📱',n:'Tech Helper',d:'Field guide',h:'rk_technician_helper.html',bg:'rgba(255,107,53,0.12)',c:'#FF6B35'},
+];
+const ms=document.getElementById('mslider');
+MODS.forEach(m=>{
+  const a=document.createElement('a');
+  a.href=m.h;a.className='mc';
+  a.innerHTML=`<div class="mc-ico" style="background:${m.bg}">${m.i}</div><div class="mc-name">${m.n}</div><div class="mc-desc">${m.d}</div>`;
+  ms.appendChild(a);
+});
+
+// Drag scroll
+let isD=false,sX,sL;
+ms.addEventListener('mousedown',e=>{isD=true;sX=e.pageX-ms.offsetLeft;sL=ms.scrollLeft;ms.style.cursor='grabbing';});
+['mouseleave','mouseup'].forEach(ev=>ms.addEventListener(ev,()=>{isD=false;ms.style.cursor='grab';}));
+ms.addEventListener('mousemove',e=>{if(!isD)return;e.preventDefault();const x=e.pageX-ms.offsetLeft;ms.scrollLeft=sL-(x-sX)*1.5;});
+
+function scrollMod(d){ms.scrollBy({left:d*320,behavior:'smooth'});}
+
+// Data
+async function loadData(){
+  try{
+    const[lR,cR,jR,iR,eR,pR,invR]=await Promise.all([
+      db.from('leads').select('id',{count:'exact',head:true}),
+      db.from('customers').select('id',{count:'exact',head:true}),
+      db.from('jobs').select('id',{count:'exact',head:true}).neq('status','Done'),
+      db.from('invoices').select('id',{count:'exact',head:true}),
+      db.from('employees').select('id',{count:'exact',head:true}).eq('status','Active'),
+      db.from('payments').select('amount').eq('type','in'),
+      db.from('invoices').select('pending_amt').neq('status','Paid'),
+    ]);
+    document.getElementById('qs1').textContent=lR.count||0;
+    document.getElementById('qs2').textContent=cR.count||0;
+    document.getElementById('qs3').textContent=jR.count||0;
+    document.getElementById('qs4').textContent=iR.count||0;
+    document.getElementById('qs5').textContent=eR.count||0;
+    const rev=(pR.data||[]).reduce((s,p)=>s+(p.amount||0),0);
+    document.getElementById('bv-rev').textContent='₹'+rev.toLocaleString();
+    document.getElementById('bv-jobs').textContent=jR.count||0;
+    const pend=(invR.data||[]).reduce((s,i)=>s+(i.pending_amt||0),0);
+    document.getElementById('bv-pend').textContent='₹'+pend.toLocaleString();
+    buildAlerts(jR.count||0,pend);
+  }catch(e){buildAlerts(0,0);}
+  loadActivity();
+}
+
+function buildAlerts(jobs,pend){
+  const list=[];
+  if(pend>0)list.push({c:'var(--yellow)',bg:'rgba(245,158,11,0.08)',b:'rgba(245,158,11,0.2)',t:`₹${pend.toLocaleString()} pending है`,s:'Customers से collect करें'});
+  if(jobs>0)list.push({c:'var(--blue)',bg:'rgba(59,130,246,0.08)',b:'rgba(59,130,246,0.2)',t:`${jobs} Active Jobs`,s:'Jobs module में track करें'});
+  list.push({c:'var(--green)',bg:'rgba(16,185,129,0.08)',b:'rgba(16,185,129,0.2)',t:'System Ready है ✅',s:'सारे modules connected'});
+  document.getElementById('alerts').innerHTML=list.map(a=>`<div class="alert" style="background:${a.bg};border:1px solid ${a.b}"><div class="al-dot" style="background:${a.c}"></div><div><div class="al-title" style="color:${a.c}">${a.t}</div><div class="al-sub">${a.s}</div></div></div>`).join('');
+}
+
+async function loadActivity(){
+  const colors={login:'var(--green)',logout:'var(--red)',punch_in:'var(--blue)',punch_out:'var(--yellow)',task:'var(--purple)',report:'var(--cyan)',action:'var(--accent)'};
+  try{
+    const{data}=await db.from('employee_activity').select('employee_name,description,type,created_at').order('created_at',{ascending:false}).limit(7);
+    if(data&&data.length){
+      document.getElementById('af-list').innerHTML=data.map(a=>`<div class="af-item"><div class="af-d" style="background:${colors[a.type]||'var(--text3)'}"></div><div class="af-txt"><strong>${a.employee_name||'System'}</strong> — ${a.description||a.type}</div><div class="af-tm">${(a.created_at||'').substring(11,16)}</div></div>`).join('');
+      return;
+    }
+  }catch(e){}
+  const def=[
+    {d:'var(--accent)',t:'<strong>System</strong> started — सब modules ready'},
+    {d:'var(--green)',t:'<strong>Database</strong> connected — Supabase live'},
+    {d:'var(--blue)',t:'<strong>16 Modules</strong> loaded — सब features active'},
+    {d:'var(--purple)',t:'<strong>Employee</strong> system — GPS tracking ready'},
+    {d:'var(--yellow)',t:'<strong>Payment</strong> tracker — Finance ready'},
+  ];
+  document.getElementById('af-list').innerHTML=def.map(a=>`<div class="af-item"><div class="af-d" style="background:${a.d}"></div><div class="af-txt">${a.t}</div><div class="af-tm">${new Date().toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+
+loadData();
+<\/script>
+</body>
+</html>

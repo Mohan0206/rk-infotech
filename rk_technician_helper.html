@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RK Infotech — Technician Helper</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --radius:12px;--shadow:0 4px 24px rgba(0,0,0,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* TOP BAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;}
+.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.logo span{color:var(--accent);}
+.back-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;text-decoration:none;display:flex;align-items:center;gap:5px;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0d1117,#131920);padding:24px 20px;text-align:center;border-bottom:1px solid var(--border);}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accentBg);border:1px solid rgba(232,108,47,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);font-weight:600;margin-bottom:10px;}
+.hero-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.hero-sub{font-size:13px;color:var(--text2);}
+
+/* SEARCH */
+.search-wrap{padding:14px 16px 0;position:relative;}
+.search-ico{position:absolute;left:28px;top:50%;transform:translateY(-20%);color:var(--text3);font-size:15px;pointer-events:none;}
+.search-input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:11px 14px 11px 40px;border-radius:11px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--text3);}
+
+/* TABS */
+.tabs{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:500;transition:all 0.15s;flex-shrink:0;}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* CONTENT */
+.content{padding:0 16px 120px;}
+.section{display:none;}
+.section.active{display:block;}
+.sec-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin:18px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+/* STEP CARD */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);margin-bottom:12px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.step-card.open{border-color:var(--accent);}
+.step-head{padding:15px 16px;display:flex;align-items:center;gap:12px;}
+.step-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;flex-shrink:0;}
+.step-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;flex:1;}
+.step-arrow{color:var(--text3);font-size:13px;transition:transform 0.2s;}
+.step-card.open .step-arrow{transform:rotate(180deg);}
+.step-body{display:none;padding:0 16px 16px;}
+.step-card.open .step-body{display:block;}
+.step-item{display:flex;gap:10px;margin-bottom:9px;font-size:13px;color:var(--text2);line-height:1.6;}
+.step-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:7px;}
+.step-tip{background:var(--yellowBg);border:1px solid rgba(240,180,41,0.2);border-radius:9px;padding:10px 13px;margin-top:10px;font-size:12px;color:var(--yellow);display:flex;gap:8px;}
+.step-warn{background:var(--redBg);border:1px solid rgba(240,79,79,0.2);border-radius:9px;padding:10px 13px;margin-top:8px;font-size:12px;color:var(--red);display:flex;gap:8px;}
+.step-good{background:var(--greenBg);border:1px solid rgba(34,201,122,0.2);border-radius:9px;padding:10px 13px;margin-top:8px;font-size:12px;color:var(--green);display:flex;gap:8px;}
+
+/* ══ VIDEO SECTION ══ */
+.video-section{margin:12px 0;}
+.video-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.video-label::before{content:'';flex:1;height:1px;background:var(--border);}
+.video-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* YouTube Embed */
+.yt-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.yt-thumb{position:relative;cursor:pointer;background:#000;}
+.yt-thumb img{width:100%;height:180px;object-fit:cover;opacity:0.8;}
+.yt-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;background:rgba(232,108,47,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all 0.2s;}
+.yt-thumb:hover .yt-play{background:var(--accent);transform:translate(-50%,-50%) scale(1.1);}
+.yt-info{padding:10px 13px;}
+.yt-title{font-size:13px;color:var(--text);font-weight:600;margin-bottom:3px;}
+.yt-channel{font-size:11px;color:var(--text3);}
+.yt-iframe-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-bottom:8px;}
+.yt-iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+
+/* Custom Video URL */
+.custom-video-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
+.custom-video-title{font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;}
+.custom-video-input{display:flex;gap:7px;}
+.custom-video-input input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;outline:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.custom-video-input input:focus{border-color:var(--accent);}
+.add-btn{padding:7px 14px;border-radius:8px;background:var(--accentBg);color:var(--accent);border:1px solid rgba(232,108,47,0.3);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;}
+.custom-video-player{margin-top:10px;border-radius:8px;overflow:hidden;display:none;}
+.custom-video-player video{width:100%;border-radius:8px;background:#000;}
+
+/* ══ PHOTO SECTION ══ */
+.photo-section{margin:12px 0;}
+.photo-upload-area{background:var(--bg2);border:2px dashed var(--border2);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+.photo-upload-area:hover{border-color:var(--accent);background:var(--accentBg);}
+.photo-upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-ico{font-size:28px;margin-bottom:6px;}
+.upload-text{font-size:13px;color:var(--text2);margin-bottom:3px;}
+.upload-sub{font-size:11px;color:var(--text3);}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.photo-item{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--bg3);}
+.photo-item img{width:100%;height:100%;object-fit:cover;}
+.photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(240,79,79,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:#fff;border:none;}
+.photo-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);padding:4px 6px;font-size:10px;color:#fff;}
+.photo-view-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:600;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.photo-view-overlay.open{display:flex;}
+.photo-view-overlay img{max-width:95%;max-height:80vh;border-radius:10px;object-fit:contain;}
+.photo-view-close{position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;border:none;}
+
+/* PROBLEM CARD */
+.prob-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);margin-bottom:12px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.prob-card.open{border-color:var(--red);}
+.prob-head{padding:15px 16px;display:flex;align-items:center;gap:12px;}
+.prob-ico{width:36px;height:36px;border-radius:10px;background:var(--redBg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.prob-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;margin-bottom:2px;}
+.prob-sub{font-size:11px;color:var(--text3);}
+.prob-body{display:none;padding:0 16px 16px;}
+.prob-card.open .prob-body{display:block;}
+.sol-step{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(28,42,58,0.4);font-size:13px;color:var(--text2);}
+.sol-step:last-child{border-bottom:none;}
+.sol-num{width:24px;height:24px;border-radius:6px;background:var(--greenBg);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'JetBrains Mono',monospace;}
+
+/* WIRING */
+.wiring-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);margin-bottom:14px;overflow:hidden;}
+.wiring-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.wiring-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;}
+.wire-diagram{padding:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);background:var(--bg3);border-radius:10px;margin:12px;line-height:2;overflow-x:auto;}
+.wire-table{width:100%;border-collapse:collapse;font-size:13px;}
+.wire-table th{padding:9px 12px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(10,14,24,0.8);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);}
+.wire-table td{padding:10px 12px;border-bottom:1px solid rgba(28,42,58,0.4);color:var(--text2);}
+.wire-table tr:last-child td{border-bottom:none;}
+.color-dot{width:13px;height:13px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;}
+
+/* SVG DIAGRAM */
+.svg-diagram{background:var(--bg3);border-radius:10px;margin:12px;overflow:hidden;}
+.svg-diagram svg{width:100%;height:auto;}
+
+/* CUSTOMER TIPS */
+.tip-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:16px;margin-bottom:12px;}
+.tip-scenario{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+.tip-customer{background:var(--bg2);border-radius:10px 10px 10px 2px;padding:10px 13px;font-size:13px;color:var(--text2);margin-bottom:6px;border-left:3px solid var(--red);}
+.tip-tech{background:var(--accentBg);border-radius:10px 10px 2px 10px;padding:10px 13px;font-size:13px;color:var(--text);border-left:3px solid var(--accent);}
+.tip-note{background:var(--blueBg);border:1px solid rgba(59,142,255,0.2);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--blue);margin-top:8px;}
+
+/* CHECKLIST */
+.checklist{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:16px;margin-bottom:12px;}
+.checklist-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(28,42,58,0.4);cursor:pointer;}
+.check-item:last-child{border-bottom:none;}
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;margin-top:1px;font-size:13px;}
+.check-item.checked .check-box{background:var(--green);border-color:var(--green);}
+.check-item.checked .check-text{text-decoration:line-through;color:var(--text3);}
+.check-text{font-size:13px;color:var(--text2);flex:1;line-height:1.5;}
+.reset-btn{width:100%;padding:10px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:13px;cursor:pointer;margin-top:12px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.code-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);margin-top:8px;line-height:1.7;}
+
+/* SOS */
+.sos-section{padding:12px 16px;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 60%,transparent);z-index:100;}
+.sos-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(240,79,79,0.3);}
+
+/* SOS MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:500;align-items:flex-end;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.sos-modal{background:var(--card);border:1px solid var(--border2);border-radius:20px 20px 16px 16px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:slideUp 0.25s ease;position:relative;}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.sos-modal-head{padding:18px;border-bottom:1px solid var(--border);text-align:center;}
+.sos-modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--red);margin-bottom:4px;}
+.sos-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.sos-content{padding:14px;}
+.sos-problem{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;cursor:pointer;transition:all 0.15s;}
+.sos-problem:hover,.sos-problem.active{border-color:var(--accent);background:var(--accentBg);}
+.sos-prob-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;}
+.sos-prob-desc{font-size:12px;color:var(--text3);}
+.sos-solution{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.sos-problem.active .sos-solution{display:block;}
+
+/* EMPTY SEARCH */
+.empty-search{text-align:center;padding:40px 20px;color:var(--text3);}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+@media(max-width:480px){.photo-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- PHOTO VIEW OVERLAY -->
+<div class="photo-view-overlay" id="photo-viewer">
+  <button class="photo-view-close" onclick="closePhotoViewer()">✕</button>
+  <img id="photo-viewer-img" src="" alt="">
+  <div id="photo-viewer-caption" style="font-size:13px;color:var(--text2);text-align:center;max-width:90%"></div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-mark">🔧</div>RK <span>Helper</span></div>
+  <a href="index.html" class="back-btn">🏠 Home</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">👷 Technician Field Guide</div>
+  <div class="hero-title">Site पर हर Problem का Solution</div>
+  <div class="hero-sub">Videos, Photos, Wiring Diagrams — सब यहाँ</div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <span class="search-ico">🔍</span>
+  <input class="search-input" type="search" placeholder="Problem या topic खोजें..." id="search-inp" oninput="doSearch(this.value)">
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('install',this)">📹 Installation</button>
+  <button class="tab" onclick="showTab('wiring',this)">🔌 Wiring</button>
+  <button class="tab" onclick="showTab('problems',this)">🚨 Problems</button>
+  <button class="tab" onclick="showTab('customer',this)">🗣️ Customer</button>
+  <button class="tab" onclick="showTab('checklist',this)">✅ Checklist</button>
+  <button class="tab" onclick="showTab('photos',this)">📸 My Photos</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ══ INSTALLATION ══ -->
+<div class="section active" id="sec-install">
+  <div class="sec-title">📹 New CCTV Installation — Step by Step</div>
+
+  <!-- VIDEO: Installation Overview -->
+  <div class="video-section">
+    <div class="video-label">🎬 Installation Video Guide</div>
+    <div class="yt-iframe-wrap">
+      <iframe src="https://www.youtube.com/embed/videoseries?list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14v" allowfullscreen title="CCTV Installation Guide"></iframe>
+    </div>
+    <!-- Custom YouTube URL -->
+    <div class="custom-video-wrap">
+      <div class="custom-video-title">📎 अपना YouTube Video add करें:</div>
+      <div class="custom-video-input">
+        <input id="yt-url-install" placeholder="YouTube link paste करें..." type="url">
+        <button class="add-btn" onclick="addYTVideo('yt-url-install','yt-custom-install')">▶ Add</button>
+      </div>
+      <div id="yt-custom-install" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--blueBg);color:var(--blue)">1</div><div class="step-title">Site Survey — पहले देखो</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>Cameras की positions decide करो — हर corner check करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>DVR कहाँ रखेंगे — safe और accessible जगह</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Power point कहाँ है — SMPS के लिए</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Cable route plan करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Internet है? Remote viewing के लिए</span></div>
+      <div class="step-tip">💡 Customer को पहले बताओ cameras कहाँ लगेंगे — approval लो</div>
+      <!-- PHOTOS for this step -->
+      <div class="photo-section">
+        <div class="video-label">📸 Site Survey Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-step1')">
+          <input type="file" id="photos-step1" accept="image/*" multiple onchange="handlePhotos(this,'grid-step1','step1')">
+          <div class="upload-ico">📷</div>
+          <div class="upload-text">Photo add करें</div>
+          <div class="upload-sub">Tap to upload</div>
+        </div>
+        <div class="photo-grid" id="grid-step1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--accentBg);color:var(--accent)">2</div><div class="step-title">Material Check — आने से पहले</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>Cameras (सही quantity)</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>DVR/NVR + Power adapter</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Cable (20% extra रखो)</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>BNC connectors + crimping tool</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>SMPS, Cable clips, Drill machine</span></div>
+      <div class="step-tip">💡 हमेशा extra cable और connectors रखो</div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--greenBg);color:var(--green)">3</div><div class="step-title">DVR/NVR Setup</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>DVR को अच्छी जगह fix करो — ventilation ज़रूरी</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>HDD install और format करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Monitor HDMI/VGA से connect करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Date/Time set करो — बहुत ज़रूरी</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Admin password set करो</span></div>
+      <div class="step-warn">⚠️ HDD format किए बिना recording नहीं होगी</div>
+      <div class="photo-section">
+        <div class="video-label">📸 DVR Setup Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-step3')">
+          <input type="file" id="photos-step3" accept="image/*" multiple onchange="handlePhotos(this,'grid-step3','step3')">
+          <div class="upload-ico">📷</div><div class="upload-text">DVR setup photo add करें</div>
+        </div>
+        <div class="photo-grid" id="grid-step3"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--yellowBg);color:var(--yellow)">4</div><div class="step-title">Camera Mount — सही angle</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>Camera height: 8-10 feet ideal</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Angle: 15-30° नीचे — face clearly दिखे</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Drill करके rawl plug डालो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Outdoor camera: silicone sealant लगाओ</span></div>
+      <div class="step-warn">⚠️ Outdoor camera IP66 rated होना चाहिए</div>
+      <div class="photo-section">
+        <div class="video-label">📸 Camera Mounting Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-step4')">
+          <input type="file" id="photos-step4" accept="image/*" multiple onchange="handlePhotos(this,'grid-step4','step4')">
+          <div class="upload-ico">📷</div><div class="upload-text">Camera mounting photo add करें</div>
+        </div>
+        <div class="photo-grid" id="grid-step4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--accentBg);color:var(--accent)">5</div><div class="step-title">BNC Connector लगाओ</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>Cable का 2cm outer cover छीलो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Braided wire को पीछे fold करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Inner wire का 5mm cover छीलो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>BNC connector में wire डालो और crimp करो</span></div>
+      <!-- VIDEO: BNC -->
+      <div class="video-section">
+        <div class="video-label">🎬 BNC Connector Video</div>
+        <div class="yt-iframe-wrap">
+          <iframe src="https://www.youtube.com/embed/2L_Y8w3GmSw" allowfullscreen title="BNC Connector Tutorial"></iframe>
+        </div>
+        <div class="custom-video-wrap">
+          <div class="custom-video-title">📎 अपना BNC video add करें:</div>
+          <div class="custom-video-input">
+            <input id="yt-url-bnc" placeholder="YouTube link..." type="url">
+            <button class="add-btn" onclick="addYTVideo('yt-url-bnc','yt-custom-bnc')">▶ Add</button>
+          </div>
+          <div id="yt-custom-bnc" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="step-warn">⚠️ Inner और outer wire touch नहीं होनी चाहिए</div>
+      <div class="photo-section">
+        <div class="video-label">📸 BNC Connector Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-bnc')">
+          <input type="file" id="photos-bnc" accept="image/*" multiple onchange="handlePhotos(this,'grid-bnc','bnc')">
+          <div class="upload-ico">📷</div><div class="upload-text">BNC connector photo add करें</div>
+        </div>
+        <div class="photo-grid" id="grid-bnc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--greenBg);color:var(--green)">6</div><div class="step-title">SMPS Power Connection</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>SMPS को DVR के पास रखो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Red wire = Positive (+) 12V</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Black wire = Negative (−) GND</span></div>
+      <div class="step-warn">⚠️ Polarity reverse करने से camera जल जाएगा</div>
+      <div class="step-good">✅ IR light जले = Power OK है</div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--purpleBg);color:var(--purple)">7</div><div class="step-title">Mobile App Setup — Remote Viewing</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>DVR को router से LAN cable से connect करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Customer के phone पर app install करो</span></div>
+      <div class="code-box">
+Hikvision → Hik-Connect
+Dahua     → DMSS / gDMSS
+CP Plus   → CP Plus App
+Other     → XMEye / iVMS
+      </div>
+      <div class="step-item"><div class="step-dot"></div><span>QR code scan करो या manually add करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Live view customer के सामने test करो</span></div>
+      <!-- VIDEO: Mobile App -->
+      <div class="video-section">
+        <div class="video-label">🎬 Mobile App Setup Video</div>
+        <div class="custom-video-wrap">
+          <div class="custom-video-title">📎 App setup video add करें:</div>
+          <div class="custom-video-input">
+            <input id="yt-url-app" placeholder="YouTube link..." type="url">
+            <button class="add-btn" onclick="addYTVideo('yt-url-app','yt-custom-app')">▶ Add</button>
+          </div>
+          <div id="yt-custom-app" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" onclick="toggleStep(this)">
+    <div class="step-head"><div class="step-num" style="background:var(--greenBg);color:var(--green)">8</div><div class="step-title">Final Check और Handover</div><div class="step-arrow">▼</div></div>
+    <div class="step-body">
+      <div class="step-item"><div class="step-dot"></div><span>सारे cameras का live view check करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Recording और playback verify करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Night vision test करो</span></div>
+      <div class="step-item"><div class="step-dot"></div><span>Customer को walkthrough दो</span></div>
+      <div class="step-good">✅ Job Done! RK Infotech app में "Done" mark करो</div>
+      <div class="photo-section">
+        <div class="video-label">📸 Completed Work Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-done')">
+          <input type="file" id="photos-done" accept="image/*" multiple onchange="handlePhotos(this,'grid-done','done')">
+          <div class="upload-ico">📷</div><div class="upload-text">काम पूरा होने की photo लो</div>
+          <div class="upload-sub">Customer को भी copy भेजें</div>
+        </div>
+        <div class="photo-grid" id="grid-done"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WIRING ══ -->
+<div class="section" id="sec-wiring">
+  <div class="sec-title">🔌 Wiring Diagrams</div>
+
+  <!-- VIDEO: Wiring -->
+  <div class="video-section">
+    <div class="video-label">🎬 Wiring Tutorial Video</div>
+    <div class="yt-iframe-wrap">
+      <iframe src="https://www.youtube.com/embed/zqlUInj_AI4" allowfullscreen title="CCTV Wiring Guide"></iframe>
+    </div>
+    <div class="custom-video-wrap">
+      <div class="custom-video-title">📎 अपना wiring video add करें:</div>
+      <div class="custom-video-input">
+        <input id="yt-url-wire" placeholder="YouTube link..." type="url">
+        <button class="add-btn" onclick="addYTVideo('yt-url-wire','yt-custom-wire')">▶ Add</button>
+      </div>
+      <div id="yt-custom-wire" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="wiring-card">
+    <div class="wiring-head"><span style="font-size:18px">📹</span><div class="wiring-title">Analog Camera Wiring</div></div>
+    <div style="padding:0 12px 14px">
+      <!-- SVG Diagram -->
+      <div class="svg-diagram">
+        <svg viewBox="0 0 340 160" xmlns="http://www.w3.org/2000/svg" style="padding:10px">
+          <!-- Camera -->
+          <rect x="10" y="55" width="60" height="50" rx="8" fill="#0f1622" stroke="#1c2a3a" stroke-width="1.5"/>
+          <circle cx="40" cy="80" r="15" fill="#131920" stroke="#FF6B35" stroke-width="1.5"/>
+          <circle cx="40" cy="80" r="8" fill="#FF6B35" opacity="0.3"/>
+          <text x="40" y="120" text-anchor="middle" fill="#8899aa" font-size="9" font-family="sans-serif">Camera</text>
+          <!-- DVR -->
+          <rect x="240" y="20" width="85" height="50" rx="8" fill="#0f1622" stroke="#1c2a3a" stroke-width="1.5"/>
+          <text x="282" y="50" text-anchor="middle" fill="#dde6f0" font-size="11" font-family="sans-serif" font-weight="bold">DVR</text>
+          <text x="282" y="63" text-anchor="middle" fill="#8899aa" font-size="8" font-family="sans-serif">Channel IN</text>
+          <!-- SMPS -->
+          <rect x="240" y="95" width="85" height="50" rx="8" fill="#0f1622" stroke="#1c2a3a" stroke-width="1.5"/>
+          <text x="282" y="123" text-anchor="middle" fill="#dde6f0" font-size="11" font-family="sans-serif" font-weight="bold">SMPS</text>
+          <text x="282" y="136" text-anchor="middle" fill="#8899aa" font-size="8" font-family="sans-serif">12V Output</text>
+          <!-- BNC Video Line -->
+          <line x1="70" y1="72" x2="240" y2="45" stroke="#F59E0B" stroke-width="2" stroke-dasharray="5,3"/>
+          <text x="155" y="52" text-anchor="middle" fill="#F59E0B" font-size="9" font-family="sans-serif">BNC Video</text>
+          <!-- Power Lines -->
+          <line x1="70" y1="85" x2="240" y2="113" stroke="#ff4444" stroke-width="2"/>
+          <line x1="70" y1="92" x2="240" y2="128" stroke="#888" stroke-width="2"/>
+          <text x="155" y="105" text-anchor="middle" fill="#ff4444" font-size="9" font-family="sans-serif">+12V Red</text>
+          <text x="155" y="128" text-anchor="middle" fill="#888" font-size="9" font-family="sans-serif">GND Black</text>
+        </svg>
+      </div>
+      <table class="wire-table" style="margin:0 0 0 0">
+        <thead><tr><th>Wire</th><th>Color</th><th>Connect to</th></tr></thead>
+        <tbody>
+          <tr><td>Video Signal</td><td><span class="color-dot" style="background:#ffd700"></span>Yellow BNC</td><td>DVR Video IN</td></tr>
+          <tr><td>Power +</td><td><span class="color-dot" style="background:#ff4444"></span>Red</td><td>SMPS +12V</td></tr>
+          <tr><td>Power −</td><td><span class="color-dot" style="background:#555;border:1px solid #777"></span>Black</td><td>SMPS GND</td></tr>
+        </tbody>
+      </table>
+      <!-- Photos -->
+      <div class="photo-section" style="margin-top:12px">
+        <div class="video-label">📸 Wiring Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-wiring1')">
+          <input type="file" id="photos-wiring1" accept="image/*" multiple onchange="handlePhotos(this,'grid-wiring1','wiring1')">
+          <div class="upload-ico">📷</div><div class="upload-text">Wiring photo add करें</div>
+        </div>
+        <div class="photo-grid" id="grid-wiring1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wiring-card">
+    <div class="wiring-head"><span style="font-size:18px">⚡</span><div class="wiring-title">SMPS Size Calculator</div></div>
+    <div style="padding:0 12px 14px">
+      <table class="wire-table">
+        <thead><tr><th>Cameras</th><th>SMPS</th><th>Ampere</th></tr></thead>
+        <tbody>
+          <tr><td>1–4 cameras</td><td>5A SMPS</td><td style="color:var(--green)">5 Amp</td></tr>
+          <tr><td>5–8 cameras</td><td>10A SMPS</td><td style="color:var(--yellow)">10 Amp</td></tr>
+          <tr><td>9–16 cameras</td><td>20A SMPS</td><td style="color:var(--accent)">20 Amp</td></tr>
+          <tr><td>17–32 cameras</td><td>2× 20A SMPS</td><td style="color:var(--red)">40 Amp</td></tr>
+        </tbody>
+      </table>
+      <div class="step-tip" style="margin-top:10px">💡 हमेशा 20% extra capacity का SMPS use करो</div>
+    </div>
+  </div>
+
+  <div class="wiring-card">
+    <div class="wiring-head"><span style="font-size:18px">🔩</span><div class="wiring-title">BNC Connector Structure</div></div>
+    <div style="padding:0 12px 14px">
+      <div class="svg-diagram">
+        <svg viewBox="0 0 340 120" xmlns="http://www.w3.org/2000/svg" style="padding:10px">
+          <!-- Cable cross section -->
+          <rect x="20" y="40" width="200" height="40" rx="20" fill="#1c2a3a"/>
+          <rect x="30" y="47" width="180" height="26" rx="13" fill="#FF6B35" opacity="0.3"/>
+          <rect x="40" y="52" width="160" height="16" rx="8" fill="#131920"/>
+          <rect x="50" y="56" width="140" height="8" rx="4" fill="#F59E0B"/>
+          <!-- Labels -->
+          <text x="120" y="100" text-anchor="middle" fill="#8899aa" font-size="9" font-family="sans-serif">Outer Cover</text>
+          <line x1="80" y1="40" x2="80" y2="35" stroke="#FF6B35" stroke-width="1"/>
+          <text x="80" y="30" text-anchor="middle" fill="#FF6B35" font-size="9" font-family="sans-serif">Braided Shield = GND</text>
+          <line x1="120" y1="56" x2="120" y2="20" stroke="#F59E0B" stroke-width="1"/>
+          <text x="120" y="15" text-anchor="middle" fill="#F59E0B" font-size="9" font-family="sans-serif">Inner Core = Video Signal</text>
+          <!-- BNC Connector -->
+          <rect x="230" y="30" width="90" height="60" rx="10" fill="#0f1622" stroke="#1c2a3a" stroke-width="1.5"/>
+          <circle cx="260" cy="60" r="15" fill="#131920" stroke="#3B82F6" stroke-width="1.5"/>
+          <circle cx="260" cy="60" r="5" fill="#F59E0B"/>
+          <rect x="280" y="45" width="30" height="10" rx="3" fill="#1c2a3a"/>
+          <text x="275" y="80" text-anchor="middle" fill="#dde6f0" font-size="10" font-family="sans-serif" font-weight="bold">BNC</text>
+          <text x="260" y="100" text-anchor="middle" fill="#8899aa" font-size="8" font-family="sans-serif">Center Pin = Signal</text>
+        </svg>
+      </div>
+      <div class="code-box">
+Inner Pin  (Center) = Video Signal → Yellow wire
+Outer Ring (Shield) = Ground/GND  → Braided shield
+      </div>
+    </div>
+  </div>
+
+  <div class="wiring-card">
+    <div class="wiring-head"><span style="font-size:18px">📡</span><div class="wiring-title">IP Camera / NVR Connection</div></div>
+    <div style="padding:0 12px 14px">
+      <div class="wire-diagram">
+[IP Camera] ──LAN Cable──► [POE Switch]
+[POE Switch] ──LAN Cable──► [NVR]
+[NVR] ──HDMI──► [Monitor]
+
+या Direct POE:
+[IP Camera] ──LAN Cable──► [NVR POE Port]
+      </div>
+      <div class="step-good">✅ IP Camera में अलग power नहीं — LAN से ही मिलती है (POE)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROBLEMS ══ -->
+<div class="section" id="sec-problems">
+  <div class="sec-title">🚨 Common Problems — Quick Solutions</div>
+
+  <!-- VIDEO: Troubleshooting -->
+  <div class="video-section">
+    <div class="video-label">🎬 Troubleshooting Video</div>
+    <div class="custom-video-wrap">
+      <div class="custom-video-title">📎 Troubleshooting video add करें:</div>
+      <div class="custom-video-input">
+        <input id="yt-url-trouble" placeholder="YouTube link..." type="url">
+        <button class="add-btn" onclick="addYTVideo('yt-url-trouble','yt-custom-trouble')">▶ Add</button>
+      </div>
+      <div id="yt-custom-trouble" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">📺</div><div><div class="prob-name">Screen पर "No Signal"</div><div class="prob-sub">Image नहीं आ रही</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>BNC connector दोनों sides tight करो</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>Camera की power LED जल रही है?</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>दूसरे channel पर same cable try करो</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>Camera को DVR से directly short cable से connect करो</span></div>
+      <div class="sol-step"><div class="sol-num">5</div><span>Image आए → Cable faulty | नहीं → Camera या DVR</span></div>
+      <div class="photo-section">
+        <div class="video-label">📸 Problem Photos</div>
+        <div class="photo-upload-area" onclick="triggerUpload('photos-prob1')">
+          <input type="file" id="photos-prob1" accept="image/*" multiple onchange="handlePhotos(this,'grid-prob1','prob1')">
+          <div class="upload-ico">📷</div><div class="upload-text">Problem की photo लो</div>
+        </div>
+        <div class="photo-grid" id="grid-prob1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">🌈</div><div><div class="prob-name">Image में lines / distortion</div><div class="prob-sub">Wavy lines या wrong colors</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>Cable को power wire से दूर करो — interference है</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>BNC connector का ground check करो</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>Cable 80+ meters है → signal booster लगाओ</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>Ferrite core लगाओ cable पर</span></div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">🌑</div><div><div class="prob-name">Night Vision काम नहीं कर रही</div><div class="prob-sub">रात को image dark है</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>Phone camera से IR LEDs check करो — दिखेंगी</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>Camera के सामने dust या spider web है — साफ करो</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>DVR में Day/Night mode "Auto" पर set करो</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>Power supply proper 12V है?</span></div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">📱</div><div><div class="prob-name">Mobile पर live view नहीं</div><div class="prob-sub">Remote access problem</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>DVR का LAN cable connected है?</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>App में सही serial number डाला है?</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>DVR restart करो</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>DVR में P2P/Cloud service enabled है?</span></div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">💾</div><div><div class="prob-name">Recording नहीं हो रही</div><div class="prob-sub">Playback में footage नहीं</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>DVR → Storage → HDD detect हो रहा?</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>HDD full तो नहीं → overwrite enable करो</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>Date/Time सही है DVR में?</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>HDD format करो: DVR → Storage → Format</span></div>
+    </div>
+  </div>
+
+  <div class="prob-card" onclick="toggleProb(this)">
+    <div class="prob-head"><div class="prob-ico">🔥</div><div><div class="prob-name">DVR बहुत गर्म हो रहा है</div><div class="prob-sub">Overheating problem</div></div><div class="step-arrow" style="color:var(--text3);font-size:13px">▼</div></div>
+    <div class="prob-body">
+      <div class="sol-step"><div class="sol-num">1</div><span>DVR के ऊपर/नीचे ventilation space है?</span></div>
+      <div class="sol-step"><div class="sol-num">2</div><span>DVR का fan चल रहा है?</span></div>
+      <div class="sol-step"><div class="sol-num">3</div><span>Dust साफ करो — blower से</span></div>
+      <div class="sol-step"><div class="sol-num">4</div><span>Cabinet में बंद मत रखो</span></div>
+      <div class="step-warn" style="margin-top:8px">⚠️ Overheating से DVR crash और HDD damage होता है</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CUSTOMER TIPS ══ -->
+<div class="section" id="sec-customer">
+  <div class="sec-title">🗣️ Customer से बात — Tips</div>
+
+  <div class="tip-card">
+    <div class="tip-scenario">😤 Customer नाराज़ है — काम देरी से हुआ</div>
+    <div class="tip-customer">"आपने बोला था सुबह आएंगे, अब दोपहर हो गई!"</div>
+    <div class="tip-tech">"Sir, माफ करना देरी के लिए। लेकिन अब मैं आ गया हूँ और आपका काम जल्दी और अच्छे से करूंगा।"</div>
+    <div class="tip-note">💡 पहले माफ़ी मांगो — excuse मत दो।</div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-scenario">💰 Free में extra काम मांगे</div>
+    <div class="tip-customer">"एक camera और लगा दो, उसका पैसा नहीं लगेगा ना?"</div>
+    <div class="tip-tech">"Sir, यह quotation में नहीं था। मैं office से confirm करके बताता हूँ।"</div>
+    <div class="tip-note">💡 खुद decide मत करो — office को call करो।</div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-scenario">🔧 Quality पर doubt करे</div>
+    <div class="tip-customer">"यह camera अच्छा है या सस्ता माल दे रहे हो?"</div>
+    <div class="tip-tech">"Sir, यह [Brand] का camera है — 1 साल warranty है। मैं अभी live demo दिखाता हूँ।"</div>
+    <div class="tip-note">💡 Demo दिखाओ — words से ज़्यादा काम करेगा।</div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-scenario">❓ Technical सवाल जो पता नहीं</div>
+    <div class="tip-customer">"यह कितने Megapixel का है?"</div>
+    <div class="tip-tech">"Sir, exact specification मैं confirm करता हूँ — box पर देखते हैं।"</div>
+    <div class="tip-note">💡 गलत information मत दो — honest रहो।</div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-scenario">✅ काम पूरा — Handover</div>
+    <div class="tip-tech">"Sir, आपका CCTV तैयार है। सारे cameras काम कर रहे हैं। DVR password: [password]. Mobile app भी connect हो गया। कोई problem हो तो call करें।"</div>
+    <div class="tip-note">💡 हमेशा live demo दो — customer खुश होगा।</div>
+  </div>
+</div>
+
+<!-- ══ CHECKLIST ══ -->
+<div class="section" id="sec-checklist">
+  <div class="sec-title">✅ Site Checklists</div>
+
+  <div class="checklist" id="cl-install">
+    <div class="checklist-title">📹 Installation Checklist</div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Site survey — cameras की position decide</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">सारा material लेकर आए</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">DVR mount और HDD format किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Date/Time set किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">सारे cameras mount — angle सही</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Cable routing complete</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">BNC connectors tight</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">SMPS connect — सारे cameras on</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Live view verify</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Recording test किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Night vision test किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Mobile app setup</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Customer को demo दिया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Job "Done" mark किया app में</div></div>
+    <button class="reset-btn" onclick="resetChecklist('cl-install')">🔄 Reset</button>
+  </div>
+
+  <div class="checklist" id="cl-repair">
+    <div class="checklist-title">🔧 Repair Checklist</div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Customer से problem details लिया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Power supply check किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Affected cameras identify किए</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Cable continuity test</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Faulty part replace किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Customer को demonstrate किया</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Repair details office को बताए</div></div>
+    <button class="reset-btn" onclick="resetChecklist('cl-repair')">🔄 Reset</button>
+  </div>
+
+  <div class="checklist" id="cl-amc">
+    <div class="checklist-title">🔧 AMC Service Visit Checklist</div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">सारे cameras का live view check</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Camera lenses साफ किए</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Night vision test</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Recording playback check</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">DVR dust साफ</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Mobile app working है</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">Visit record किया app में</div></div>
+    <button class="reset-btn" onclick="resetChecklist('cl-amc')">🔄 Reset</button>
+  </div>
+</div>
+
+<!-- ══ MY PHOTOS ══ -->
+<div class="section" id="sec-photos">
+  <div class="sec-title">📸 मेरी Photos — Site Work</div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:16px;margin-bottom:14px;">
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px;">📸 New Photo Add करें</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Job की photos यहाँ save करो — बाद में reference के लिए</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <select id="photo-cat" style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;outline:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;">
+        <option value="installation">📹 Installation</option>
+        <option value="repair">🔧 Repair</option>
+        <option value="wiring">🔌 Wiring</option>
+        <option value="problem">🚨 Problem</option>
+        <option value="completed">✅ Completed Work</option>
+        <option value="other">📌 Other</option>
+      </select>
+      <input id="photo-note" placeholder="Caption (optional)" style="flex:2;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;outline:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-width:120px">
+    </div>
+    <div class="photo-upload-area" onclick="triggerUpload('main-photos')">
+      <input type="file" id="main-photos" accept="image/*" multiple onchange="handleMainPhotos(this)">
+      <div class="upload-ico">📷</div>
+      <div class="upload-text">Photos add करें</div>
+      <div class="upload-sub">Multiple photos select कर सकते हो</div>
+    </div>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none;">
+    <button onclick="filterPhotoCat('all',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--accent);background:var(--accentBg);color:var(--accent);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;" id="pc-all">सभी</button>
+    <button onclick="filterPhotoCat('installation',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;">📹 Installation</button>
+    <button onclick="filterPhotoCat('repair',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;">🔧 Repair</button>
+    <button onclick="filterPhotoCat('wiring',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;">🔌 Wiring</button>
+    <button onclick="filterPhotoCat('completed',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;">✅ Completed</button>
+  </div>
+
+  <div id="main-photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+  <div id="main-photo-empty" style="text-align:center;padding:40px;color:var(--text3);display:none">
+    <div style="font-size:40px;margin-bottom:10px">📷</div>
+    <div style="font-size:14px;color:var(--text2)">कोई photo नहीं</div>
+    <div style="font-size:12px;margin-top:5px">ऊपर से add करें</div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="section" id="sec-search">
+  <div id="search-results"></div>
+</div>
+
+</div><!-- content -->
+
+<!-- SOS BUTTON -->
+<div class="sos-section">
+  <button class="sos-btn" onclick="openSos()">🆘 Emergency Help — तुरंत Solution</button>
+</div>
+
+<!-- SOS MODAL -->
+<div class="overlay" id="sos-overlay" onclick="closeSosOuter(event)">
+  <div class="sos-modal">
+    <div class="sos-modal-head">
+      <div class="sos-modal-title">🆘 Emergency Help</div>
+      <div style="font-size:13px;color:var(--text2)">Problem चुनो — solution मिलेगा</div>
+      <button class="sos-close" onclick="document.getElementById('sos-overlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="sos-content">
+      <div class="sos-problem" onclick="toggleSos(this)">
+        <div class="sos-prob-name">📺 No Signal / Black Screen</div>
+        <div class="sos-prob-desc">Camera connected है but image नहीं</div>
+        <div class="sos-solution">
+          <div class="sol-step"><div class="sol-num">1</div><span>BNC tight करो दोनों sides</span></div>
+          <div class="sol-step"><div class="sol-num">2</div><span>Camera IR light check करो (phone camera से)</span></div>
+          <div class="sol-step"><div class="sol-num">3</div><span>दूसरे channel पर try करो</span></div>
+          <div class="sol-step"><div class="sol-num">4</div><span>Short cable से directly DVR से connect करो</span></div>
+        </div>
+      </div>
+      <div class="sos-problem" onclick="toggleSos(this)">
+        <div class="sos-prob-name">⚡ Power नहीं / Camera on नहीं</div>
+        <div class="sos-prob-desc">LED नहीं जल रही</div>
+        <div class="sos-solution">
+          <div class="sol-step"><div class="sol-num">1</div><span>SMPS LED check करो</span></div>
+          <div class="sol-step"><div class="sol-num">2</div><span>Red=+, Black=− polarity check करो</span></div>
+          <div class="sol-step"><div class="sol-num">3</div><span>Multimeter से 12V check करो</span></div>
+        </div>
+      </div>
+      <div class="sos-problem" onclick="toggleSos(this)">
+        <div class="sos-prob-name">📱 Mobile App नहीं चल रहा</div>
+        <div class="sos-prob-desc">Remote view problem</div>
+        <div class="sos-solution">
+          <div class="sol-step"><div class="sol-num">1</div><span>DVR LAN cable check करो</span></div>
+          <div class="sol-step"><div class="sol-num">2</div><span>DVR restart करो</span></div>
+          <div class="sol-step"><div class="sol-num">3</div><span>Serial number/UID सही है?</span></div>
+        </div>
+      </div>
+      <div class="sos-problem" onclick="toggleSos(this)">
+        <div class="sos-prob-name">🔐 DVR Password भूल गए</div>
+        <div class="sos-prob-desc">Login नहीं हो रहा</div>
+        <div class="sos-solution">
+          <div class="sol-step"><div class="sol-num">1</div><span>Try: admin / 12345 / 888888</span></div>
+          <div class="sol-step"><div class="sol-num">2</div><span>Hikvision: SADP Tool use करो</span></div>
+          <div class="sol-step"><div class="sol-num">3</div><span>Office को call करो</span></div>
+        </div>
+      </div>
+      <div style="padding:12px 0;text-align:center">
+        <a href="tel:9999999999" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accentBg);border:1px solid rgba(232,108,47,0.3);border-radius:10px;color:var(--accent);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;text-decoration:none;">📞 Office Call करो</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TABS ──
+function showTab(tab, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('search-inp').value = '';
+  if (tab === 'photos') renderMainPhotos('all');
+}
+
+// ── TOGGLES ──
+function toggleStep(card) { card.classList.toggle('open'); }
+function toggleProb(card) {
+  const was = card.classList.contains('open');
+  document.querySelectorAll('.prob-card').forEach(c => c.classList.remove('open'));
+  if (!was) card.classList.add('open');
+}
+
+// ── YOUTUBE VIDEO ──
+function getYTId(url) {
+  const m = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return m ? m[1] : null;
+}
+
+function addYTVideo(inputId, containerId) {
+  const url = document.getElementById(inputId).value.trim();
+  if (!url) { alert('YouTube link डालें'); return; }
+  const id = getYTId(url);
+  if (!id) { alert('Valid YouTube link नहीं है'); return; }
+  const container = document.getElementById(containerId);
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-bottom:8px;';
+  wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>`;
+  container.appendChild(wrap);
+  document.getElementById(inputId).value = '';
+  // Save
+  const key = 'rk_yt_' + containerId;
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  saved.push(id);
+  localStorage.setItem(key, JSON.stringify(saved));
+}
+
+function loadSavedVideos() {
+  const containers = ['yt-custom-install','yt-custom-bnc','yt-custom-app','yt-custom-wire','yt-custom-trouble'];
+  containers.forEach(cid => {
+    const saved = JSON.parse(localStorage.getItem('rk_yt_' + cid) || '[]');
+    const container = document.getElementById(cid);
+    if (container) {
+      saved.forEach(id => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-bottom:8px;';
+        wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>`;
+        container.appendChild(wrap);
+      });
+    }
+  });
+}
+
+// ── PHOTOS (Step-level) ──
+function triggerUpload(id) { document.getElementById(id).click(); }
+
+function handlePhotos(input, gridId, key) {
+  const grid = document.getElementById(gridId);
+  const files = Array.from(input.files);
+  const saved = JSON.parse(localStorage.getItem('rk_photos_' + key) || '[]');
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const src = e.target.result;
+      saved.push({ src, name: file.name, date: new Date().toLocaleDateString('hi-IN') });
+      localStorage.setItem('rk_photos_' + key, JSON.stringify(saved));
+      addPhotoToGrid(grid, src, file.name, saved.length - 1, key);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function addPhotoToGrid(grid, src, name, idx, key) {
+  const div = document.createElement('div');
+  div.className = 'photo-item';
+  div.innerHTML = `<img src="${src}" onclick="viewPhoto('${src}','${name}')"><button class="photo-del" onclick="delPhoto('${key}',${idx},this)">✕</button>`;
+  grid.appendChild(div);
+}
+
+function delPhoto(key, idx, btn) {
+  const saved = JSON.parse(localStorage.getItem('rk_photos_' + key) || '[]');
+  saved.splice(idx, 1);
+  localStorage.setItem('rk_photos_' + key, JSON.stringify(saved));
+  btn.closest('.photo-item').remove();
+}
+
+function loadStepPhotos() {
+  const keys = ['step1','step3','step4','bnc','done','wiring1','prob1'];
+  const gridMap = { step1:'grid-step1',step3:'grid-step3',step4:'grid-step4',bnc:'grid-bnc',done:'grid-done',wiring1:'grid-wiring1',prob1:'grid-prob1' };
+  keys.forEach(key => {
+    const saved = JSON.parse(localStorage.getItem('rk_photos_' + key) || '[]');
+    const grid = document.getElementById(gridMap[key]);
+    if (grid) saved.forEach((p, i) => addPhotoToGrid(grid, p.src, p.name, i, key));
+  });
+}
+
+// ── MAIN PHOTOS PAGE ──
+let allMainPhotos = JSON.parse(localStorage.getItem('rk_main_photos') || '[]');
+let currentCatFilter = 'all';
+
+function handleMainPhotos(input) {
+  const cat = document.getElementById('photo-cat').value;
+  const note = document.getElementById('photo-note').value.trim();
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      allMainPhotos.push({ src: e.target.result, name: file.name, cat, note, date: new Date().toLocaleDateString('hi-IN') });
+      localStorage.setItem('rk_main_photos', JSON.stringify(allMainPhotos));
+      renderMainPhotos(currentCatFilter);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+  document.getElementById('photo-note').value = '';
+}
+
+function renderMainPhotos(cat) {
+  currentCatFilter = cat;
+  const grid = document.getElementById('main-photo-grid');
+  const empty = document.getElementById('main-photo-empty');
+  const list = cat === 'all' ? allMainPhotos : allMainPhotos.filter(p => p.cat === cat);
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map((p, i) => `
+    <div class="photo-item" style="aspect-ratio:1">
+      <img src="${p.src}" onclick="viewPhoto('${p.src}','${p.note||p.name}')">
+      <button class="photo-del" onclick="delMainPhoto(${allMainPhotos.indexOf(p)})">✕</button>
+      ${p.note ? `<div class="photo-caption">${p.note}</div>` : ''}
+    </div>`).join('');
+}
+
+function filterPhotoCat(cat, el) {
+  document.querySelectorAll('#sec-photos button').forEach(b => { b.style.background = 'var(--bg2)'; b.style.color = 'var(--text2)'; b.style.borderColor = 'var(--border)'; });
+  el.style.background = 'var(--accentBg)'; el.style.color = 'var(--accent)'; el.style.borderColor = 'var(--accent)';
+  renderMainPhotos(cat);
+}
+
+function delMainPhoto(idx) {
+  allMainPhotos.splice(idx, 1);
+  localStorage.setItem('rk_main_photos', JSON.stringify(allMainPhotos));
+  renderMainPhotos(currentCatFilter);
+}
+
+// ── PHOTO VIEWER ──
+function viewPhoto(src, caption) {
+  document.getElementById('photo-viewer-img').src = src;
+  document.getElementById('photo-viewer-caption').textContent = caption || '';
+  document.getElementById('photo-viewer').classList.add('open');
+}
+function closePhotoViewer() { document.getElementById('photo-viewer').classList.remove('open'); }
+
+// ── CHECKLIST ──
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  saveChecklist(item.closest('.checklist').id);
+}
+function saveChecklist(id) {
+  const data = Array.from(document.querySelectorAll(`#${id} .check-item`)).map(i => i.classList.contains('checked'));
+  localStorage.setItem('rk_check_' + id, JSON.stringify(data));
+}
+function loadChecklists() {
+  ['cl-install','cl-repair','cl-amc'].forEach(id => {
+    const saved = localStorage.getItem('rk_check_' + id);
+    if (saved) {
+      const data = JSON.parse(saved);
+      document.querySelectorAll(`#${id} .check-item`).forEach((item, i) => { if (data[i]) item.classList.add('checked'); });
+    }
+  });
+}
+function resetChecklist(id) {
+  document.querySelectorAll(`#${id} .check-item`).forEach(i => i.classList.remove('checked'));
+  localStorage.removeItem('rk_check_' + id);
+}
+
+// ── SOS ──
+function openSos() { document.getElementById('sos-overlay').classList.add('open'); }
+function closeSosOuter(e) { if (e.target === document.getElementById('sos-overlay')) document.getElementById('sos-overlay').classList.remove('open'); }
+function toggleSos(el) {
+  const was = el.classList.contains('active');
+  document.querySelectorAll('.sos-problem').forEach(p => p.classList.remove('active'));
+  if (!was) el.classList.add('active');
+}
+
+// ── SEARCH ──
+function doSearch(val) {
+  const q = val.toLowerCase().trim();
+  if (!q) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-install').classList.add('active');
+    document.querySelectorAll('.tab').forEach((t,i) => { if(i===0) t.classList.add('active'); else t.classList.remove('active'); });
+    return;
+  }
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-search').classList.add('active');
+  const data = [
+    {tab:'install',title:'Site Survey',kw:['survey','site','camera position','देखो']},
+    {tab:'install',title:'DVR Setup',kw:['dvr','setup','hdd','format','date','time']},
+    {tab:'install',title:'BNC Connector',kw:['bnc','connector','crimp','crimping','wire']},
+    {tab:'install',title:'SMPS Power',kw:['smps','power','12v','voltage','red','black']},
+    {tab:'install',title:'Mobile App Setup',kw:['mobile','app','remote','hik-connect','dmss']},
+    {tab:'wiring',title:'Analog Camera Wiring',kw:['wiring','analog','video','signal']},
+    {tab:'wiring',title:'SMPS Size',kw:['smps','ampere','size','cameras','how many']},
+    {tab:'wiring',title:'IP Camera NVR',kw:['ip','nvr','poe','lan','network']},
+    {tab:'problems',title:'No Signal',kw:['no signal','black','blank','image nahi']},
+    {tab:'problems',title:'Night Vision',kw:['night','dark','ir','infrared']},
+    {tab:'problems',title:'Recording',kw:['recording','record','hdd','playback','footage']},
+    {tab:'problems',title:'Overheating',kw:['hot','heat','overheat','गर्म','fan']},
+    {tab:'customer',title:'Customer Tips',kw:['customer','बात','tips','naaraz','angry']},
+  ];
+  const tabs = {install:'📹 Installation',wiring:'🔌 Wiring',problems:'🚨 Problems',customer:'🗣️ Customer'};
+  const results = data.filter(d => d.title.toLowerCase().includes(q) || d.kw.some(k => k.toLowerCase().includes(q)));
+  document.getElementById('search-results').innerHTML = results.length
+    ? `<div class="sec-title">"${val}" — ${results.length} results</div>
+       ${results.map(r => `<div class="step-card" onclick="showTab('${r.tab}',document.querySelector('.tab'))"><div class="step-head"><div class="step-num" style="background:var(--accentBg);color:var(--accent)">→</div><div><div class="step-title">${r.title}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${tabs[r.tab]||r.tab}</div></div></div></div>`).join('')}`
+    : `<div class="empty-search"><div style="font-size:36px">🔍</div><div style="font-size:14px;color:var(--text2);margin-top:10px">कोई result नहीं</div><div style="font-size:12px;margin-top:5px">दूसरे words try करो</div></div>`;
+}
+
+// ── INIT ──
+loadChecklists();
+loadSavedVideos();
+loadStepPhotos();
+</script>
+</body>
+</html>

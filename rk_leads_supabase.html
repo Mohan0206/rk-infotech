@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Leads / CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(240,79,79,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:68px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+/* PIPELINE */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.pipeline-col{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.pipeline-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pipeline-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;}
+.pipeline-count{font-size:11px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:10px;}
+.pipeline-body{padding:10px;min-height:180px;display:flex;flex-direction:column;gap:8px;}
+.lead-card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;cursor:pointer;transition:all 0.15s;}
+.lead-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+.lead-card-name{font-weight:600;color:var(--text);font-size:13px;margin-bottom:3px;}
+.lead-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
+.lead-card-date{font-size:10px;color:var(--text3);}
+
+/* TABLE */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+
+/* VIEW TABS */
+.view-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:4px;width:fit-content;}
+.view-tab{padding:6px 14px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.view-tab.active{background:var(--accent);color:#fff;}
+
+/* CONV BAR */
+.conv-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:5px;}
+.conv-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--green));}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px 20px;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+
+/* DETAIL */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.info-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;}
+.info-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.info-val{font-size:13px;color:var(--text);font-weight:500;}
+
+.stage-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding:14px;background:var(--bg2);border-radius:10px;}
+.stage-btn{flex:1;min-width:120px;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;text-align:center;}
+.stage-btn:hover{border-color:var(--accent);color:var(--accent);}
+.stage-btn.green:hover{border-color:var(--green);color:var(--green);background:var(--greenBg);}
+.stage-btn.red:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.reason-opt{padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:12px;text-align:center;transition:all 0.15s;}
+.reason-opt:hover,.reason-opt.sel{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.empty-state{text-align:center;padding:40px;color:var(--text3);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+@media(max-width:900px){.pipeline{grid-template-columns:repeat(3,1fr);}.stats-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.sidebar{display:none;}.main{padding:14px;}.form-grid{grid-template-columns:1fr;}.info-grid{grid-template-columns:1fr;}.pipeline{grid-template-columns:1fr 1fr;}.stats-row{grid-template-columns:1fr 1fr;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn active" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Pipeline</div>
+    <button class="sidebar-item active" onclick="filterStage('all',this)"><span class="si-icon">🎯</span>सभी<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-all">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('New',this)"><span class="si-icon">🆕</span>New<span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-New">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('Site Visit',this)"><span class="si-icon">📅</span>Site Visit<span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-SiteVisit">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('Quoted',this)"><span class="si-icon">📝</span>Quoted<span class="sb-badge" style="background:var(--purpleBg);color:var(--purple)" id="sb-Quoted">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('Follow Up',this)"><span class="si-icon">🔔</span>Follow Up<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-FollowUp">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('Won',this)"><span class="si-icon">✅</span>Won<span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-Won">0</span></button>
+    <button class="sidebar-item" onclick="filterStage('Lost',this)"><span class="si-icon">❌</span>Lost<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-Lost">0</span></button>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div><div class="page-title">🎯 Leads / CRM</div><div class="page-subtitle">Lead से Customer तक — Supabase connected</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="setView('pipeline',this)">⊞ Pipeline</button>
+          <button class="view-tab" onclick="setView('table',this)">☰ List</button>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">+ नया Lead</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">🎯</div><div><div class="stat-val" style="color:var(--blue)" id="s-total">0</div><div class="stat-lbl">Total Leads</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">📅</div><div><div class="stat-val" style="color:var(--yellow)" id="s-visit">0</div><div class="stat-lbl">Site Visit</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--purpleBg)">📝</div><div><div class="stat-val" style="color:var(--purple)" id="s-quoted">0</div><div class="stat-lbl">Quoted</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">✅</div><div><div class="stat-val" style="color:var(--green)" id="s-won">0</div><div class="stat-lbl">Won</div></div></div>
+      <div class="stat" style="flex-direction:column;align-items:flex-start;gap:5px">
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <div class="stat-ico" style="background:var(--accentBg)">📊</div>
+          <div><div class="stat-val" style="color:var(--accent)" id="s-rate">0%</div><div class="stat-lbl">Conversion</div></div>
+        </div>
+        <div class="conv-bar" style="width:100%"><div class="conv-fill" id="conv-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- PIPELINE VIEW -->
+    <div id="pipeline-view">
+      <div class="pipeline">
+        <div class="pipeline-col">
+          <div class="pipeline-head"><div class="pipeline-title" style="color:var(--blue)">🆕 New</div><span class="pipeline-count" style="background:var(--blueBg);color:var(--blue)" id="pc-New">0</span></div>
+          <div class="pipeline-body" id="pl-New"></div>
+        </div>
+        <div class="pipeline-col">
+          <div class="pipeline-head"><div class="pipeline-title" style="color:var(--yellow)">📅 Site Visit</div><span class="pipeline-count" style="background:var(--yellowBg);color:var(--yellow)" id="pc-SiteVisit">0</span></div>
+          <div class="pipeline-body" id="pl-SiteVisit"></div>
+        </div>
+        <div class="pipeline-col">
+          <div class="pipeline-head"><div class="pipeline-title" style="color:var(--purple)">📝 Quoted</div><span class="pipeline-count" style="background:var(--purpleBg);color:var(--purple)" id="pc-Quoted">0</span></div>
+          <div class="pipeline-body" id="pl-Quoted"></div>
+        </div>
+        <div class="pipeline-col">
+          <div class="pipeline-head"><div class="pipeline-title" style="color:var(--green)">✅ Won</div><span class="pipeline-count" style="background:var(--greenBg);color:var(--green)" id="pc-Won">0</span></div>
+          <div class="pipeline-body" id="pl-Won"></div>
+        </div>
+        <div class="pipeline-col">
+          <div class="pipeline-head"><div class="pipeline-title" style="color:var(--red)">❌ Lost</div><span class="pipeline-count" style="background:var(--redBg);color:var(--red)" id="pc-Lost">0</span></div>
+          <div class="pipeline-body" id="pl-Lost"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div id="table-view" style="display:none">
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <input class="input search-input" type="search" placeholder="🔍 नाम या phone..." id="search-inp" oninput="render()" style="flex:1;min-width:180px;padding-left:14px">
+      </div>
+      <div class="table-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Lead</th><th>Phone</th><th>Service</th><th>Source</th><th>Stage</th><th>Follow Up</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- FORM MODAL -->
+<div class="overlay" id="form-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="form-title">नया Lead</div><button class="modal-close" onclick="closeModal('form-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-section">Lead Info</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">नाम <span class="req">*</span></label><input class="input" id="f-name" placeholder="Lead का नाम"></div>
+        <div class="form-group"><label class="form-label">Phone <span class="req">*</span></label><input class="input" id="f-phone" placeholder="10 digit" maxlength="10" type="tel"></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input class="input" id="f-whatsapp" placeholder="अगर अलग है"></div>
+        <div class="form-group"><label class="form-label">City</label><input class="input" id="f-city" placeholder="शहर"></div>
+        <div class="form-group"><label class="form-label">Service</label>
+          <select class="input" id="f-service">
+            <option value="Installation">📹 New Installation</option>
+            <option value="Repair">🔧 CCTV Repair</option>
+            <option value="Other">⚙️ Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Source</label>
+          <select class="input" id="f-source">
+            <option value="Phone Call">📞 Phone Call</option>
+            <option value="WhatsApp">💬 WhatsApp</option>
+            <option value="Walk-in">🚶 Walk-in</option>
+            <option value="Reference">🤝 Reference</option>
+            <option value="Social Media">📱 Social Media</option>
+            <option value="Google">🌐 Google</option>
+            <option value="Other">📌 Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Stage</label>
+          <select class="input" id="f-stage">
+            <option value="New">🆕 New</option>
+            <option value="Site Visit">📅 Site Visit</option>
+            <option value="Quoted">📝 Quoted</option>
+            <option value="Follow Up">🔔 Follow Up</option>
+            <option value="Won">✅ Won</option>
+            <option value="Lost">❌ Lost</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Follow Up Date</label><input class="input" type="date" id="f-followup"></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="input" id="f-notes" placeholder="Requirements, details..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('form-modal')">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveLead()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head"><div class="modal-title" id="detail-title">Lead Details</div><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-foot" id="detail-foot"></div>
+  </div>
+</div>
+
+<!-- LOST MODAL -->
+<div class="overlay" id="lost-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head"><div class="modal-title">❌ Lost Reason</div><button class="modal-close" onclick="closeModal('lost-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="reason-grid">
+        <button class="reason-opt" onclick="selReason(this,'💸 Price ज़्यादा')">💸 Price ज़्यादा</button>
+        <button class="reason-opt" onclick="selReason(this,'🔄 Competitor गया')">🔄 Competitor</button>
+        <button class="reason-opt" onclick="selReason(this,'⏳ बाद में करेंगे')">⏳ बाद में</button>
+        <button class="reason-opt" onclick="selReason(this,'📵 Response नहीं')">📵 Response नहीं</button>
+        <button class="reason-opt" onclick="selReason(this,'📝 Re-quote चाहिए')">📝 Re-quote</button>
+        <button class="reason-opt" onclick="selReason(this,'❓ पता नहीं')">❓ पता नहीं</button>
+      </div>
+      <input class="input" id="lost-custom" placeholder="या खुद लिखें...">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('lost-modal')">Cancel</button>
+      <button class="btn btn-red" onclick="confirmLost()">❌ Mark Lost</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERT MODAL -->
+<div class="overlay" id="convert-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head"><div class="modal-title">✅ Lead Convert करें</div><button class="modal-close" onclick="closeModal('convert-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:44px;margin-bottom:10px">🎉</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px" id="convert-name"></div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:18px">यह lead Customer बन जाएगा और Job create होगी</div>
+        <div style="background:var(--greenBg);border:1px solid rgba(34,201,122,0.2);border-radius:10px;padding:14px;text-align:left;font-size:13px;color:var(--green);line-height:1.8">
+          ✅ Customer list में add होगा<br>✅ नया Job create होगा<br>✅ Lead "Won" mark होगा
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('convert-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmConvert()">🚀 Convert करें</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+// ─── SUPABASE ───
+const SUPABASE_URL = 'https://hkspejyyzicejxvucvtc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let leads = [];
+let customers = [];
+let editingId = null;
+let lostLeadId = null;
+let convertLeadId = null;
+let selectedReason = '';
+let stageFilter = 'all';
+let currentView = 'pipeline';
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+function setStatus(s){ document.getElementById('db-dot').className='db-dot '+s; document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Connecting...'; }
+
+const srcIcon={'Phone Call':'📞','WhatsApp':'💬','Walk-in':'🚶','Reference':'🤝','Social Media':'📱','Google':'🌐','Other':'📌'};
+const svcIcon={'Installation':'📹','Repair':'🔧','Other':'⚙️'};
+const stageBadgeStyle={
+  'New':'background:var(--blueBg);color:var(--blue)',
+  'Site Visit':'background:var(--yellowBg);color:var(--yellow)',
+  'Quoted':'background:var(--purpleBg);color:var(--purple)',
+  'Follow Up':'background:var(--accentBg);color:var(--accent)',
+  'Won':'background:var(--greenBg);color:var(--green)',
+  'Lost':'background:var(--redBg);color:var(--red)'
+};
+
+// ─── LOAD ───
+async function loadData(){
+  try {
+    setStatus('loading');
+    const [{ data: lData, error: lErr }, { data: cData, error: cErr }] = await Promise.all([
+      db.from('leads').select('*').order('created_at',{ascending:false}),
+      db.from('customers').select('id,name,phone')
+    ]);
+    if(lErr) throw lErr;
+    if(cErr) throw cErr;
+    leads = lData||[];
+    customers = cData||[];
+    setStatus('connected');
+    render();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    setStatus('disconnected');
+    toast('❌','Error: '+err.message);
+  }
+}
+
+// ─── FILTER ───
+function filterStage(stage,el){
+  stageFilter=stage;
+  document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ─── STATS ───
+function updateStats(){
+  const total=leads.length;
+  const won=leads.filter(l=>l.stage==='Won').length;
+  const rate=total>0?Math.round(won/total*100):0;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-visit').textContent=leads.filter(l=>l.stage==='Site Visit').length;
+  document.getElementById('s-quoted').textContent=leads.filter(l=>l.stage==='Quoted').length;
+  document.getElementById('s-won').textContent=won;
+  document.getElementById('s-rate').textContent=rate+'%';
+  document.getElementById('conv-fill').style.width=rate+'%';
+
+  document.getElementById('sb-all').textContent=total;
+  document.getElementById('sb-New').textContent=leads.filter(l=>l.stage==='New').length;
+  document.getElementById('sb-SiteVisit').textContent=leads.filter(l=>l.stage==='Site Visit').length;
+  document.getElementById('sb-Quoted').textContent=leads.filter(l=>l.stage==='Quoted').length;
+  document.getElementById('sb-FollowUp').textContent=leads.filter(l=>l.stage==='Follow Up').length;
+  document.getElementById('sb-Won').textContent=won;
+  document.getElementById('sb-Lost').textContent=leads.filter(l=>l.stage==='Lost').length;
+
+  ['New','SiteVisit','Quoted','Won','Lost'].forEach(s=>{
+    const el=document.getElementById('pc-'+s);
+    const stage=s==='SiteVisit'?'Site Visit':s;
+    if(el) el.textContent=leads.filter(l=>l.stage===stage).length;
+  });
+}
+
+// ─── RENDER ───
+function render(){
+  updateStats();
+  if(currentView==='pipeline') renderPipeline();
+  else renderTable();
+}
+
+function renderPipeline(){
+  const stages=['New','Site Visit','Quoted','Won','Lost'];
+  const keys={'New':'New','Site Visit':'SiteVisit','Quoted':'Quoted','Won':'Won','Lost':'Lost'};
+  stages.forEach(stage=>{
+    const col=document.getElementById('pl-'+keys[stage]);
+    if(!col) return;
+    const list=leads.filter(l=>l.stage===stage);
+    const overdue_check=(l)=>l.followup&&l.followup<today()&&l.stage!=='Won'&&l.stage!=='Lost';
+    col.innerHTML=list.length?list.map(l=>`
+      <div class="lead-card" onclick="openDetail(${l.id})" style="${overdue_check(l)?'border-color:var(--red)':''}">
+        <div class="lead-card-name">${l.name} ${overdue_check(l)?'🔴':''}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${svcIcon[l.service]||'📋'} ${l.service}</div>
+        <div class="lead-card-meta">
+          <span class="lead-card-date">${l.date||''}</span>
+          <span style="font-size:10px;background:var(--bg3);padding:2px 6px;border-radius:5px;color:var(--text3)">${srcIcon[l.source]||'📌'} ${l.source}</span>
+        </div>
+      </div>`).join(''):`<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">—</div>`;
+  });
+}
+
+function renderTable(){
+  const search=document.getElementById('search-inp')?.value.toLowerCase()||'';
+  const list=leads.filter(l=>{
+    if(stageFilter!=='all'&&l.stage!==stageFilter) return false;
+    if(search&&!l.name.toLowerCase().includes(search)&&!(l.phone||'').includes(search)) return false;
+    return true;
+  });
+  const tb=document.getElementById('leads-tbody');
+  const overdue_check=(l)=>l.followup&&l.followup<today()&&l.stage!=='Won'&&l.stage!=='Lost';
+  tb.innerHTML=list.length?list.map(l=>`<tr onclick="openDetail(${l.id})">
+    <td><strong style="color:var(--text)">${l.name}</strong>${overdue_check(l)?` <span style="color:var(--red);font-size:11px">● Overdue</span>`:''}</td>
+    <td><a href="tel:${l.phone}" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none">${l.phone}</a></td>
+    <td>${svcIcon[l.service]||''} ${l.service}</td>
+    <td>${srcIcon[l.source]||''} ${l.source}</td>
+    <td><span class="badge" style="${stageBadgeStyle[l.stage]||''}">${l.stage}</span></td>
+    <td style="color:${overdue_check(l)?'var(--red)':'var(--text2)'}">${l.followup||'—'}</td>
+    <td>${l.date||'—'}</td>
+    <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+      <button class="act-btn" onclick="openEditModal(${l.id})">✏️</button>
+      <button class="act-btn del" onclick="deleteLead(${l.id},'${l.name.replace(/'/g,"\\'")}')">🗑️</button>
+    </div></td>
+  </tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div style="font-size:36px;margin-bottom:10px;opacity:0.5">🎯</div><div style="font-size:14px;color:var(--text2)">कोई Lead नहीं</div></div></td></tr>`;
+}
+
+// ─── OPEN MODALS ───
+function openAddModal(){
+  editingId=null;
+  document.getElementById('form-title').textContent='नया Lead';
+  ['f-name','f-phone','f-whatsapp','f-city','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-service').value='Installation';
+  document.getElementById('f-source').value='Phone Call';
+  document.getElementById('f-stage').value='New';
+  document.getElementById('f-followup').value='';
+  document.getElementById('form-modal').classList.add('open');
+}
+
+function openEditModal(id){
+  const l=leads.find(x=>x.id===id); if(!l) return;
+  editingId=id;
+  document.getElementById('form-title').textContent='Lead Edit';
+  document.getElementById('f-name').value=l.name;
+  document.getElementById('f-phone').value=l.phone;
+  document.getElementById('f-whatsapp').value=l.whatsapp||'';
+  document.getElementById('f-city').value=l.city||'';
+  document.getElementById('f-service').value=l.service;
+  document.getElementById('f-source').value=l.source;
+  document.getElementById('f-stage').value=l.stage;
+  document.getElementById('f-followup').value=l.followup||'';
+  document.getElementById('f-notes').value=l.notes||'';
+  document.getElementById('form-modal').classList.add('open');
+}
+
+// ─── SAVE ───
+async function saveLead(){
+  const name=document.getElementById('f-name').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  if(!name){toast('❌','नाम ज़रूरी है!');return;}
+  if(!phone){toast('❌','Phone ज़रूरी है!');return;}
+
+  const btn=document.getElementById('save-btn');
+  btn.textContent='⏳...'; btn.disabled=true;
+
+  const data={
+    name, phone,
+    whatsapp:document.getElementById('f-whatsapp').value.trim(),
+    city:document.getElementById('f-city').value.trim(),
+    service:document.getElementById('f-service').value,
+    source:document.getElementById('f-source').value,
+    stage:document.getElementById('f-stage').value,
+    followup:document.getElementById('f-followup').value||null,
+    notes:document.getElementById('f-notes').value,
+    date:today()
+  };
+
+  try {
+    if(editingId){
+      const {error}=await db.from('leads').update(data).eq('id',editingId);
+      if(error) throw error;
+      toast('✅',`${name} updated!`);
+    } else {
+      const {error}=await db.from('leads').insert([data]);
+      if(error) throw error;
+      toast('✅',`${name} जोड़ा गया!`);
+    }
+    closeModal('form-modal');
+    await loadData();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+  finally { btn.textContent='💾 Save'; btn.disabled=false; }
+}
+
+// ─── DELETE ───
+async function deleteLead(id,name){
+  if(!confirm(`"${name}" delete करें?`)) return;
+  try {
+    const {error}=await db.from('leads').delete().eq('id',id);
+    if(error) throw error;
+    toast('🗑️',`${name} deleted`);
+    await loadData();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── DETAIL ───
+function openDetail(id){
+  const l=leads.find(x=>x.id===id); if(!l) return;
+  const overdue=l.followup&&l.followup<today()&&l.stage!=='Won'&&l.stage!=='Lost';
+  document.getElementById('detail-title').textContent=l.name;
+  document.getElementById('detail-body').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge" style="${stageBadgeStyle[l.stage]||''}">${l.stage}</span>
+      <span class="badge" style="background:var(--bg3);color:var(--text2)">${svcIcon[l.service]||''} ${l.service}</span>
+      ${overdue?`<span class="badge" style="background:var(--redBg);color:var(--red)">🔴 Follow Up Overdue</span>`:''}
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-lbl">📞 Phone</div><div class="info-val"><a href="tel:${l.phone}" style="color:var(--blue);text-decoration:none">${l.phone}</a></div></div>
+      <div class="info-item"><div class="info-lbl">💬 WhatsApp</div><div class="info-val"><a href="https://wa.me/91${l.whatsapp||l.phone}" target="_blank" style="color:var(--green);text-decoration:none">${l.whatsapp||l.phone}</a></div></div>
+      <div class="info-item"><div class="info-lbl">📍 City</div><div class="info-val">${l.city||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">📌 Source</div><div class="info-val">${srcIcon[l.source]||''} ${l.source}</div></div>
+      <div class="info-item"><div class="info-lbl">📅 Follow Up</div><div class="info-val" style="color:${overdue?'var(--red)':'var(--text)'}">${l.followup||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">🗓️ Added</div><div class="info-val">${l.date||'—'}</div></div>
+      ${l.notes?`<div class="info-item" style="grid-column:1/-1"><div class="info-lbl">📋 Notes</div><div class="info-val">${l.notes}</div></div>`:''}
+      ${l.lost_reason?`<div class="info-item" style="grid-column:1/-1;border-color:rgba(240,79,79,0.3)"><div class="info-lbl" style="color:var(--red)">❌ Lost Reason</div><div class="info-val">${l.lost_reason}</div></div>`:''}
+    </div>
+    ${l.stage!=='Won'&&l.stage!=='Lost'?`
+    <div class="stage-actions">
+      <button class="stage-btn" onclick="moveStage(${l.id},'Site Visit')">📅 Site Visit</button>
+      <button class="stage-btn" onclick="moveStage(${l.id},'Quoted')">📝 Quoted</button>
+      <button class="stage-btn" onclick="moveStage(${l.id},'Follow Up')">🔔 Follow Up</button>
+      <button class="stage-btn green" onclick="openConvert(${l.id})">✅ Convert → Customer</button>
+      <button class="stage-btn red" onclick="openLost(${l.id})">❌ Mark Lost</button>
+    </div>`:''}
+  `;
+  document.getElementById('detail-foot').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal')">बंद करें</button>
+    <button class="btn btn-primary" onclick="closeModal('detail-modal');openEditModal(${l.id})">✏️ Edit</button>
+  `;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+// ─── STAGE MOVE ───
+async function moveStage(id,stage){
+  try {
+    const {error}=await db.from('leads').update({stage}).eq('id',id);
+    if(error) throw error;
+    closeModal('detail-modal');
+    await loadData();
+    toast('✅',`Stage → ${stage}`);
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── LOST ───
+function openLost(id){ lostLeadId=id; selectedReason=''; document.querySelectorAll('.reason-opt').forEach(b=>b.classList.remove('sel')); document.getElementById('lost-custom').value=''; closeModal('detail-modal'); document.getElementById('lost-modal').classList.add('open'); }
+function selReason(el,r){ document.querySelectorAll('.reason-opt').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); selectedReason=r; }
+async function confirmLost(){
+  const reason=selectedReason||document.getElementById('lost-custom').value.trim()||'—';
+  try {
+    const {error}=await db.from('leads').update({stage:'Lost',lost_reason:reason}).eq('id',lostLeadId);
+    if(error) throw error;
+    closeModal('lost-modal'); await loadData(); toast('📉',`Lost: ${reason}`);
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── CONVERT ───
+function openConvert(id){
+  convertLeadId=id;
+  const l=leads.find(x=>x.id===id);
+  document.getElementById('convert-name').textContent=l?.name||'';
+  closeModal('detail-modal');
+  document.getElementById('convert-modal').classList.add('open');
+}
+
+async function confirmConvert(){
+  const l=leads.find(x=>x.id===convertLeadId); if(!l) return;
+  try {
+    // 1. Update lead to Won
+    await db.from('leads').update({stage:'Won',customer_id:null}).eq('id',l.id);
+    // 2. Create customer
+    const {data:custData,error:custErr}=await db.from('customers').insert([{
+      name:l.name, phone:l.phone, whatsapp:l.whatsapp||'', city:l.city||'', type:'Other', sites:[]
+    }]).select().single();
+    if(custErr) throw custErr;
+    // 3. Update lead with customer_id
+    await db.from('leads').update({customer_id:custData.id}).eq('id',l.id);
+    // 4. Create job
+    await db.from('jobs').insert([{
+      type:l.service==='Repair'?'Repair':l.service==='Installation'?'Installation':'Other',
+      customer_id:custData.id, customer_name:l.name,
+      status:'Pending', date:today(),
+      created_from:'Lead #'+l.id, notes:l.notes||''
+    }]);
+    closeModal('convert-modal');
+    await loadData();
+    toast('🎉',`${l.name} → Customer बन गया!`);
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── VIEW ───
+function setView(v,el){
+  currentView=v;
+  document.querySelectorAll('.view-tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pipeline-view').style.display=v==='pipeline'?'block':'none';
+  document.getElementById('table-view').style.display=v==='table'?'block':'none';
+  render();
+}
+
+// ─── MODAL ───
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }); });
+
+// ─── TOAST ───
+let toastT;
+function toast(icon,msg){ document.getElementById('toast-icon').textContent=icon; document.getElementById('toast-msg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000); }
+
+// ─── INIT ───
+loadData();
+</script>
+</body>
+</html>

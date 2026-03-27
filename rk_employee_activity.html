@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RK Infotech — Employee Activity</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;padding-bottom:80px;}
+
+/* LOGIN */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,rgba(232,108,47,0.07) 0%,transparent 70%);}
+.login-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow);animation:fadeUp 0.3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo-mark{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;box-shadow:0 8px 20px rgba(232,108,47,0.3);}
+.login-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:3px;}
+.login-sub{font-size:12px;color:var(--text2);}
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:70px;}
+.pin-display{display:flex;gap:10px;justify-content:center;margin:14px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);transition:all 0.15s;}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;}
+.pin-key{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:15px;font-family:'Plus Jakarta Sans',sans-serif;font-size:19px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.12s;user-select:none;}
+.pin-key:active{transform:scale(0.95);background:var(--accentBg);border-color:var(--accent);}
+.pin-key.clear{font-size:13px;color:var(--text2);}
+.pin-key.enter{background:var(--accent);color:#fff;border-color:var(--accent);}
+.login-err{background:var(--redBg);border:1px solid rgba(240,79,79,0.3);color:var(--red);padding:9px 13px;border-radius:8px;font-size:12px;text-align:center;display:none;}
+.login-err.show{display:block;}
+.back-link{text-align:center;margin-top:10px;font-size:12px;color:var(--text2);cursor:pointer;}
+.back-link span{color:var(--accent);}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;}
+.tb-logo span{color:var(--accent);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#CC3300);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;color:#fff;}
+.tb-name{font-size:13px;font-weight:600;}
+.logout-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;}
+.logout-btn:hover{color:var(--red);border-color:var(--red);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100;}
+.bn-item{flex:1;padding:10px 4px;text-align:center;cursor:pointer;transition:all 0.15s;border:none;background:none;}
+.bn-ico{font-size:19px;margin-bottom:2px;}
+.bn-lbl{font-size:10px;color:var(--text3);font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.bn-item.active .bn-lbl{color:var(--accent);}
+.bn-item.active .bn-ico{filter:drop-shadow(0 0 4px var(--accent));}
+
+/* MAIN */
+.main{padding:16px;max-width:600px;margin:0 auto;}
+.section{display:none;}
+.section.active{display:block;}
+.sec-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+
+/* ATTENDANCE CARD */
+.att-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden;}
+.att-card::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(232,108,47,0.08),transparent);}
+.att-time{font-family:'Plus Jakarta Sans',sans-serif;font-size:40px;font-weight:800;letter-spacing:-2px;margin-bottom:4px;}
+.att-date{font-size:13px;color:var(--text2);margin-bottom:20px;}
+.att-status{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:20px;}
+.att-status.in{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.att-status.out{background:var(--redBg);color:var(--red);border:1px solid rgba(240,79,79,0.2);}
+.att-status.none{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.punch-btn{width:100%;padding:15px;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.punch-in{background:linear-gradient(135deg,var(--green),#1a9c5e);color:#fff;box-shadow:0 6px 20px rgba(34,201,122,0.25);}
+.punch-out{background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;box-shadow:0 6px 20px rgba(240,79,79,0.25);}
+.punch-done{background:var(--bg3);color:var(--text2);cursor:default;}
+.loc-status{display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--text2);margin-top:12px;}
+.loc-dot{width:8px;height:8px;border-radius:50%;}
+.loc-dot.ok{background:var(--green);}
+.loc-dot.no{background:var(--yellow);}
+.att-info-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;}
+.att-info{background:var(--bg2);border-radius:10px;padding:10px;text-align:center;}
+.att-info-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;margin-bottom:2px;}
+.att-info-lbl{font-size:10px;color:var(--text3);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px;text-align:center;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+/* CARDS */
+.dcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:12px;}
+.dcard-hd{padding:12px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:14px 15px;}
+
+/* PERFORMANCE RING */
+.perf-ring-wrap{display:flex;align-items:center;gap:16px;margin-bottom:12px;}
+.perf-ring{position:relative;width:80px;height:80px;flex-shrink:0;}
+.perf-ring svg{transform:rotate(-90deg);}
+.perf-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;}
+.perf-bars{flex:1;}
+.perf-bar-row{margin-bottom:7px;}
+.perf-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:3px;}
+.perf-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.perf-bar-fill{height:100%;border-radius:3px;}
+
+/* TASKS */
+.task-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
+.task-item-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.task-title{font-size:13px;font-weight:600;color:var(--text);}
+.task-meta{font-size:11px;color:var(--text3);}
+.task-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.task-btn{padding:5px 12px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+
+/* DAILY REPORT */
+.report-form{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:16px;margin-bottom:12px;}
+.report-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);font-size:12px;cursor:pointer;margin:3px;transition:all 0.12s;}
+.report-chip.sel{border-color:var(--accent);background:var(--accentBg);color:var(--accent);}
+
+/* MEETING */
+.meeting-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+.meeting-type{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:8px;}
+.meeting-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
+.meeting-meta{font-size:12px;color:var(--text2);}
+
+/* HELP CENTER */
+.help-categories{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.help-cat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.help-cat:hover,.help-cat.sel{border-color:var(--accent);background:var(--accentBg);}
+.help-cat-ico{font-size:24px;margin-bottom:5px;}
+.help-cat-lbl{font-size:12px;color:var(--text2);font-weight:600;}
+.anon-toggle{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-bottom:10px;cursor:pointer;}
+.toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border2);position:relative;transition:background 0.2s;flex-shrink:0;}
+.toggle-track.on{background:var(--green);}
+.toggle-thumb{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left 0.2s;}
+.toggle-track.on .toggle-thumb{left:18px;}
+
+/* ANNOUNCEMENTS */
+.ann-card{background:var(--card);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:14px;margin-bottom:10px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.ann-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.ann-body{font-size:13px;color:var(--text2);line-height:1.5;}
+.ann-meta{font-size:11px;color:var(--text3);margin-top:6px;}
+
+/* RECOGNITION */
+.star-card{background:linear-gradient(135deg,rgba(240,180,41,0.1),rgba(232,108,47,0.05));border:1px solid rgba(240,180,41,0.3);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;}
+.star-badge{font-size:44px;margin-bottom:8px;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#f08040;}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+
+
+/* PROFILE PHOTO */
+.profile-photo-wrap{position:relative;width:80px;height:80px;cursor:pointer;}
+.profile-photo-wrap img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);}
+.profile-photo-av{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;border:3px solid var(--border2);}
+.profile-photo-edit{position:absolute;bottom:2px;right:2px;width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid var(--card);}
+.profile-setup-card{background:linear-gradient(135deg,var(--accentBg),var(--blueBg));border:1px solid rgba(232,108,47,0.2);border-radius:14px;padding:18px;margin-bottom:16px;text-align:center;}
+.photo-upload-zone{background:var(--bg2);border:2px dashed var(--border2);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;margin-bottom:10px;}
+.photo-upload-zone:hover{border-color:var(--accent);background:var(--accentBg);}
+.photo-upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.cam-preview{width:100%;border-radius:10px;max-height:220px;object-fit:cover;display:none;border:2px solid var(--green);margin-bottom:8px;}
+
+
+/* TASK SITE PHOTOS */
+.task-photos-section{background:var(--bg3);border-radius:10px;padding:12px;margin-top:10px;}
+.task-photos-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.task-photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}
+.task-photo-thumb{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:var(--bg2);cursor:pointer;}
+.task-photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.task-photo-del{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(240,79,79,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;cursor:pointer;border:none;}
+.task-photo-add{aspect-ratio:1;border-radius:8px;border:2px dashed var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;background:var(--bg2);}
+.task-photo-add:hover{border-color:var(--accent);background:var(--accentBg);}
+.task-cam-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:700;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;}
+.task-cam-overlay.open{display:flex;}
+.task-cam-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;}
+.task-cam-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#fff;}
+.task-cam-close{width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;font-size:16px;cursor:pointer;}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;font-size:13px;box-shadow:var(--shadow);z-index:999;opacity:0;transition:all 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<!-- TASK SITE CAMERA OVERLAY -->
+<div class="task-cam-overlay" id="task-cam-overlay">
+  <div class="task-cam-header" style="max-width:500px;width:100%">
+    <div class="task-cam-title" id="task-cam-title">📸 Site Photo</div>
+    <button class="task-cam-close" onclick="closeTaskCam()">✕</button>
+  </div>
+  <!-- GPS Status -->
+  <div id="task-cam-loc" style="font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px">
+    <div style="width:7px;height:7px;border-radius:50%;background:#f0b429"></div>
+    <span>Location detect हो रही है...</span>
+  </div>
+  <!-- Camera / Upload options -->
+  <div style="display:flex;gap:10px;width:100%;max-width:500px;margin-bottom:8px">
+    <button onclick="startTaskCamera()" style="flex:1;padding:12px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600">📷 Camera</button>
+    <label style="flex:1;padding:12px;border-radius:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;cursor:pointer;text-align:center;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600">
+      📁 Gallery
+      <input type="file" id="task-gallery-input" accept="image/*" multiple style="display:none" onchange="handleTaskGallery(this)">
+    </label>
+  </div>
+  <!-- Video -->
+  <div style="width:100%;max-width:500px;border-radius:14px;overflow:hidden;background:#000;display:none" id="task-cam-video-wrap">
+    <video id="task-cam-video" style="width:100%;max-height:300px;object-fit:cover;display:block" autoplay playsinline muted></video>
+    <canvas id="task-cam-canvas" style="display:none"></canvas>
+  </div>
+  <!-- Preview -->
+  <div id="task-cam-previews" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;max-width:500px;display:none"></div>
+  <!-- Description -->
+  <input id="task-photo-desc" placeholder="Photo description (optional)..." style="width:100%;max-width:500px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 13px;border-radius:9px;font-size:13px;outline:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif" class="input">
+  <!-- Capture & Save buttons -->
+  <div style="display:flex;gap:8px;width:100%;max-width:500px">
+    <button id="task-capture-btn" onclick="captureTaskPhoto()" style="display:none;flex:1;padding:14px;border-radius:50px;background:linear-gradient(135deg,var(--accent),#CC3300);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer">📸 Capture</button>
+    <button id="task-save-btn" onclick="saveTaskPhotos()" style="display:none;flex:1;padding:14px;border-radius:50px;background:linear-gradient(135deg,var(--green),#1a9c5e);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer">✅ Save Photos</button>
+  </div>
+  <!-- Upload Progress -->
+  <div id="task-cam-progress" style="display:none;width:100%;max-width:500px;background:rgba(255,255,255,0.1);border-radius:9px;padding:12px">
+    <div id="task-cam-prog-text" style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:6px">Saving...</div>
+    <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden"><div id="task-cam-prog-fill" style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 0.3s;width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">👷</div>
+      <div class="login-title">Employee Portal</div>
+      <div class="login-sub">RK Infotech Activity System</div>
+    </div>
+    <div id="step-phone">
+      <div style="margin-bottom:14px"><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">📱 Phone Number</label>
+        <input class="input" id="l-phone" type="tel" maxlength="10" placeholder="10-digit number" style="font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:2px" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="checkPhone()">आगे →</button>
+      <div class="login-err" id="phone-err">❌ Phone number नहीं मिला</div>
+    </div>
+    <div id="step-pin" style="display:none">
+      <div style="text-align:center;margin-bottom:12px"><div style="font-size:13px;color:var(--text2)">नमस्ते!</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700" id="pin-emp-name"></div></div>
+      <div class="pin-display"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div></div>
+      <div class="pin-pad">
+        <div class="pin-key" onclick="pp('1')">1</div><div class="pin-key" onclick="pp('2')">2</div><div class="pin-key" onclick="pp('3')">3</div>
+        <div class="pin-key" onclick="pp('4')">4</div><div class="pin-key" onclick="pp('5')">5</div><div class="pin-key" onclick="pp('6')">6</div>
+        <div class="pin-key" onclick="pp('7')">7</div><div class="pin-key" onclick="pp('8')">8</div><div class="pin-key" onclick="pp('9')">9</div>
+        <div class="pin-key clear" onclick="pb()">← Del</div><div class="pin-key" onclick="pp('0')">0</div><div class="pin-key enter" onclick="checkPIN()">✓</div>
+      </div>
+      <div class="login-err" id="pin-err">❌ PIN गलत है</div>
+      <div class="back-link" onclick="backPhone()">← <span>Phone बदलें</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="tb-logo">📹 RK <span>Infotech</span></div>
+    <div class="tb-right">
+      <div class="profile-photo-wrap" onclick="showSection('profile',null)" title="Profile देखें">
+        <div class="profile-photo-av" id="tb-av" style="background:rgba(232,108,47,0.15);color:var(--accent)">RK</div>
+        <div class="profile-photo-edit">✏️</div>
+      </div>
+      <div class="tb-name" id="tb-name"></div>
+      <button class="logout-btn" onclick="logout()">🚪</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- HOME -->
+    <div class="section active" id="sec-home">
+      <!-- GREETING -->
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800" id="home-greeting">नमस्ते!</div>
+        <div style="font-size:12px;color:var(--text2)" id="home-date"></div>
+      </div>
+
+      <!-- ANNOUNCEMENTS PREVIEW -->
+      <div id="ann-preview"></div>
+
+      <!-- ATTENDANCE CARD -->
+      <div class="att-card">
+        <div class="att-time" id="live-clock">00:00:00</div>
+        <div class="att-date" id="live-date"></div>
+        <div class="att-status none" id="att-status-badge">⏳ Attendance नहीं मारी</div>
+        <button class="punch-btn punch-in" id="punch-btn" onclick="doPunch()">📍 Attendance Mark करें</button>
+        <div class="loc-status" id="loc-status"><div class="loc-dot no" id="loc-dot"></div><span id="loc-text">Location check हो रही है...</span></div>
+        <div class="att-info-row">
+          <div class="att-info"><div class="att-info-val" id="ai-in" style="color:var(--green)">—</div><div class="att-info-lbl">Time IN</div></div>
+          <div class="att-info"><div class="att-info-val" id="ai-out" style="color:var(--red)">—</div><div class="att-info-lbl">Time OUT</div></div>
+          <div class="att-info"><div class="att-info-val" id="ai-hrs" style="color:var(--blue)">0h</div><div class="att-info-lbl">Hours</div></div>
+        </div>
+      </div>
+
+      <!-- TODAY TASKS PREVIEW -->
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">📋 आज के Tasks</div><button class="btn btn-ghost btn-sm" onclick="showSection('tasks')">सब देखें</button></div>
+        <div class="dcard-body" id="home-tasks"></div>
+      </div>
+
+      <!-- RECOGNITION -->
+      <div id="home-recognition"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="section" id="sec-attendance">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">📍 Attendance History</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">इस महीने की attendance</div>
+
+      <div class="stats-row" id="att-stats"></div>
+
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">📅 इस महीने</div>
+          <select class="input" style="width:auto;font-size:12px;padding:4px 8px" id="att-month-sel" onchange="loadAttHistory()"></select>
+        </div>
+        <div id="att-calendar" style="padding:12px"></div>
+      </div>
+
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">⏱️ Time Log</div></div>
+        <div id="att-timelog" style="max-height:300px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="section" id="sec-tasks">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">📋 मेरे Tasks</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Assigned tasks और progress</div>
+
+      <div class="stats-row" id="task-stats"></div>
+
+      <div style="display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none">
+        <button class="btn btn-primary btn-sm" onclick="filterTasks('all',this)">सब</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterTasks('Pending',this)">⏳ Pending</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterTasks('In Progress',this)">🔄 In Progress</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterTasks('Done',this)">✅ Done</button>
+      </div>
+
+      <div id="tasks-container"></div>
+    </div>
+
+    <!-- DAILY REPORT -->
+    <div class="section" id="sec-report">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">📝 Daily Report</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">आज क्या किया — submit करें</div>
+
+      <div class="report-form">
+        <div class="sec-title" style="margin-top:0">आज की Date: <span id="report-date" style="color:var(--accent)"></span></div>
+
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:7px;font-weight:600">✅ आज क्या-क्या किया? (सब select करें)</div>
+          <div id="work-chips" style="display:flex;flex-wrap:wrap;gap:4px">
+            <div class="report-chip" onclick="this.classList.toggle('sel')">📹 Camera Installation</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">🔧 Repair Work</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">🚗 Site Visit</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">👥 Customer Meeting</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">📦 Inventory Work</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">📞 Customer Calls</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">🔌 Wiring Work</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">📝 Documentation</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">⚙️ DVR/NVR Setup</div>
+            <div class="report-chip" onclick="this.classList.toggle('sel')">📱 App Support</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600">📋 Details (क्या-क्या हुआ)</div>
+          <textarea class="input" id="report-details" placeholder="आज के काम की details लिखें..."></textarea>
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600">⚠️ कोई Problem? (optional)</div>
+          <textarea class="input" id="report-problem" placeholder="कोई problem आई तो लिखें..." style="min-height:50px"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:7px;font-weight:600">😊 आज का मूड?</div>
+          <div style="display:flex;gap:8px">
+            <div class="report-chip" id="mood-great" onclick="setMood('great')">😄 Great</div>
+            <div class="report-chip" id="mood-ok" onclick="setMood('ok')">😊 Good</div>
+            <div class="report-chip" id="mood-meh" onclick="setMood('meh')">😐 Okay</div>
+            <div class="report-chip" id="mood-bad" onclick="setMood('bad')">😔 Bad</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="report-submit-btn" onclick="submitReport()">📤 Report Submit करें</button>
+        <div id="report-submitted" style="display:none;text-align:center;padding:12px;color:var(--green);font-size:13px">✅ आज की report submit हो गई!</div>
+      </div>
+
+      <!-- Past Reports -->
+      <div class="sec-title">📜 Past Reports</div>
+      <div id="past-reports"></div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="section" id="sec-performance">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">🏆 Performance</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">आपकी performance score</div>
+
+      <div id="perf-content"></div>
+    </div>
+
+    <!-- MEETINGS -->
+    <div class="section" id="sec-meetings">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">🗓️ Meetings</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Scheduled और past meetings</div>
+      <div id="meetings-list"></div>
+    </div>
+
+    <!-- HELP CENTER -->
+    <div class="section" id="sec-help">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">🤝 Help Center</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">परेशानी share करें — हम सुनेंगे</div>
+
+      <div style="background:var(--greenBg);border:1px solid rgba(34,201,122,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--green)">
+        💚 यह एक safe space है। आप anonymously भी share कर सकते हैं।
+      </div>
+
+      <div class="sec-title" style="margin-top:0">Category चुनें</div>
+      <div class="help-categories">
+        <div class="help-cat" id="hc-work" onclick="selHelp('work',this)"><div class="help-cat-ico">💼</div><div class="help-cat-lbl">काम से problem</div></div>
+        <div class="help-cat" id="hc-tools" onclick="selHelp('tools',this)"><div class="help-cat-ico">🔧</div><div class="help-cat-lbl">Tools/Equipment</div></div>
+        <div class="help-cat" id="hc-team" onclick="selHelp('team',this)"><div class="help-cat-ico">👥</div><div class="help-cat-lbl">Team issue</div></div>
+        <div class="help-cat" id="hc-salary" onclick="selHelp('salary',this)"><div class="help-cat-ico">💰</div><div class="help-cat-lbl">Salary/Leave</div></div>
+        <div class="help-cat" id="hc-system" onclick="selHelp('system',this)"><div class="help-cat-ico">💻</div><div class="help-cat-lbl">System problem</div></div>
+        <div class="help-cat" id="hc-other" onclick="selHelp('other',this)"><div class="help-cat-ico">💬</div><div class="help-cat-lbl">कुछ और</div></div>
+      </div>
+      <input type="hidden" id="help-cat" value="">
+
+      <div class="anon-toggle" onclick="toggleAnon()">
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">Anonymous रहना चाहते हैं?</div><div style="font-size:11px;color:var(--text3)">Admin को आपका नाम नहीं पता चलेगा</div></div>
+        <div class="toggle-track" id="anon-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <input type="hidden" id="help-anon" value="false">
+
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:600">आपकी बात लिखें <span style="color:var(--accent)">*</span></div>
+        <textarea class="input" id="help-message" placeholder="जो भी परेशानी है, खुलकर लिखें..." style="min-height:100px"></textarea>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:7px;font-weight:600">Urgency Level</div>
+        <div style="display:flex;gap:7px">
+          <button class="report-chip sel" id="urg-normal" onclick="setUrgency('normal',this)">😊 Normal</button>
+          <button class="report-chip" id="urg-urgent" onclick="setUrgency('urgent',this)">⚠️ Urgent</button>
+          <button class="report-chip" id="urg-critical" onclick="setUrgency('critical',this)">🚨 Critical</button>
+        </div>
+      </div>
+      <input type="hidden" id="help-urgency" value="normal">
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitHelp()">💌 Submit करें</button>
+
+      <div class="sec-title">📜 पिछली Requests</div>
+      <div id="help-history"></div>
+    </div>
+
+  </div>
+
+    <!-- PROFILE -->
+    <div class="section" id="sec-profile">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px">🧑 मेरी Profile</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">अपनी photo और details update करें</div>
+
+      <!-- Profile Card -->
+      <div class="profile-setup-card">
+        <div style="display:flex;align-items:center;gap:16px;justify-content:center;margin-bottom:14px">
+          <div id="profile-big-wrap" style="position:relative">
+            <div id="profile-big-av" style="width:90px;height:90px;border-radius:50%;background:rgba(232,108,47,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;border:3px solid var(--accent)">?</div>
+          </div>
+          <div style="text-align:left">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800" id="profile-name-lbl">—</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px" id="profile-role-lbl">—</div>
+            <div style="font-size:11px;color:var(--text3)" id="profile-phone-lbl">📱 —</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--text2)">अपनी profile photo update करें 👇</div>
+      </div>
+
+      <!-- Upload Options -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.15s;position:relative" onclick="document.getElementById('profile-file-input').click()">
+          <input type="file" id="profile-file-input" accept="image/*" style="display:none" onchange="handleProfileFile(this)">
+          <div style="font-size:28px;margin-bottom:6px">📁</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Gallery से</div>
+          <div style="font-size:11px;color:var(--text3)">Phone photos</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.15s" onclick="openProfileCamera()">
+          <div style="font-size:28px;margin-bottom:6px">📷</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Camera से</div>
+          <div style="font-size:11px;color:var(--text3)">Live photo लो</div>
+        </div>
+      </div>
+
+      <!-- Camera Section -->
+      <div id="profile-cam-section" style="display:none;margin-bottom:14px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:8px">
+          <video id="profile-cam-video" style="width:100%;max-height:240px;object-fit:cover;display:block;background:#000" autoplay playsinline muted></video>
+          <canvas id="profile-cam-canvas" style="display:none"></canvas>
+        </div>
+        <img id="profile-cam-preview" class="cam-preview" alt="">
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-ghost btn-sm" onclick="closeProfileCam()">❌ Cancel</button>
+          <button style="padding:12px 24px;border-radius:50px;background:linear-gradient(135deg,var(--accent),#CC3300);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer" onclick="captureProfilePhoto()">📸 Capture</button>
+          <button class="btn btn-green btn-sm" id="profile-cam-save" style="display:none" onclick="saveProfileCapture()">✅ Save</button>
+        </div>
+      </div>
+
+      <!-- Upload Progress -->
+      <div id="profile-upload-progress" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px" id="profile-prog-text">Uploading...</div>
+        <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div id="profile-prog-fill" style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 0.3s;width:0%"></div></div>
+      </div>
+
+      <!-- Current Photo Preview -->
+      <div id="profile-current-section" style="display:none">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">Current Photo</div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px">
+          <img id="profile-current-img" src="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--green)">
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--green);font-weight:600">✅ Profile photo set है</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">ऊपर से change कर सकते हैं</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">🗑️</button>
+        </div>
+      </div>
+
+    </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="bn-item active" onclick="showSection('home',this)"><div class="bn-ico">🏠</div><div class="bn-lbl">Home</div></button>
+    <button class="bn-item" onclick="showSection('attendance',this)"><div class="bn-ico">📍</div><div class="bn-lbl">Attendance</div></button>
+    <button class="bn-item" onclick="showSection('tasks',this)"><div class="bn-ico">📋</div><div class="bn-lbl">Tasks</div></button>
+    <button class="bn-item" onclick="showSection('report',this)"><div class="bn-ico">📝</div><div class="bn-lbl">Report</div></button>
+    <button class="bn-item" onclick="showSection('performance',this)"><div class="bn-ico">🏆</div><div class="bn-lbl">Score</div></button>
+    <button class="bn-item" onclick="showSection('profile',this)"><div class="bn-ico">🧑</div><div class="bn-lbl">Profile</div></button>
+    <button class="bn-item" onclick="showSection('help',this)"><div class="bn-ico">🤝</div><div class="bn-lbl">Help</div></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let ACC=null,EMP=null,pinBuf='',loc={lat:null,lng:null,addr:''},todayAtt=null,tasks=[],meetings=[],reports=[],helpList=[],announcements=[],recog=[];
+const TODAY=new Date().toISOString().split('T')[0];
+const THIS_MONTH=new Date().toISOString().substring(0,7);
+
+function fmtTime(d){return d?new Date(d).toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'}):'—';}
+function today(){return TODAY;}
+
+// ── CLOCK ──
+setInterval(()=>{
+  const n=new Date();
+  const el=document.getElementById('live-clock');
+  if(el)el.textContent=n.toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+},1000);
+
+// ── LOCATION ──
+function getLocation(){
+  return new Promise(resolve=>{
+    if(!navigator.geolocation){loc={lat:null,lng:null,addr:'Location not supported'};resolve();return;}
+    navigator.geolocation.getCurrentPosition(pos=>{
+      loc.lat=pos.coords.latitude;loc.lng=pos.coords.longitude;
+      loc.addr=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+      document.getElementById('loc-dot').className='loc-dot ok';
+      document.getElementById('loc-text').textContent='📍 Location मिल गई';
+      resolve();
+    },err=>{
+      loc.addr='Location permission denied';
+      document.getElementById('loc-dot').className='loc-dot no';
+      document.getElementById('loc-text').textContent='⚠️ Location permission दें (optional)';
+      resolve();
+    },{timeout:8000,enableHighAccuracy:true});
+  });
+}
+
+// ── LOGIN ──
+async function checkPhone(){
+  const ph=document.getElementById('l-phone').value.trim();
+  if(ph.length!==10){showErr('phone-err','10 digit number डालें');return;}
+  try{
+    const{data,error}=await db.from('employee_access').select('*').eq('phone',ph).eq('status','Active').single();
+    if(error||!data){showErr('phone-err','Phone number नहीं मिला या account inactive है');return;}
+    ACC=data;
+    const{data:emp}=await db.from('employees').select('*').eq('id',data.employee_id).single();
+    EMP=emp||{name:data.employee_name};
+    document.getElementById('pin-emp-name').textContent=EMP.name;
+    document.getElementById('phone-err').classList.remove('show');
+    document.getElementById('step-phone').style.display='none';
+    document.getElementById('step-pin').style.display='block';
+    pinBuf='';updatePins();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};showErr('phone-err','Error: '+e.message);}
+}
+
+function showErr(id,msg){const el=document.getElementById(id);el.textContent='❌ '+msg;el.classList.add('show');}
+function pp(d){if(pinBuf.length>=4)return;pinBuf+=d;updatePins();if(pinBuf.length===4)setTimeout(checkPIN,150);}
+function pb(){pinBuf=pinBuf.slice(0,-1);updatePins();}
+function updatePins(){[0,1,2,3].forEach(i=>{const d=document.getElementById('pd'+i);d.className='pin-dot'+(i<pinBuf.length?' filled':'');});}
+function backPhone(){document.getElementById('step-pin').style.display='none';document.getElementById('step-phone').style.display='block';pinBuf='';updatePins();ACC=null;EMP=null;}
+
+async function checkPIN(){
+  if(pinBuf!==ACC.pin){showErr('pin-err','PIN गलत है');pinBuf='';updatePins();
+    await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP?.name,type:'login_failed',description:'Wrong PIN',created_at:new Date().toISOString()}]).catch(()=>{});return;}
+  sessionStorage.setItem('rk_act_sess',JSON.stringify({acc:ACC,emp:EMP}));
+  await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP?.name,type:'login',description:'Logged in — Activity Portal',created_at:new Date().toISOString()}]).catch(()=>{});
+  initApp();
+}
+
+window.onload=()=>{
+  const s=sessionStorage.getItem('rk_act_sess');
+  if(s){const d=JSON.parse(s);ACC=d.acc;EMP=d.emp;initApp();}
+};
+
+async function logout(){
+  await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP?.name,type:'logout',description:'Logged out',created_at:new Date().toISOString()}]).catch(()=>{});
+  sessionStorage.removeItem('rk_act_sess');location.reload();
+}
+
+// ── INIT APP ──
+async function initApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tb-av').textContent=EMP.name.substring(0,2).toUpperCase();
+  loadProfilePhoto(); // load profile photo on init
+  document.getElementById('tb-name').textContent=EMP.name;
+  const h=new Date().getHours();
+  const g=h<12?'शुभ प्रभात ☀️':h<17?'नमस्ते 🙏':h<20?'शुभ संध्या 🌆':'शुभ रात्रि 🌙';
+  document.getElementById('home-greeting').textContent=g+' '+EMP.name+'!';
+  document.getElementById('home-date').textContent=new Date().toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('live-date').textContent=new Date().toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('report-date').textContent=today();
+  // Month filter
+  const months=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toISOString().substring(0,7));}
+  document.getElementById('att-month-sel').innerHTML=months.map(m=>`<option value="${m}" ${m===THIS_MONTH?'selected':''}>${new Date(m+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'})}</option>`).join('');
+  getLocation();
+  await loadAllData();
+}
+
+async function loadAllData(){
+  try{
+    const [tR,mR,rR,hR,aR,recR,todR,profR]=await Promise.all([
+      db.from('employee_tasks').select('*').eq('employee_id',ACC.employee_id).order('created_at',{ascending:false}),
+      db.from('meetings').select('*').order('date',{ascending:false}).limit(20),
+      db.from('daily_reports').select('*').eq('employee_id',ACC.employee_id).order('date',{ascending:false}).limit(15),
+      db.from('help_requests').select('*').eq('employee_id',ACC.employee_id).order('created_at',{ascending:false}).limit(10),
+      db.from('announcements').select('*').order('created_at',{ascending:false}).limit(5),
+      db.from('recognition').select('*').eq('employee_id',ACC.employee_id).order('created_at',{ascending:false}).limit(5),
+      db.from('attendance_log').select('*').eq('employee_id',ACC.employee_id).eq('date',today()).single(),
+      db.from('employee_photos').select('*').eq('employee_id',ACC.employee_id).eq('photo_type','profile').order('created_at',{ascending:false}).limit(1)
+    ]);
+    tasks=tR.data||[];meetings=mR.data||[];reports=rR.data||[];
+    helpList=hR.data||[];announcements=aR.data||[];recog=recR.data||[];
+    todayAtt=todR.data||null;
+    if(profR?.data?.length)updateProfileUI(profR.data[0]);
+    renderHome();renderAttendanceCard();renderTasks();renderReport();renderPerformance();renderMeetings();renderHelp();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    tasks=[];meetings=[];reports=[];helpList=[];announcements=[];recog=[];todayAtt=null;
+    renderHome();renderAttendanceCard();renderTasks();renderReport();renderPerformance();
+  }
+}
+
+// ── ATTENDANCE ──
+function renderAttendanceCard(){
+  const btn=document.getElementById('punch-btn');
+  const badge=document.getElementById('att-status-badge');
+  document.getElementById('ai-in').textContent=fmtTime(todayAtt?.time_in);
+  document.getElementById('ai-out').textContent=fmtTime(todayAtt?.time_out);
+  if(todayAtt?.time_in&&todayAtt?.time_out){
+    const hrs=((new Date(todayAtt.time_out)-new Date(todayAtt.time_in))/3600000).toFixed(1);
+    document.getElementById('ai-hrs').textContent=hrs+'h';
+    btn.className='punch-btn punch-done';btn.textContent='✅ दिन पूरा हो गया';btn.disabled=true;
+    badge.className='att-status in';badge.textContent='✅ Attendance Complete';
+  }else if(todayAtt?.time_in){
+    btn.className='punch-btn punch-out';btn.innerHTML='🕐 Time OUT Mark करें';btn.disabled=false;
+    badge.className='att-status in';badge.textContent='✅ Time IN: '+fmtTime(todayAtt.time_in);
+  }else{
+    btn.className='punch-btn punch-in';btn.innerHTML='📍 Attendance Mark करें';btn.disabled=false;
+    badge.className='att-status none';badge.textContent='⏳ Attendance नहीं मारी';
+  }
+}
+
+async function doPunch(){
+  const now=new Date().toISOString();
+  const punchType=todayAtt?.time_in?'out':'in';
+  const data={employee_id:ACC.employee_id,employee_name:EMP.name,date:today(),
+    lat:loc.lat,lng:loc.lng,location_addr:loc.addr};
+
+  try{
+    if(punchType==='in'){
+      data.time_in=now;data.status='present';
+      const{data:r,error}=await db.from('attendance_log').insert([data]).select().single();
+      if(error)throw error;
+      todayAtt=r;
+    }else{
+      const{error}=await db.from('attendance_log').update({time_out:now}).eq('id',todayAtt.id);
+      if(error)throw error;
+      todayAtt={...todayAtt,time_out:now};
+    }
+    // Log activity
+    await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP.name,type:punchType==='in'?'punch_in':'punch_out',description:punchType==='in'?'Time IN marked':'Time OUT marked',location:loc.addr,created_at:now}]).catch(()=>{});
+    renderAttendanceCard();
+    toast(punchType==='in'?'✅ Time IN recorded! '+fmtTime(now):'✅ Time OUT recorded! '+fmtTime(now));
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+}
+
+async function loadAttHistory(){
+  const month=document.getElementById('att-month-sel').value;
+  const{data}=await db.from('attendance_log').select('*').eq('employee_id',ACC.employee_id).gte('date',month+'-01').lte('date',month+'-31').order('date');
+  const list=data||[];
+  // Stats
+  const present=list.filter(a=>a.status==='present').length;
+  const daysInMonth=new Date(parseInt(month.split('-')[0]),parseInt(month.split('-')[1]),0).getDate();
+  const today_d=new Date().getDate();
+  const workDays=Math.min(daysInMonth,today_d);
+  const absent=workDays-present;
+  const totalHrs=list.reduce((s,a)=>{if(a.time_in&&a.time_out)s+=((new Date(a.time_out)-new Date(a.time_in))/3600000);return s;},0);
+  document.getElementById('att-stats').innerHTML=`
+    <div class="stat"><div class="stat-val" style="color:var(--green)">${present}</div><div class="stat-lbl">✅ Present</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--red)">${absent}</div><div class="stat-lbl">❌ Absent</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--blue)">${totalHrs.toFixed(0)}h</div><div class="stat-lbl">⏱️ Total Hrs</div></div>
+  `;
+  // Calendar
+  const cal=document.getElementById('att-calendar');
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">${days.map(d=>`<div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">${d}</div>`).join('')}</div>`;
+  const firstDay=new Date(month+'-01').getDay();
+  html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">${'<div></div>'.repeat(firstDay)}`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=month+'-'+(d<10?'0':'')+d;
+    const rec=list.find(a=>a.date===ds);
+    const isToday=ds===today();
+    let bg=rec?'var(--greenBg)':'var(--bg3)';
+    let col=rec?'var(--green)':'var(--text3)';
+    let border=isToday?'1px solid var(--accent)':'1px solid transparent';
+    html+=`<div style="text-align:center;padding:6px 2px;border-radius:6px;background:${bg};color:${col};font-size:12px;font-weight:600;border:${border}" title="${rec?'IN: '+fmtTime(rec.time_in)+' OUT: '+fmtTime(rec.time_out):''}">${d}</div>`;
+  }
+  cal.innerHTML=html+'</div>';
+  // Time log
+  const tl=document.getElementById('att-timelog');
+  tl.innerHTML=list.length?[...list].reverse().map(a=>{
+    const hrs=a.time_in&&a.time_out?((new Date(a.time_out)-new Date(a.time_in))/3600000).toFixed(1)+'h':'—';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 15px;border-bottom:1px solid rgba(28,42,58,0.4)">
+      <div><div style="font-size:13px;color:var(--text);font-weight:600">${a.date}</div>
+      <div style="font-size:11px;color:var(--text3)">📍 ${a.location_addr||'Location not recorded'}</div></div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:var(--green)">IN: ${fmtTime(a.time_in)}</div>
+        <div style="font-size:12px;color:var(--red)">OUT: ${fmtTime(a.time_out)}</div>
+        <div style="font-size:11px;color:var(--blue)">${hrs}</div>
+      </div></div>`;
+  }).join(''):`<div style="text-align:center;padding:20px;color:var(--text3)">कोई record नहीं</div>`;
+}
+
+// ── HOME ──
+function renderHome(){
+  // Announcements
+  const ap=document.getElementById('ann-preview');
+  ap.innerHTML=announcements.slice(0,2).map(a=>`<div class="ann-card" style="margin-bottom:8px"><div class="ann-title">${a.title}</div><div class="ann-body">${a.body}</div><div class="ann-meta">📢 Admin · ${a.created_at?.split('T')[0]||''}</div></div>`).join('');
+  // Tasks preview
+  const pending=tasks.filter(t=>t.status!=='Done').slice(0,3);
+  const ht=document.getElementById('home-tasks');
+  ht.innerHTML=pending.length?pending.map(t=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid rgba(28,42,58,0.3)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--yellow)':'var(--green)'};flex-shrink:0"></div>
+      <div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${t.title}</div><div style="font-size:11px;color:var(--text3)">${t.module||''} ${t.due_date?'· Due: '+t.due_date:''}</div></div>
+      <span class="badge ${t.status==='In Progress'?'b-blue':'b-yellow'}" style="font-size:10px">${t.status}</span>
+    </div>`).join(''):`<div style="text-align:center;padding:14px;color:var(--green);font-size:13px">✅ सारे tasks complete!</div>`;
+  // Recognition
+  const hr=document.getElementById('home-recognition');
+  if(recog.length){hr.innerHTML=`<div class="star-card"><div class="star-badge">${recog[0].badge||'⭐'}</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px">${recog[0].title||'Star Employee'}</div><div style="font-size:13px;color:var(--text2)">${recog[0].message||''}</div><div style="font-size:11px;color:var(--text3);margin-top:6px">Admin द्वारा · ${recog[0].created_at?.split('T')[0]||''}</div></div>`;}
+}
+
+// ── TASKS ──
+let taskFilter='all';
+function filterTasks(f,el){taskFilter=f;document.querySelectorAll('#sec-tasks .btn').forEach(b=>b.className='btn btn-ghost btn-sm');if(el)el.className='btn btn-primary btn-sm';renderTasks();}
+
+function renderTasks(){
+  const list=taskFilter==='all'?tasks:tasks.filter(t=>t.status===taskFilter);
+  // Load task photos for all tasks
+  loadTaskPhotosForList(list.map(t=>t.id));
+  const pend=tasks.filter(t=>t.status==='Pending').length;
+  const prog=tasks.filter(t=>t.status==='In Progress').length;
+  const done=tasks.filter(t=>t.status==='Done').length;
+  document.getElementById('task-stats').innerHTML=`
+    <div class="stat"><div class="stat-val" style="color:var(--yellow)">${pend}</div><div class="stat-lbl">⏳ Pending</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--blue)">${prog}</div><div class="stat-lbl">🔄 In Progress</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--green)">${done}</div><div class="stat-lbl">✅ Done</div></div>
+  `;
+  const priCol={Low:'var(--green)',Medium:'var(--yellow)',High:'var(--red)'};
+  const stBadge={'Pending':'b-yellow','In Progress':'b-blue','Done':'b-green'};
+  document.getElementById('tasks-container').innerHTML=list.length?list.map(t=>{
+    const tPhotos=(taskPhotos[t.id]||[]);
+    const photoThumbsHTML=tPhotos.slice(0,4).map((p,pi)=>`
+      <div class="task-photo-thumb" onclick="openTaskPhotoLightbox('${p.photo_url||p.photo_base64||''}','${t.title} · ${p.location_addr||''} · ${p.created_at?.substring(0,16)||''}')">
+        <img src="${p.photo_url||p.photo_base64||''}" alt="">
+        <button class="task-photo-del" onclick="event.stopPropagation();deleteTaskPhoto(${p.id},${t.id})">✕</button>
+      </div>`).join('');
+    return `
+    <div class="task-item" style="${t.status==='Done'?'opacity:0.75':''}">
+      <div class="task-item-hd">
+        <div><div class="task-title">${t.title}</div><div class="task-meta">${t.module?'📦 '+t.module:''} ${t.due_date?'· 📅 '+t.due_date:''}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge ${stBadge[t.status]||'b-grey'}">${t.status}</span>
+          <span style="font-size:11px;color:${priCol[t.priority]||'var(--text3)'}">● ${t.priority||''}</span>
+        </div>
+      </div>
+      ${t.description?`<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">${t.description}</div>`:''}
+      <div class="task-actions">
+        ${t.status==='Pending'?`<button class="task-btn" style="background:var(--blueBg);color:var(--blue);border:1px solid rgba(59,142,255,0.2)" onclick="updateTask(${t.id},'In Progress')">🔄 Start</button>`:''}
+        ${t.status==='In Progress'?`<button class="task-btn" style="background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2)" onclick="updateTask(${t.id},'Done')">✅ Done</button>`:''}
+        ${t.status==='Done'?`<span style="font-size:12px;color:var(--green)">✅ Completed</span>`:''}
+        <button class="task-btn" style="background:var(--accentBg);color:var(--accent);border:1px solid rgba(232,108,47,0.2)" onclick="openTaskCam(${t.id},'${t.title.replace(/'/g,"\'")}')">📸 Site Photo ${tPhotos.length>0?'('+tPhotos.length+')':''}</button>
+      </div>
+      <!-- SITE PHOTOS -->
+      ${tPhotos.length>0?`
+      <div class="task-photos-section">
+        <div class="task-photos-title">
+          <span>📍 Site Photos (${tPhotos.length})</span>
+          <span style="font-size:10px;color:var(--text3)">${tPhotos[0]?.location_addr?.substring(0,30)||''}</span>
+        </div>
+        <div class="task-photo-grid">
+          ${photoThumbsHTML}
+          ${tPhotos.length>4?`<div class="task-photo-add" onclick="openTaskCam(${t.id},'${t.title.replace(/'/g,"\'")}')"><div style="font-size:16px;margin-bottom:3px">+${tPhotos.length-4}</div><div style="font-size:10px;color:var(--text3)">more</div></div>`:''}
+        </div>
+      </div>`:``}
+    </div>`}).join(''):`<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:32px;opacity:0.4">📋</div><div style="margin-top:8px;font-size:13px">कोई task नहीं</div></div>`;
+}
+
+async function updateTask(id,status){
+  await db.from('employee_tasks').update({status}).eq('id',id);
+  await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP.name,type:'task',description:`Task ${status}`,created_at:new Date().toISOString()}]).catch(()=>{});
+  tasks=tasks.map(t=>t.id===id?{...t,status}:t);
+  renderTasks();renderHome();
+  toast(status==='Done'?'✅ Task complete!':'🔄 Task started!');
+}
+
+// ── DAILY REPORT ──
+let selectedMood='ok';
+function setMood(m){selectedMood=m;['great','ok','meh','bad'].forEach(x=>document.getElementById('mood-'+x).classList.remove('sel'));document.getElementById('mood-'+m).classList.add('sel');}
+
+function renderReport(){
+  // Check if already submitted today
+  const todayReport=reports.find(r=>r.date===today());
+  if(todayReport){
+    document.getElementById('report-submit-btn').style.display='none';
+    document.getElementById('report-submitted').style.display='block';
+  }
+  // Past reports
+  const pr=document.getElementById('past-reports');
+  const moodIco={great:'😄',ok:'😊',meh:'😐',bad:'😔'};
+  pr.innerHTML=reports.filter(r=>r.date!==today()).slice(0,10).map(r=>`
+    <div class="dcard" style="margin-bottom:10px">
+      <div class="dcard-hd"><div class="dcard-title">${r.date}</div><span style="font-size:18px">${moodIco[r.mood]||'😊'}</span></div>
+      <div class="dcard-body">
+        ${r.work_done?.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px">${r.work_done.map(w=>`<span class="badge b-blue" style="font-size:11px">${w}</span>`).join('')}</div>`:''}
+        ${r.details?`<div style="font-size:13px;color:var(--text2)">${r.details}</div>`:''}
+        ${r.problem?`<div style="font-size:12px;color:var(--yellow);margin-top:5px">⚠️ ${r.problem}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function submitReport(){
+  const works=Array.from(document.querySelectorAll('#work-chips .report-chip.sel')).map(c=>c.textContent.trim());
+  const details=document.getElementById('report-details').value.trim();
+  if(!details&&!works.length){toast('❌ Details या work activities ज़रूरी हैं!');return;}
+  try{
+    await db.from('daily_reports').insert([{employee_id:ACC.employee_id,employee_name:EMP.name,date:today(),work_done:works,details,problem:document.getElementById('report-problem').value,mood:selectedMood,created_at:new Date().toISOString()}]);
+    await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP.name,type:'report',description:'Daily report submitted',created_at:new Date().toISOString()}]).catch(()=>{});
+    document.getElementById('report-submit-btn').style.display='none';
+    document.getElementById('report-submitted').style.display='block';
+    toast('✅ Report submit हो गई!');
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+}
+
+// ── PERFORMANCE ──
+function renderPerformance(){
+  const totalTasks=tasks.length||1;
+  const doneTasks=tasks.filter(t=>t.status==='Done').length;
+  const taskScore=Math.round(doneTasks/totalTasks*100);
+  const totalReports=reports.length;
+  const reportScore=Math.min(100,totalReports*10);
+  const todayAttOk=todayAtt?1:0;
+  const attScore=todayAttOk*100;
+  const overall=Math.round((taskScore*0.5)+(reportScore*0.3)+(attScore*0.2));
+  const perf=document.getElementById('perf-content');
+  const scoreColor=overall>=80?'var(--green)':overall>=50?'var(--yellow)':'var(--red)';
+  const r=34;const circ=2*Math.PI*r;const dash=circ*(overall/100);
+  perf.innerHTML=`
+    ${recog.length?`<div class="star-card"><div class="star-badge">${recog[0].badge||'⭐'}</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700">${recog[0].title||'Star Employee'}</div></div>`:''}
+    <div class="dcard">
+      <div class="dcard-hd"><div class="dcard-title">📊 Overall Score</div></div>
+      <div class="dcard-body">
+        <div class="perf-ring-wrap">
+          <div class="perf-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="${r}" fill="none" stroke="var(--border)" stroke-width="6"/>
+              <circle cx="40" cy="40" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="6" stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/>
+            </svg>
+            <div class="perf-ring-num" style="color:${scoreColor}">${overall}%</div>
+          </div>
+          <div class="perf-bars">
+            <div class="perf-bar-row">
+              <div class="perf-bar-label"><span>📋 Tasks</span><span style="color:var(--green)">${taskScore}%</span></div>
+              <div class="perf-bar"><div class="perf-bar-fill" style="width:${taskScore}%;background:var(--green)"></div></div>
+            </div>
+            <div class="perf-bar-row">
+              <div class="perf-bar-label"><span>📝 Reports</span><span style="color:var(--blue)">${reportScore}%</span></div>
+              <div class="perf-bar"><div class="perf-bar-fill" style="width:${reportScore}%;background:var(--blue)"></div></div>
+            </div>
+            <div class="perf-bar-row">
+              <div class="perf-bar-label"><span>📍 Attendance</span><span style="color:var(--yellow)">${attScore}%</span></div>
+              <div class="perf-bar"><div class="perf-bar-fill" style="width:${attScore}%;background:var(--yellow)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--bg2);border-radius:9px;padding:12px;font-size:13px;color:var(--text2)">
+          ${overall>=80?'🌟 बहुत अच्छा काम! आप top performer हैं।':overall>=60?'👍 अच्छा काम कर रहे हैं। थोड़ा और बेहतर हो सकता है।':overall>=40?'💪 मेहनत जारी रखें। Tasks complete करते रहें।':'📈 और ध्यान दें — tasks और daily report जरूर submit करें।'}
+        </div>
+      </div>
+    </div>
+    <div class="dcard">
+      <div class="dcard-hd"><div class="dcard-title">📊 Activity Log</div></div>
+      <div id="act-log-mini" style="max-height:200px;overflow-y:auto"></div>
+    </div>`;
+  loadActivityLog();
+}
+
+async function loadActivityLog(){
+  const{data}=await db.from('employee_activity').select('*').eq('employee_id',ACC.employee_id).order('created_at',{ascending:false}).limit(20);
+  const list=data||[];
+  const typeIco={login:'🔑',logout:'🚪',punch_in:'📍',punch_out:'🕐',task:'📋',report:'📝',action:'⚡',login_failed:'❌'};
+  const el=document.getElementById('act-log-mini');
+  if(el)el.innerHTML=list.map(a=>`<div style="display:flex;gap:9px;padding:8px 14px;border-bottom:1px solid rgba(28,42,58,0.3)"><div style="font-size:16px;width:20px;flex-shrink:0">${typeIco[a.type]||'•'}</div><div style="flex:1"><div style="font-size:13px;color:var(--text)">${a.description||a.type}</div><div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${(a.created_at||'').replace('T',' ').substring(0,16)}</div></div></div>`).join('');
+}
+
+// ── MEETINGS ──
+function renderMeetings(){
+  const upcoming=meetings.filter(m=>m.date>=today());
+  const past=meetings.filter(m=>m.date<today());
+  const typeColor={weekly:'var(--blue)',monthly:'var(--purple)',emergency:'var(--red)',training:'var(--green)'};
+  const ml=document.getElementById('meetings-list');
+  ml.innerHTML=(upcoming.length?`<div class="sec-title" style="margin-top:0">📅 Upcoming Meetings</div>${upcoming.map(m=>`<div class="meeting-card"><div class="meeting-type" style="background:${typeColor[m.type]||'var(--accentBg)'};color:${typeColor[m.type]||'var(--accent)'}">📅 ${m.type||'meeting'}</div><div class="meeting-title">${m.title}</div><div class="meeting-meta">📅 ${m.date} ${m.time?'· ⏰ '+m.time:''} ${m.location?'· 📍 '+m.location:''}</div>${m.description?`<div style="font-size:12px;color:var(--text2);margin-top:6px">${m.description}</div>`:''}</div>`).join('')}`:'')
+  +(past.length?`<div class="sec-title">📜 Past Meetings</div>${past.slice(0,5).map(m=>`<div class="meeting-card" style="opacity:0.7"><div class="meeting-type" style="background:var(--bg3);color:var(--text2)">✅ Done</div><div class="meeting-title">${m.title}</div><div class="meeting-meta">📅 ${m.date}</div>${m.minutes?`<div style="font-size:12px;color:var(--text2);margin-top:6px;background:var(--bg2);border-radius:7px;padding:8px">📝 ${m.minutes}</div>`:''}</div>`).join('')}`:'')
+  ||`<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:36px;opacity:0.4">🗓️</div><div style="font-size:13px;margin-top:10px">कोई meeting scheduled नहीं</div></div>`;
+}
+
+// ── HELP ──
+function selHelp(cat,el){document.querySelectorAll('.help-cat').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('help-cat').value=cat;}
+function toggleAnon(){const t=document.getElementById('anon-track');const v=document.getElementById('help-anon').value==='true';document.getElementById('help-anon').value=v?'false':'true';t.classList.toggle('on',!v);}
+function setUrgency(u,el){document.getElementById('help-urgency').value=u;document.querySelectorAll('#sec-help .report-chip').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
+
+function renderHelp(){
+  const urgColor={normal:'var(--text2)',urgent:'var(--yellow)',critical:'var(--red)'};
+  const catIco={work:'💼',tools:'🔧',team:'👥',salary:'💰',system:'💻',other:'💬'};
+  const hl=document.getElementById('help-history');
+  hl.innerHTML=helpList.map(h=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span>${catIco[h.category]||'💬'} <strong style="color:var(--text)">${h.category||'Other'}</strong></span>
+      <span class="badge ${h.status==='Resolved'?'b-green':h.status==='In Review'?'b-yellow':'b-grey'}">${h.status||'Pending'}</span>
+    </div>
+    <div style="font-size:13px;color:var(--text2)">${h.message}</div>
+    ${h.admin_reply?`<div style="margin-top:8px;background:var(--greenBg);border-left:3px solid var(--green);padding:8px 11px;border-radius:0 7px 7px 0;font-size:12px;color:var(--green)">Admin: ${h.admin_reply}</div>`:''}
+    <div style="font-size:10px;color:var(--text3);margin-top:5px">${h.created_at?.split('T')[0]||''} · ${h.urgency||'normal'} · ${h.anonymous?'Anonymous':'Named'}</div>
+  </div>`).join('')||`<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">कोई past request नहीं</div>`;
+}
+
+async function submitHelp(){
+  const msg=document.getElementById('help-message').value.trim();
+  const cat=document.getElementById('help-cat').value;
+  if(!msg){toast('❌ Message लिखें!');return;}
+  if(!cat){toast('❌ Category चुनें!');return;}
+  const anon=document.getElementById('help-anon').value==='true';
+  try{
+    await db.from('help_requests').insert([{employee_id:anon?null:ACC.employee_id,employee_name:anon?'Anonymous':EMP.name,category:cat,message:msg,urgency:document.getElementById('help-urgency').value,anonymous:anon,status:'Pending',created_at:new Date().toISOString()}]);
+    await db.from('employee_activity').insert([{employee_id:ACC.employee_id,employee_name:EMP.name,type:'help',description:'Help request submitted',created_at:new Date().toISOString()}]).catch(()=>{});
+    document.getElementById('help-message').value='';
+    toast('💌 Request submit हो गई! Admin जल्द reply करेंगे।');
+    await loadAllData();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Error: '+e.message);}
+}
+
+// ── PROFILE PHOTO ──
+let profilePhotoData=null;
+let profileCamStream=null;
+let profileCapturedB64=null;
+
+async function loadProfilePhoto(){
+  try{
+    const{data}=await db.from('employee_photos').select('*').eq('employee_id',ACC.employee_id).eq('photo_type','profile').order('created_at',{ascending:false}).limit(1);
+    if(data&&data.length){updateProfileUI(data[0]);profilePhotoData=data[0];}
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
+
+function updateProfileUI(photo){
+  profilePhotoData=photo;
+  const src=photo.photo_url||photo.photo_base64||'';
+  if(!src)return;
+  // Topbar — update existing element, don't replace it
+  const tbAv=document.getElementById('tb-av');
+  if(tbAv){
+    tbAv.style.background='transparent';
+    tbAv.style.border='2px solid var(--accent)';
+    tbAv.style.padding='0';
+    tbAv.style.overflow='hidden';
+    tbAv.innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  }
+  // Profile section big wrap
+  const bigWrap=document.getElementById('profile-big-wrap');
+  if(bigWrap)bigWrap.innerHTML=`<img src="${src}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">`;
+  // Current photo section
+  const curImg=document.getElementById('profile-current-img');
+  const curSec=document.getElementById('profile-current-section');
+  if(curImg){curImg.src=src;}
+  if(curSec){curSec.style.display='block';}
+}
+
+function renderProfileSection(){
+  const n=document.getElementById('profile-name-lbl');
+  const r=document.getElementById('profile-role-lbl');
+  const p=document.getElementById('profile-phone-lbl');
+  const av=document.getElementById('profile-big-av');
+  if(n)n.textContent=EMP?.name||'—';
+  if(r)r.textContent=EMP?.role||ACC?.notes||'Employee';
+  if(p)p.textContent='📱 '+(ACC?.phone||'—');
+  if(av&&!profilePhotoData)av.textContent=EMP?.name?.substring(0,2).toUpperCase()||'RK';
+  if(profilePhotoData){
+    const bigWrap=document.getElementById('profile-big-wrap');
+    if(bigWrap){const src=profilePhotoData.photo_url||profilePhotoData.photo_base64||'';if(src)bigWrap.innerHTML=`<img src="${src}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">`;}
+    const ci=document.getElementById('profile-current-img');
+    if(ci){const src=profilePhotoData.photo_url||profilePhotoData.photo_base64||'';ci.src=src;document.getElementById('profile-current-section').style.display='block';}
+  }
+}
+
+async function handleProfileFile(input){
+  const file=input.files[0];if(!file)return;
+  showProfileProgress(20,'Reading file...');
+  // Compress image to 300x300 max
+  const b64=await compressImage(file,300,300);
+  showProfileProgress(50,'Saving...');
+  await saveProfilePhoto(b64,null);
+}
+
+// Compress image to max width/height
+function compressImage(file,maxW,maxH){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        let w=img.width,h=img.height;
+        if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+        if(h>maxH){w=Math.round(w*maxH/h);h=maxH;}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.75));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function openProfileCamera(){
+  document.getElementById('profile-cam-section').style.display='block';
+  try{
+    profileCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    document.getElementById('profile-cam-video').srcObject=profileCamStream;
+    document.getElementById('profile-cam-preview').style.display='none';
+    document.getElementById('profile-cam-save').style.display='none';
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera: '+e.message);}
+}
+
+function closeProfileCam(){
+  if(profileCamStream)profileCamStream.getTracks().forEach(t=>t.stop());
+  profileCamStream=null;
+  document.getElementById('profile-cam-section').style.display='none';
+  profileCapturedB64=null;
+}
+
+function captureProfilePhoto(){
+  const video=document.getElementById('profile-cam-video');
+  const canvas=document.getElementById('profile-cam-canvas');
+  const preview=document.getElementById('profile-cam-preview');
+  // Compress to 300x300
+  let w=video.videoWidth,h=video.videoHeight;
+  if(w>300){h=Math.round(h*300/w);w=300;}
+  if(h>300){w=Math.round(w*300/h);h=300;}
+  canvas.width=w;canvas.height=h;
+  canvas.getContext('2d').drawImage(video,0,0,w,h);
+  profileCapturedB64=canvas.toDataURL('image/jpeg',0.75);
+  preview.src=profileCapturedB64;preview.style.display='block';
+  video.style.display='none';
+  document.getElementById('profile-cam-save').style.display='flex';
+}
+
+async function saveProfileCapture(){
+  if(!profileCapturedB64)return;
+  showProfileProgress(50,'Saving...');
+  await saveProfilePhoto(profileCapturedB64,null);
+  closeProfileCam();
+  document.getElementById('profile-cam-video').style.display='block';
+}
+
+async function saveProfilePhoto(b64,file){
+  try{
+    showProfileProgress(60,'Saving...');
+    // Delete old profile photo first
+    if(profilePhotoData){
+      await db.from('employee_photos').delete().eq('id',profilePhotoData.id).catch(()=>{});
+      profilePhotoData=null;
+    }
+    // Save base64 directly to database (reliable, no storage needed)
+    const{data,error}=await db.from('employee_photos').insert([{
+      employee_id:ACC.employee_id,
+      employee_name:EMP?.name||'',
+      photo_type:'profile',
+      photo_url:null,
+      photo_base64:b64,
+      file_name:'profile.jpg',
+      date:today(),
+      created_at:new Date().toISOString()
+    }]).select().single();
+    if(error)throw error;
+    showProfileProgress(100,'✅ Saved!');
+    setTimeout(()=>hideProfileProgress(),800);
+    // Update UI immediately
+    updateProfileUI(data);
+    profilePhotoData=data;
+    // Reset input
+    const inp=document.getElementById('profile-file-input');
+    if(inp)inp.value='';
+    toast('✅ Profile photo save हो गई!');
+    // Log
+    await db.from('employee_activity').insert([{
+      employee_id:ACC.employee_id,
+      employee_name:EMP?.name,
+      type:'action',
+      description:'Profile photo updated',
+      created_at:new Date().toISOString()
+    }]).catch(()=>{});
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    hideProfileProgress();
+    toast('❌ Error: '+e.message);
+    console.error('Profile save error:',e);
+  }
+}
+
+async function removeProfilePhoto(){
+  if(!profilePhotoData)return;
+  if(!confirm('Profile photo delete करें?'))return;
+  await db.from('employee_photos').delete().eq('id',profilePhotoData.id);
+  profilePhotoData=null;
+  // Reset topbar av
+  const tbAv=document.getElementById('tb-av');
+  if(tbAv){
+    tbAv.innerHTML=EMP?.name?.substring(0,2).toUpperCase()||'RK';
+    tbAv.style.background='rgba(232,108,47,0.15)';
+    tbAv.style.border='2px solid var(--border2)';
+    tbAv.style.padding='';
+    tbAv.style.overflow='';
+  }
+  // Reset profile big wrap
+  const bw=document.getElementById('profile-big-wrap');
+  if(bw)bw.innerHTML=`<div id="profile-big-av" style="width:90px;height:90px;border-radius:50%;background:rgba(232,108,47,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;border:3px solid var(--accent)">${EMP?.name?.substring(0,2).toUpperCase()||'RK'}</div>`;
+  const cs=document.getElementById('profile-current-section');
+  if(cs)cs.style.display='none';
+  toast('🗑️ Photo removed');
+}
+
+function showProfileProgress(pct,text){
+  document.getElementById('profile-upload-progress').style.display='block';
+  document.getElementById('profile-prog-text').textContent=text||'Uploading...';
+  document.getElementById('profile-prog-fill').style.width=pct+'%';
+}
+function hideProfileProgress(){document.getElementById('profile-upload-progress').style.display='none';}
+
+function fileToBase64(file){return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(file);});}
+
+// ── TASK SITE PHOTOS ──
+let taskPhotos={};      // {taskId: [...photos]}
+let activeCamTaskId=null;
+let activeCamTaskTitle='';
+let taskCamStream=null;
+let taskCapturedPhotos=[];  // queue of captured/selected photos
+let taskCamLoc={lat:null,lng:null,addr:''};
+
+async function loadTaskPhotosForList(taskIds){
+  if(!taskIds.length)return;
+  try{
+    const{data}=await db.from('employee_photos').select('*')
+      .eq('employee_id',ACC.employee_id)
+      .eq('photo_type','job')
+      .in('job_id',taskIds)
+      .order('created_at',{ascending:false});
+    const photos=data||[];
+    // Group by task
+    taskIds.forEach(id=>{taskPhotos[id]=photos.filter(p=>p.job_id===id);});
+    // Re-render after loading
+    const container=document.getElementById('tasks-container');
+    if(container&&container.innerHTML)renderTasksHTML();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
+
+function renderTasksHTML(){
+  // Just re-trigger renderTasks without reloading
+  const list=taskFilter==='all'?tasks:tasks.filter(t=>t.status===taskFilter);
+  const pend=tasks.filter(t=>t.status==='Pending').length;
+  const prog=tasks.filter(t=>t.status==='In Progress').length;
+  const done=tasks.filter(t=>t.status==='Done').length;
+  const priCol={Low:'var(--green)',Medium:'var(--yellow)',High:'var(--red)'};
+  const stBadge={'Pending':'b-yellow','In Progress':'b-blue','Done':'b-green'};
+  document.getElementById('tasks-container').innerHTML=list.length?list.map(t=>{
+    const tPhotos=(taskPhotos[t.id]||[]);
+    const photoThumbsHTML=tPhotos.slice(0,4).map((p)=>`
+      <div class="task-photo-thumb" onclick="openTaskPhotoLightbox('${p.photo_url||p.photo_base64||''}','${t.title} · ${(p.location_addr||'').substring(0,30)} · ${(p.created_at||'').substring(0,16)}')">
+        <img src="${p.photo_url||p.photo_base64||''}" alt="">
+        <button class="task-photo-del" onclick="event.stopPropagation();deleteTaskPhoto(${p.id},${t.id})">✕</button>
+      </div>`).join('');
+    return `<div class="task-item" style="${t.status==='Done'?'opacity:0.75':''}">
+      <div class="task-item-hd">
+        <div><div class="task-title">${t.title}</div><div class="task-meta">${t.module?'📦 '+t.module:''} ${t.due_date?'· 📅 '+t.due_date:''}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge ${stBadge[t.status]||'b-grey'}">${t.status}</span>
+          <span style="font-size:11px;color:${priCol[t.priority]||'var(--text3)'}">● ${t.priority||''}</span>
+        </div>
+      </div>
+      ${t.description?`<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">${t.description}</div>`:''}
+      <div class="task-actions">
+        ${t.status==='Pending'?`<button class="task-btn" style="background:var(--blueBg);color:var(--blue);border:1px solid rgba(59,142,255,0.2)" onclick="updateTask(${t.id},'In Progress')">🔄 Start</button>`:''}
+        ${t.status==='In Progress'?`<button class="task-btn" style="background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2)" onclick="updateTask(${t.id},'Done')">✅ Done</button>`:''}
+        ${t.status==='Done'?`<span style="font-size:12px;color:var(--green)">✅ Completed</span>`:''}
+        <button class="task-btn" style="background:var(--accentBg);color:var(--accent);border:1px solid rgba(232,108,47,0.2)" onclick="openTaskCam(${t.id},'${t.title.replace(/'/g,"\'")}')">📸 Site Photo ${tPhotos.length>0?'('+tPhotos.length+')':''}</button>
+      </div>
+      ${tPhotos.length>0?`<div class="task-photos-section">
+        <div class="task-photos-title"><span>📍 Site Photos (${tPhotos.length})</span><span style="font-size:10px;color:var(--text3)">${(tPhotos[0]?.location_addr||'').substring(0,35)}</span></div>
+        <div class="task-photo-grid">${photoThumbsHTML}${tPhotos.length>4?`<div class="task-photo-add" onclick="openTaskCam(${t.id},'${t.title.replace(/'/g,"\'")}')"><div style="font-size:16px">+${tPhotos.length-4}</div><div style="font-size:10px;color:var(--text3)">more</div></div>`:''}</div>
+      </div>`:``}
+    </div>`;
+  }).join(''):`<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:32px;opacity:0.4">📋</div><div style="margin-top:8px;font-size:13px">कोई task नहीं</div></div>`;
+}
+
+function openTaskCam(taskId,taskTitle){
+  activeCamTaskId=taskId;
+  activeCamTaskTitle=taskTitle;
+  taskCapturedPhotos=[];
+  document.getElementById('task-cam-title').textContent='📸 '+taskTitle;
+  document.getElementById('task-photo-desc').value='';
+  document.getElementById('task-save-btn').style.display='none';
+  document.getElementById('task-capture-btn').style.display='none';
+  document.getElementById('task-cam-video-wrap').style.display='none';
+  document.getElementById('task-cam-previews').style.display='none';
+  document.getElementById('task-cam-previews').innerHTML='';
+  document.getElementById('task-cam-progress').style.display='none';
+  document.getElementById('task-cam-overlay').classList.add('open');
+  // Get location
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      taskCamLoc.lat=pos.coords.latitude;
+      taskCamLoc.lng=pos.coords.longitude;
+      taskCamLoc.addr=`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+      document.getElementById('task-cam-loc').innerHTML=`<div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span>📍 ${taskCamLoc.addr}</span>`;
+    },()=>{
+      taskCamLoc={lat:null,lng:null,addr:''};
+      document.getElementById('task-cam-loc').innerHTML=`<div style="width:7px;height:7px;border-radius:50%;background:var(--yellow)"></div><span>Location unavailable</span>`;
+    },{timeout:5000,enableHighAccuracy:true});
+  }
+}
+
+async function startTaskCamera(){
+  document.getElementById('task-cam-video-wrap').style.display='block';
+  document.getElementById('task-capture-btn').style.display='block';
+  try{
+    taskCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false});
+    document.getElementById('task-cam-video').srcObject=taskCamStream;
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌ Camera: '+e.message);}
+}
+
+function captureTaskPhoto(){
+  const video=document.getElementById('task-cam-video');
+  const canvas=document.getElementById('task-cam-canvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const b64=canvas.toDataURL('image/jpeg',0.85);
+  taskCapturedPhotos.push({b64,file:null,name:'capture_'+Date.now()+'.jpg'});
+  updateTaskCamPreviews();
+  document.getElementById('task-save-btn').style.display='block';
+}
+
+async function handleTaskGallery(input){
+  const files=Array.from(input.files);
+  for(const f of files){
+    const b64=await fileToBase64(f);
+    taskCapturedPhotos.push({b64,file:f,name:f.name});
+  }
+  updateTaskCamPreviews();
+  document.getElementById('task-save-btn').style.display=taskCapturedPhotos.length?'block':'none';
+  input.value='';
+}
+
+function updateTaskCamPreviews(){
+  const wrap=document.getElementById('task-cam-previews');
+  wrap.style.display=taskCapturedPhotos.length?'grid':'none';
+  wrap.style.gridTemplateColumns='repeat(4,1fr)';
+  wrap.innerHTML=taskCapturedPhotos.map((p,i)=>`
+    <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:var(--bg3)">
+      <img src="${p.b64}" style="width:100%;height:100%;object-fit:cover">
+      <div onclick="taskCapturedPhotos.splice(${i},1);updateTaskCamPreviews();if(!taskCapturedPhotos.length)document.getElementById('task-save-btn').style.display='none'" style="position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(240,79,79,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;cursor:pointer">✕</div>
+    </div>`).join('');
+}
+
+async function saveTaskPhotos(){
+  if(!taskCapturedPhotos.length){toast('❌ कोई photo नहीं!');return;}
+  const desc=document.getElementById('task-photo-desc').value.trim();
+  const task=tasks.find(t=>t.id===activeCamTaskId);
+  // Show progress
+  document.getElementById('task-cam-progress').style.display='block';
+  document.getElementById('task-save-btn').style.display='none';
+  let saved=0;
+  for(const photo of taskCapturedPhotos){
+    // Try storage upload
+    let url=null;
+    try{
+      const blob=photo.file||await(await fetch(photo.b64)).blob();
+      const path=`${ACC.employee_id}/task_${activeCamTaskId}_${Date.now()}.jpg`;
+      const{error}=await db.storage.from('employee-photos').upload(path,blob,{contentType:'image/jpeg'});
+      if(!error){const{data:u}=db.storage.from('employee-photos').getPublicUrl(path);url=u.publicUrl;}
+    }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+    // Save to DB with all tracking info
+    await db.from('employee_photos').insert([{
+      employee_id:ACC.employee_id,
+      employee_name:EMP?.name||'',
+      photo_type:'job',
+      photo_url:url,
+      photo_base64:photo.b64,
+      file_name:photo.name,
+      description:desc||(task?.title||'Site Photo'),
+      job_id:activeCamTaskId,
+      lat:taskCamLoc.lat,
+      lng:taskCamLoc.lng,
+      location_addr:taskCamLoc.addr,
+      date:today(),
+      task_title:task?.title||'',
+      task_module:task?.module||'',
+      created_at:new Date().toISOString()
+    }]);
+    saved++;
+    const pct=Math.round(saved/taskCapturedPhotos.length*100);
+    document.getElementById('task-cam-prog-fill').style.width=pct+'%';
+    document.getElementById('task-cam-prog-text').textContent=`${saved}/${taskCapturedPhotos.length} photos saved...`;
+  }
+  // Activity log
+  await db.from('employee_activity').insert([{
+    employee_id:ACC.employee_id,employee_name:EMP?.name||'',
+    type:'action',module:task?.module||'Job',
+    description:`${saved} site photos added for: ${activeCamTaskTitle}`,
+    location:taskCamLoc.addr,
+    created_at:new Date().toISOString()
+  }]).catch(()=>{});
+  // Reload photos
+  const{data}=await db.from('employee_photos').select('*').eq('employee_id',ACC.employee_id).eq('job_id',activeCamTaskId).order('created_at',{ascending:false});
+  taskPhotos[activeCamTaskId]=data||[];
+  closeTaskCam();
+  renderTasksHTML();
+  toast(`✅ ${saved} site photos saved!`);
+}
+
+function closeTaskCam(){
+  if(taskCamStream)taskCamStream.getTracks().forEach(t=>t.stop());
+  taskCamStream=null;
+  document.getElementById('task-cam-overlay').classList.remove('open');
+  document.getElementById('task-cam-video-wrap').style.display='none';
+  document.getElementById('task-cam-video').srcObject=null;
+  taskCapturedPhotos=[];
+}
+
+async function deleteTaskPhoto(photoId,taskId){
+  if(!confirm('Photo delete करें?'))return;
+  await db.from('employee_photos').delete().eq('id',photoId);
+  taskPhotos[taskId]=(taskPhotos[taskId]||[]).filter(p=>p.id!==photoId);
+  renderTasksHTML();
+  toast('🗑️ Photo deleted');
+}
+
+function openTaskPhotoLightbox(src,info){
+  if(!src)return;
+  document.getElementById('lb-img').src=src;
+  document.getElementById('lb-info').textContent=info||'';
+  document.getElementById('lightbox').classList.add('open');
+}
+
+// ── SECTIONS ──
+function showSection(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el&&el.classList)el.classList.add('active');
+  else document.querySelectorAll('.bn-item').forEach(b=>{if(b.getAttribute('onclick')?.includes(sec))b.classList.add('active');});
+  if(sec==='attendance')loadAttHistory();
+  if(sec==='performance')renderPerformance();
+  if(sec==='profile')renderProfileSection();
+}
+
+// ── TOAST ──
+let tT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+</body>
+</html>

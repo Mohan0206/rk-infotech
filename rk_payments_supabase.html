@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Payment & Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+
+/* TOPNAV MODERN */
+.topnav{background:rgba(8,12,20,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 22px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;gap:8px;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;flex-shrink:0;color:var(--text);text-decoration:none;}
+.logo-icon,.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#E55A2B);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 12px rgba(255,107,53,0.3);}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:center;}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-link{padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;white-space:nowrap;text-decoration:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);font-weight:600;}
+.db-pill{display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);flex-shrink:0;}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+
+.main{flex:1;padding:20px;min-width:0;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:#f08040;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(240,79,79,0.2);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
+
+/* INPUT */
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:60px;}
+
+/* SECTIONS */
+.section{display:none;}
+.section.active{display:block;}
+
+/* STATS */
+.stats-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 15px;position:relative;overflow:hidden;cursor:default;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat-bg-ico{position:absolute;right:12px;top:10px;font-size:26px;opacity:0.1;}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:3px;}
+.stat-sub{font-size:11px;color:var(--text3);}
+
+/* BANK CARDS */
+.bank-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:18px;}
+.bank-card{border-radius:18px;padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.18s;}
+.bank-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,0.4);}
+.bank-card-bg{position:absolute;right:-20px;top:-20px;font-size:80px;opacity:0.08;}
+.bank-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.15);border-radius:6px;padding:3px 8px;font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:12px;}
+.bank-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;}
+.bank-acc-no{font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:16px;}
+.bank-balance-lbl{font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.bank-balance{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:#fff;}
+.bank-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);}
+.bank-foot-item{font-size:11px;color:rgba(255,255,255,0.7);}
+.bank-add-card{background:var(--card);border:2px dashed var(--border2);border-radius:18px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;min-height:140px;}
+.bank-add-card:hover{border-color:var(--accent);background:var(--accentBg);}
+
+/* TRANSACTION TYPES */
+.txn-types{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;}
+.txn-type-btn{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:13px 8px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.txn-type-btn:hover,.txn-type-btn.sel{border-color:var(--accent);background:var(--accentBg);}
+.txn-type-btn.sel-in{border-color:var(--green);background:var(--greenBg);}
+.txn-type-btn.sel-out{border-color:var(--red);background:var(--redBg);}
+.txn-type-btn.sel-salary{border-color:var(--purple);background:var(--purpleBg);}
+.txn-type-btn.sel-transfer{border-color:var(--blue);background:var(--blueBg);}
+.txn-type-btn.sel-expense{border-color:var(--yellow);background:var(--yellowBg);}
+.txn-ico{font-size:22px;margin-bottom:5px;}
+.txn-lbl{font-size:11px;font-weight:600;}
+
+/* PERIOD TABS */
+.period-tabs{display:flex;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+
+/* CARD */
+.dcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:14px 16px;}
+
+/* TABLE */
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:9px 13px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(10,14,24,0.8);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.4);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child td{border-bottom:none;}
+td{padding:9px 13px;color:var(--text2);vertical-align:middle;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+
+/* TXN ROW */
+.txn-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(28,42,58,0.4);}
+.txn-row:last-child{border-bottom:none;}
+.txn-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.txn-info{flex:1;min-width:0;}
+.txn-name{font-size:13px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.txn-meta{font-size:11px;color:var(--text3);}
+.txn-amount{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;text-align:right;white-space:nowrap;}
+.txn-date{font-size:10px;color:var(--text3);text-align:right;font-family:'JetBrains Mono',monospace;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:14px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+
+/* PAY MODE SELECTOR */
+.pay-modes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px;}
+.pay-mode{background:var(--bg2);border:2px solid var(--border);border-radius:8px;padding:9px 5px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.pay-mode.sel{border-color:var(--accent);background:var(--accentBg);}
+.pay-mode-ico{font-size:16px;margin-bottom:3px;}
+.pay-mode-lbl{font-size:10px;color:var(--text2);font-weight:600;}
+.pay-mode.sel .pay-mode-lbl{color:var(--accent);}
+
+/* TXN TYPE SELECTOR */
+.txn-type-sel{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px;}
+.tts{background:var(--bg2);border:2px solid var(--border);border-radius:8px;padding:9px 5px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.tts.in.sel{border-color:var(--green);background:var(--greenBg);}
+.tts.out.sel{border-color:var(--red);background:var(--redBg);}
+.tts.salary.sel{border-color:var(--purple);background:var(--purpleBg);}
+.tts.transfer.sel{border-color:var(--blue);background:var(--blueBg);}
+.tts.expense.sel{border-color:var(--yellow);background:var(--yellowBg);}
+.tts-ico{font-size:16px;margin-bottom:3px;}
+.tts-lbl{font-size:10px;font-weight:600;color:var(--text2);}
+
+/* PENDING INVOICE CARDS */
+.pinv-card{background:var(--bg2);border:2px solid var(--border);border-radius:9px;padding:10px 13px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:10px;}
+.pinv-card:hover{border-color:var(--accent);}
+.pinv-card.sel{border-color:var(--green);background:var(--greenBg);}
+.pinv-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);}
+.pinv-cust{font-size:13px;color:var(--text);font-weight:600;}
+.pinv-amt{margin-left:auto;text-align:right;}
+.pinv-total{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--red);}
+.pinv-sub{font-size:10px;color:var(--text3);}
+.pay-summary{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-top:8px;}
+.pay-sum-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* LOADING */
+.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1100px){.stats-5{grid-template-columns:repeat(3,1fr);}.txn-types{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-5,.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.txn-types{grid-template-columns:repeat(3,1fr);}.pay-modes,.txn-type-sel{grid-template-columns:repeat(3,1fr);}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<div class="page-loader" id="page-loader">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--text3)">Payment data load हो रहा है...</div>
+</div>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn active" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-sec">Finance</div>
+    <button class="sb-item active" onclick="showSection('overview',this)"><span class="sb-ico">📊</span>Overview</button>
+    <button class="sb-item" onclick="showSection('customer-pay',this)"><span class="sb-ico">👥</span>Customer Payments<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-pending">0</span></button>
+    <button class="sb-item" onclick="showSection('transactions',this)"><span class="sb-ico">↕️</span>Transactions<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-txn">0</span></button>
+    <button class="sb-item" onclick="showSection('banks',this)"><span class="sb-ico">🏦</span>Bank Accounts</button>
+    <button class="sb-item" onclick="showSection('salary',this)"><span class="sb-ico">👷</span>Salary Payments</button>
+    <div class="sb-sec" style="margin-top:8px">Filter</div>
+    <button class="sb-item" onclick="filterType('in',this)"><span class="sb-ico">📥</span>Payment IN</button>
+    <button class="sb-item" onclick="filterType('out',this)"><span class="sb-ico">📤</span>Payment OUT</button>
+    <button class="sb-item" onclick="filterType('expense',this)"><span class="sb-ico">💸</span>Expenses</button>
+    <button class="sb-item" onclick="filterType('salary',this)"><span class="sb-ico">💼</span>Salary</button>
+    <button class="sb-item" onclick="filterType('transfer',this)"><span class="sb-ico">🔄</span>Transfers</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- ══ OVERVIEW ══ -->
+    <div class="section active" id="sec-overview">
+      <div class="page-hdr">
+        <div><div class="page-title">💰 Payment Overview</div><div class="page-sub">सारे transactions एक नज़र में</div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="exportCSV()">⬇️ Export</button>
+          <button class="btn btn-primary" onclick="openTxnModal()">+ New Transaction</button>
+        </div>
+      </div>
+
+      <!-- PERIOD TABS -->
+      <div class="period-tabs">
+        <button class="period-tab active" onclick="setPeriod('today',this)">आज</button>
+        <button class="period-tab" onclick="setPeriod('week',this)">इस हफ्ते</button>
+        <button class="period-tab" onclick="setPeriod('month',this)">इस महीने</button>
+        <button class="period-tab" onclick="setPeriod('year',this)">इस साल</button>
+        <button class="period-tab" onclick="setPeriod('all',this)">सब</button>
+      </div>
+
+      <div class="stats-5" id="ov-stats"></div>
+
+      <div class="g2">
+        <div class="dcard"><div class="dcard-hd"><div class="dcard-title">📈 Cash Flow Chart</div></div><div class="dcard-body"><canvas id="cashflow-chart" height="200"></canvas></div></div>
+        <div class="dcard"><div class="dcard-hd"><div class="dcard-title">🍩 Transaction Types</div></div><div class="dcard-body"><canvas id="txn-type-chart" height="200"></canvas></div></div>
+      </div>
+
+      <div class="g2">
+        <div class="dcard">
+          <div class="dcard-hd"><div class="dcard-title">📥 Recent Incoming</div><span class="badge b-green">IN</span></div>
+          <div class="dcard-body" id="recent-in"></div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><div class="dcard-title">📤 Recent Outgoing</div><span class="badge b-red">OUT</span></div>
+          <div class="dcard-body" id="recent-out"></div>
+        </div>
+      </div>
+
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">👥 Customer-wise Outstanding</div><button class="btn btn-ghost btn-sm" onclick="showSection('transactions',document.querySelector('.sb-item'))">सब देखें →</button></div>
+        <div class="dcard-body" id="cust-outstanding"></div>
+      </div>
+
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">🏦 Bank Balances</div><button class="btn btn-ghost btn-sm" onclick="showSection('banks',document.querySelector('.sb-item:nth-child(3)'))">सब देखें →</button></div>
+        <div class="dcard-body" id="bank-summary"></div>
+      </div>
+    </div>
+
+    <!-- ══ CUSTOMER PAYMENTS ══ -->
+    <div class="section" id="sec-customer-pay">
+      <div class="page-hdr">
+        <div><div class="page-title">👥 Customer Payments</div><div class="page-sub">किसने कितना दिया, कितना pending है</div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="exportCustCSV()">⬇️ Export</button>
+          <button class="btn btn-primary" onclick="openTxnModal()">+ Payment Add</button>
+        </div>
+      </div>
+
+      <!-- FILTER -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <select class="input" style="width:auto" id="cust-status-filter" onchange="renderCustomerPay()">
+          <option value="">सब Customers</option>
+          <option value="paid">✅ Fully Paid</option>
+          <option value="partial">🌗 Partial</option>
+          <option value="pending">⏳ Pending</option>
+        </select>
+        <input class="input" type="search" style="max-width:200px" placeholder="🔍 Customer खोजें..." id="cust-search" oninput="renderCustomerPay()">
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-4" id="cust-pay-stats"></div>
+
+      <!-- CUSTOMER TABLE -->
+      <div class="tcard" style="margin-bottom:16px">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Customer</th><th>Total Invoices</th><th>Total Amount</th><th>Paid</th><th>Pending</th><th>Last Payment</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cust-pay-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INVOICE DETAIL -->
+      <div id="cust-detail-section" style="display:none">
+        <div class="dcard">
+          <div class="dcard-hd">
+            <div class="dcard-title" id="cust-detail-title">Invoice Details</div>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cust-detail-section').style.display='none'">✕ Close</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Invoice #</th><th>Date</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="cust-inv-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRANSACTIONS ══ -->
+    <div class="section" id="sec-transactions">
+      <div class="page-hdr">
+        <div><div class="page-title">↕️ All Transactions</div><div class="page-sub" id="txn-period-label">सारे transactions</div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="exportCSV()">⬇️ Export</button>
+          <button class="btn btn-primary" onclick="openTxnModal()">+ New Transaction</button>
+        </div>
+      </div>
+
+      <div class="period-tabs">
+        <button class="period-tab active" onclick="setPeriod('today',this)">आज</button>
+        <button class="period-tab" onclick="setPeriod('week',this)">इस हफ्ते</button>
+        <button class="period-tab" onclick="setPeriod('month',this)">इस महीने</button>
+        <button class="period-tab" onclick="setPeriod('year',this)">इस साल</button>
+        <button class="period-tab" onclick="setPeriod('all',this)">सब</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" style="width:auto" id="type-filter" onchange="renderTransactions()">
+          <option value="">सब Types</option>
+          <option value="in">📥 Payment IN</option>
+          <option value="out">📤 Payment OUT</option>
+          <option value="expense">💸 Expense</option>
+          <option value="salary">💼 Salary</option>
+          <option value="transfer">🔄 Bank Transfer</option>
+        </select>
+        <select class="input" style="width:auto" id="mode-filter" onchange="renderTransactions()">
+          <option value="">सब Modes</option>
+          <option value="Cash">💵 Cash</option>
+          <option value="UPI">📱 UPI</option>
+          <option value="Bank Transfer">🏦 Bank Transfer</option>
+          <option value="Cheque">📄 Cheque</option>
+          <option value="Card">💳 Card</option>
+        </select>
+        <select class="input" style="width:auto" id="bank-filter" onchange="renderTransactions()">
+          <option value="">सब Banks</option>
+        </select>
+        <input class="input" type="search" style="max-width:200px" placeholder="🔍 Search..." id="txn-search" oninput="renderTransactions()">
+      </div>
+
+      <div class="stats-4" id="txn-stats"></div>
+
+      <div class="tcard">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>#</th><th>Type</th><th>Description</th><th>Person/Party</th><th>Mode</th><th>Bank</th><th>Amount</th><th>Date</th><th>Ref</th><th>Actions</th></tr></thead>
+            <tbody id="txn-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ BANKS ══ -->
+    <div class="section" id="sec-banks">
+      <div class="page-hdr">
+        <div><div class="page-title">🏦 Bank Accounts</div><div class="page-sub">सारे accounts और balances</div></div>
+        <button class="btn btn-primary" onclick="openBankModal()">+ Bank Add करें</button>
+      </div>
+
+      <div class="bank-grid" id="bank-grid"></div>
+
+      <div class="dcard">
+        <div class="dcard-hd"><div class="dcard-title">📋 Bank-wise Transactions</div>
+          <select class="input" style="width:auto" id="bank-txn-filter" onchange="renderBankTxns()">
+            <option value="">सब Banks</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Type</th><th>Description</th><th>Mode</th><th>IN (+)</th><th>OUT (-)</th><th>Balance</th><th>Date</th></tr></thead>
+            <tbody id="bank-txn-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SALARY ══ -->
+    <div class="section" id="sec-salary">
+      <div class="page-hdr">
+        <div><div class="page-title">👷 Salary Payments</div><div class="page-sub">Employee salary track और payment करें</div></div>
+        <button class="btn btn-primary" onclick="openSalaryModal()">+ Salary Pay करें</button>
+      </div>
+
+      <div class="stats-3" id="sal-stats"></div>
+
+      <div class="g2">
+        <div class="dcard">
+          <div class="dcard-hd"><div class="dcard-title">👷 Employee Salary Status</div>
+            <select class="input" style="width:auto" id="sal-month-filter" onchange="renderSalary()"></select>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Employee</th><th>Role</th><th>Due Salary</th><th>Paid</th><th>Pending</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="sal-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dcard">
+          <div class="dcard-hd"><div class="dcard-title">💰 Salary Payment History</div></div>
+          <div class="dcard-body" id="sal-history"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TRANSACTION MODAL -->
+<div class="overlay" id="txn-modal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="txn-modal-title">New Transaction</div><button class="modal-close" onclick="closeModal('txn-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-sec">Transaction Type</div>
+      <div class="txn-type-sel">
+        <div class="tts in sel" id="tts-in" onclick="selTxnType('in')"><div class="tts-ico">📥</div><div class="tts-lbl" style="color:var(--green)">IN</div></div>
+        <div class="tts out" id="tts-out" onclick="selTxnType('out')"><div class="tts-ico">📤</div><div class="tts-lbl">OUT</div></div>
+        <div class="tts salary" id="tts-salary" onclick="selTxnType('salary')"><div class="tts-ico">💼</div><div class="tts-lbl">Salary</div></div>
+        <div class="tts transfer" id="tts-transfer" onclick="selTxnType('transfer')"><div class="tts-ico">🔄</div><div class="tts-lbl">Transfer</div></div>
+        <div class="tts expense" id="tts-expense" onclick="selTxnType('expense')"><div class="tts-ico">💸</div><div class="tts-lbl">Expense</div></div>
+      </div>
+      <input type="hidden" id="t-type" value="in">
+
+      <div class="form-sec">Details</div>
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Description <span class="req">*</span></label><input class="input" id="t-desc" placeholder="जैसे: Customer payment, Salary March..."></div>
+        <div class="form-group"><label class="form-label">Amount (₹) <span class="req">*</span></label><input class="input" type="number" id="t-amount" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="input" type="date" id="t-date"></div>
+        <!-- Customer selector (shows for IN type) -->
+        <div class="form-group" id="t-cust-grp">
+          <label class="form-label">Customer <span style="font-size:11px;color:var(--text3)">(Pending invoices auto-load होंगे)</span></label>
+          <select class="input" id="t-customer" onchange="loadCustInvoices()">
+            <option value="">-- Customer चुनें --</option>
+          </select>
+        </div>
+        <!-- Pending invoices list -->
+        <div class="form-group full" id="t-inv-grp" style="display:none">
+          <label class="form-label">⏳ Pending Invoices — Select करें</label>
+          <div id="t-pending-invoices" style="display:grid;gap:6px;max-height:200px;overflow-y:auto;padding:2px"></div>
+        </div>
+        <!-- Party name (for OUT/expense) -->
+        <div class="form-group" id="t-party-grp" style="display:none"><label class="form-label">Party / Vendor Name</label><input class="input" id="t-party" placeholder="Supplier name..."></div>
+        <div class="form-group" id="t-emp-grp" style="display:none"><label class="form-label">Employee</label><select class="input" id="t-emp"></select></div>
+        <div class="form-group"><label class="form-label">Category</label>
+          <select class="input" id="t-category">
+            <option value="">-- Select --</option>
+            <optgroup label="📥 Payment IN"><option>Customer Payment</option><option>Advance Received</option><option>AMC Payment</option><option>Other Income</option></optgroup>
+            <optgroup label="📤 Payment OUT"><option>Supplier Payment</option><option>Vendor Payment</option><option>Advance Paid</option></optgroup>
+            <optgroup label="💸 Expenses"><option>Petrol/Travel</option><option>Tools & Equipment</option><option>Office Rent</option><option>Mobile/Internet</option><option>Food & Tea</option><option>Printing</option><option>Repair & Maintenance</option><option>Other Expense</option></optgroup>
+            <optgroup label="💼 Salary"><option>Monthly Salary</option><option>Advance Salary</option><option>Bonus</option><option>Overtime</option></optgroup>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Reference / Invoice #</label><input class="input" id="t-ref" placeholder="INV-001, Bill no..."></div>
+      </div>
+
+      <div class="form-sec">Payment Mode</div>
+      <div class="pay-modes" id="pay-modes-container">
+        <div class="pay-mode sel" onclick="selPayMode(this,'Cash')"><div class="pay-mode-ico">💵</div><div class="pay-mode-lbl">Cash</div></div>
+        <div class="pay-mode" onclick="selPayMode(this,'UPI')"><div class="pay-mode-ico">📱</div><div class="pay-mode-lbl">UPI</div></div>
+        <div class="pay-mode" onclick="selPayMode(this,'Bank Transfer')"><div class="pay-mode-ico">🏦</div><div class="pay-mode-lbl">Bank</div></div>
+        <div class="pay-mode" onclick="selPayMode(this,'Cheque')"><div class="pay-mode-ico">📄</div><div class="pay-mode-lbl">Cheque</div></div>
+        <div class="pay-mode" onclick="selPayMode(this,'Card')"><div class="pay-mode-ico">💳</div><div class="pay-mode-lbl">Card</div></div>
+      </div>
+      <input type="hidden" id="t-mode" value="Cash">
+
+      <div class="form-grid" style="margin-top:10px">
+        <div class="form-group" id="t-bank-grp"><label class="form-label">Bank Account</label><select class="input" id="t-bank"><option value="">-- Cash (No Bank) --</option></select></div>
+        <div class="form-group" id="t-tobank-grp" style="display:none"><label class="form-label">To Bank Account</label><select class="input" id="t-tobank"><option value="">-- Select --</option></select></div>
+        <div class="form-group"><label class="form-label">Transaction ID / Cheque No.</label><input class="input" id="t-txnid" placeholder="UTR, Cheque no..."></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="input" id="t-notes" placeholder="Extra details..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('txn-modal')">Cancel</button>
+      <button class="btn btn-primary" id="txn-save-btn" onclick="saveTxn()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BANK MODAL -->
+<div class="overlay" id="bank-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><div class="modal-title" id="bank-modal-title">Bank Account Add करें</div><button class="modal-close" onclick="closeModal('bank-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Bank Name <span class="req">*</span></label><input class="input" id="b-name" placeholder="SBI, HDFC, Axis..."></div>
+        <div class="form-group"><label class="form-label">Account Holder Name</label><input class="input" id="b-holder" placeholder="RK Infotech / Name"></div>
+        <div class="form-group"><label class="form-label">Account Number</label><input class="input" id="b-accno" placeholder="XXXXXXXXXXXX"></div>
+        <div class="form-group"><label class="form-label">IFSC Code</label><input class="input" id="b-ifsc" placeholder="SBIN0001234"></div>
+        <div class="form-group"><label class="form-label">Account Type</label>
+          <select class="input" id="b-type"><option>Current</option><option>Savings</option><option>OD/CC</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Opening Balance (₹)</label><input class="input" type="number" id="b-balance" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">UPI ID</label><input class="input" id="b-upi" placeholder="account@upi"></div>
+        <div class="form-group"><label class="form-label">Low Balance Alert (₹)</label><input class="input" type="number" id="b-alert" placeholder="10000"></div>
+        <div class="form-group full"><label class="form-label">Card Color Theme</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#1a1a2e,#16213e)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1a1a2e,#16213e);cursor:pointer;border:2px solid transparent;" class="color-opt sel-color"></div>
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#FF6B2B,#c0392b)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#FF6B2B,#c0392b);cursor:pointer;border:2px solid transparent;" class="color-opt"></div>
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#1e3a5f,#2980b9)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1e3a5f,#2980b9);cursor:pointer;border:2px solid transparent;" class="color-opt"></div>
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#1a5276,#148f77)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1a5276,#148f77);cursor:pointer;border:2px solid transparent;" class="color-opt"></div>
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#4a235a,#7d3c98)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#4a235a,#7d3c98);cursor:pointer;border:2px solid transparent;" class="color-opt"></div>
+            <div onclick="selBankColor(this,'linear-gradient(135deg,#1b2631,#2e4057)')" style="width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1b2631,#2e4057);cursor:pointer;border:2px solid transparent;" class="color-opt"></div>
+          </div>
+          <input type="hidden" id="b-color" value="linear-gradient(135deg,#1a1a2e,#16213e)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('bank-modal')">Cancel</button>
+      <button class="btn btn-primary" id="bank-save-btn" onclick="saveBank()">💾 Bank Save करें</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALARY MODAL -->
+<div class="overlay" id="salary-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><div class="modal-title">👷 Salary Pay करें</div><button class="modal-close" onclick="closeModal('salary-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Employee <span class="req">*</span></label><select class="input" id="sal-emp"></select></div>
+        <div class="form-group"><label class="form-label">Month</label><input class="input" type="month" id="sal-month-pay"></div>
+        <div class="form-group"><label class="form-label">Amount (₹) <span class="req">*</span></label><input class="input" type="number" id="sal-amount" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Payment Mode</label>
+          <select class="input" id="sal-mode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Cheque</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Bank Account</label><select class="input" id="sal-bank"><option value="">Cash</option></select></div>
+        <div class="form-group"><label class="form-label">Transaction ID</label><input class="input" id="sal-txnid" placeholder="UTR/Cheque no..."></div>
+        <div class="form-group full"><label class="form-label">Note</label><input class="input" id="sal-note" placeholder="March 2026 salary..."></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('salary-modal')">Cancel</button>
+      <button class="btn btn-primary" id="sal-save-btn" onclick="saveSalaryPayment()">💰 Salary Pay करें</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let transactions=[],banks=[],employees=[],invoices=[],customers=[],currentPeriod='month',currentSection='overview',editTxnId=null,editBankId=null;
+let charts={},selectedInvoices=[];
+
+const TODAY=new Date().toISOString().split('T')[0];
+const THIS_MONTH=new Date().toISOString().substring(0,7);
+
+function fmt(n){return '₹'+(Math.abs(n)||0).toLocaleString();}
+function today(){return TODAY;}
+function setDbStatus(s){document.getElementById('db-dot').className='db-dot '+s;document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Error':'Loading...';}
+
+// ─── TYPE CONFIG ───
+const TYPE_CFG={
+  in:{label:'Payment IN',icon:'📥',color:'var(--green)',bg:'var(--greenBg)',sign:'+'},
+  out:{label:'Payment OUT',icon:'📤',color:'var(--red)',bg:'var(--redBg)',sign:'-'},
+  salary:{label:'Salary',icon:'💼',color:'var(--purple)',bg:'var(--purpleBg)',sign:'-'},
+  transfer:{label:'Transfer',icon:'🔄',color:'var(--blue)',bg:'var(--blueBg)',sign:'↔'},
+  expense:{label:'Expense',icon:'💸',color:'var(--yellow)',bg:'var(--yellowBg)',sign:'-'},
+};
+const MODE_ICO={Cash:'💵',UPI:'📱','Bank Transfer':'🏦',Cheque:'📄',Card:'💳'};
+
+// ─── PERIOD FILTER ───
+function getPeriodDates(){
+  const now=new Date();
+  if(currentPeriod==='today')return{start:TODAY,end:TODAY};
+  if(currentPeriod==='week'){const d=new Date();d.setDate(d.getDate()-d.getDay());return{start:d.toISOString().split('T')[0],end:TODAY};}
+  if(currentPeriod==='month')return{start:THIS_MONTH+'-01',end:TODAY};
+  if(currentPeriod==='year')return{start:now.getFullYear()+'-01-01',end:TODAY};
+  return{start:'2020-01-01',end:TODAY};
+}
+
+function filterTxnsByPeriod(list){
+  const{start,end}=getPeriodDates();
+  return list.filter(t=>t.date>=start&&t.date<=end);
+}
+
+// ─── LOAD ───
+async function loadData(){
+  setDbStatus('loading');
+  try{
+    const [{data:t,error:e1},{data:b,error:e2},{data:emp,error:e3},{data:inv,error:e4},{data:cust,error:e5}]=await Promise.all([
+      db.from('payments').select('*').order('date',{ascending:false}).order('created_at',{ascending:false}),
+      db.from('bank_accounts').select('*').order('name'),
+      db.from('employees').select('id,name,role,salary,salary_type,daily_wage,phone').eq('status','Active'),
+      db.from('invoices').select('id,customer_name,customer_phone,customer_id,date,grand_total,paid_total,pending_amt,status,payments').order('date',{ascending:false}),
+      db.from('customers').select('id,name,phone')
+    ]);
+    // continue even with errors
+    transactions=t||[]; banks=b||[]; employees=emp||[]; invoices=inv||[]; customers=cust||[];
+    setDbStatus('connected');
+    document.getElementById('page-loader').style.display='none';
+    populateFilters();
+    renderCurrentSection();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    setDbStatus('disconnected');
+    console.error(err);
+    const pl=document.getElementById('page-loader');if(pl)pl.style.display='none';
+    // show page anyway
+    document.getElementById('page-loader').innerHTML=`<div style="color:var(--red);font-size:14px">❌ ${err.message}</div><div style="font-size:12px;color:var(--text3);margin-top:8px">Supabase में SQL run करें</div><button onclick="loadData()" style="margin-top:14px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:sans-serif">Retry</button>`;
+  }
+}
+
+function populateFilters(){
+  const bankOpts='<option value="">सब Banks</option>'+banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('bank-filter').innerHTML=bankOpts;
+  document.getElementById('bank-txn-filter').innerHTML=bankOpts;
+  document.getElementById('t-bank').innerHTML='<option value="">-- Cash (No Bank) --</option>'+banks.map(b=>`<option value="${b.id}">${b.name} (${b.account_type})</option>`).join('');
+  document.getElementById('t-tobank').innerHTML='<option value="">-- Select --</option>'+banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('sal-bank').innerHTML='<option value="">Cash</option>'+banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('t-emp').innerHTML='<option value="">-- Employee --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('t-customer').innerHTML='<option value="">-- Customer चुनें --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}${c.phone?' ('+c.phone+')':''}</option>`).join('');
+  document.getElementById('sal-emp').innerHTML='<option value="">-- चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name} — ${e.role||''}</option>`).join('');
+  document.getElementById('sb-txn').textContent=transactions.length;
+  // Pending count
+  const pendingInvs=invoices.filter(i=>i.status!=='Paid'&&i.status!=='Cancelled').length;
+  document.getElementById('sb-pending').textContent=pendingInvs;
+  // Salary month filter
+  const months=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toISOString().substring(0,7));}
+  document.getElementById('sal-month-filter').innerHTML=months.map(m=>`<option value="${m}" ${m===THIS_MONTH?'selected':''}>${new Date(m+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'})}</option>`).join('');
+  document.getElementById('sal-month-pay').value=THIS_MONTH;
+}
+
+// ─── PERIOD SET ───
+function setPeriod(p,el){
+  currentPeriod=p;
+  document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.period-tab').forEach(t=>{if(t===el||t.textContent.trim()===el?.textContent?.trim())t.classList.add('active');});
+  // Update all period tabs
+  document.querySelectorAll(`.period-tab`).forEach(t=>{
+    const map={today:'आज',week:'इस हफ्ते',month:'इस महीने',year:'इस साल',all:'सब'};
+    if(t.textContent.trim()===map[p])t.classList.add('active');
+  });
+  renderCurrentSection();
+}
+
+// ─── SECTIONS ───
+function showSection(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el)el.classList.add('active');
+  currentSection=sec;
+  renderSection(sec);
+}
+
+function filterType(type,el){
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('type-filter').value=type;
+  showSection('transactions',el);
+}
+
+function renderCurrentSection(){renderSection(currentSection);}
+function renderSection(sec){
+  if(sec==='overview')renderOverview();
+  else if(sec==='transactions')renderTransactions();
+  else if(sec==='banks')renderBanks();
+  else if(sec==='salary')renderSalary();
+}
+
+// ─── OVERVIEW ───
+function renderOverview(){
+  const list=filterTxnsByPeriod(transactions);
+  const income=list.filter(t=>t.type==='in').reduce((s,t)=>s+(t.amount||0),0);
+  const outgoing=list.filter(t=>t.type==='out').reduce((s,t)=>s+(t.amount||0),0);
+  const expenses=list.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+  const salary=list.filter(t=>t.type==='salary').reduce((s,t)=>s+(t.amount||0),0);
+  const net=income-(outgoing+expenses+salary);
+  const totalBal=banks.reduce((s,b)=>s+(b.current_balance||0),0);
+
+  document.getElementById('ov-stats').innerHTML=`
+    <div class="stat green"><div class="stat-bg-ico">📥</div><div class="stat-lbl">Payment IN</div><div class="stat-val" style="color:var(--green)">${fmt(income)}</div><div class="stat-sub">${list.filter(t=>t.type==='in').length} transactions</div></div>
+    <div class="stat red"><div class="stat-bg-ico">📤</div><div class="stat-lbl">Payment OUT</div><div class="stat-val" style="color:var(--red)">${fmt(outgoing+expenses+salary)}</div><div class="stat-sub">Out + Expense + Salary</div></div>
+    <div class="stat ${net>=0?'blue':'red'}"><div class="stat-bg-ico">💹</div><div class="stat-lbl">Net Flow</div><div class="stat-val" style="color:${net>=0?'var(--blue)':'var(--red)'}">${net>=0?'+':''}${fmt(net)}</div><div class="stat-sub">IN − OUT</div></div>
+    <div class="stat yellow"><div class="stat-bg-ico">💸</div><div class="stat-lbl">Expenses</div><div class="stat-val" style="color:var(--yellow)">${fmt(expenses)}</div><div class="stat-sub">${list.filter(t=>t.type==='expense').length} entries</div></div>
+    <div class="stat purple"><div class="stat-bg-ico">🏦</div><div class="stat-lbl">Bank Balance</div><div class="stat-val" style="color:var(--purple)">${fmt(totalBal)}</div><div class="stat-sub">${banks.length} accounts</div></div>
+  `;
+
+  // Cashflow chart — last 7 days / weeks / months
+  buildCashflowChart();
+
+  // Type donut
+  const typeData=[income,outgoing,expenses,salary,list.filter(t=>t.type==='transfer').reduce((s,t)=>s+(t.amount||0),0)];
+  buildChart('txn-type-chart','doughnut',['IN','OUT','Expense','Salary','Transfer'],[{data:typeData,backgroundColor:['rgba(34,201,122,0.7)','rgba(240,79,79,0.7)','rgba(240,180,41,0.7)','rgba(167,139,250,0.7)','rgba(59,142,255,0.7)'],borderWidth:2}]);
+
+  // Recent IN
+  const recentIn=list.filter(t=>t.type==='in').slice(0,5);
+  document.getElementById('recent-in').innerHTML=recentIn.length?recentIn.map(t=>txnRowHTML(t)).join(''):`<div class="empty-state" style="padding:20px"><div style="font-size:28px;opacity:0.4">📥</div><div style="font-size:13px;margin-top:7px">कोई incoming नहीं</div></div>`;
+
+  // Recent OUT
+  const recentOut=list.filter(t=>t.type!=='in'&&t.type!=='transfer').slice(0,5);
+  document.getElementById('recent-out').innerHTML=recentOut.length?recentOut.map(t=>txnRowHTML(t)).join(''):`<div class="empty-state" style="padding:20px"><div style="font-size:28px;opacity:0.4">📤</div><div style="font-size:13px;margin-top:7px">कोई outgoing नहीं</div></div>`;
+
+  // Customer-wise outstanding from invoices
+  const custOutMap={};
+  invoices.forEach(inv=>{
+    if(!custOutMap[inv.customer_name])custOutMap[inv.customer_name]={name:inv.customer_name,pending:0,count:0,phone:inv.customer_phone||''};
+    custOutMap[inv.customer_name].pending+=(inv.pending_amt||0);
+    custOutMap[inv.customer_name].count++;
+  });
+  const custList=Object.values(custOutMap).filter(c=>c.pending>0).sort((a,b)=>b.pending-a.pending).slice(0,8);
+  document.getElementById('cust-outstanding').innerHTML=custList.length?`
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px">
+      <span>Customer</span><span>Pending Amount</span>
+    </div>
+    ${custList.map(c=>{
+      const pct=Math.min(100,Math.round(c.pending/custList[0].pending*100));
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:13px;color:var(--text);font-weight:600">${c.name}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--red)">₹${c.pending.toLocaleString()}</span>
+          </div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--red),var(--accent));border-radius:2px"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${c.count} invoice${c.count>1?'s':''} pending ${c.phone?`· <a href="tel:${c.phone}" style="color:var(--blue);text-decoration:none">📞 ${c.phone}</a>`:''}</div>
+        </div>
+        <button class="btn btn-green btn-sm" onclick="quickCollect('${c.name.replace(/'/g,"\\'")}')">💰 Collect</button>
+      </div>`;
+    }).join('')}
+    <div style="padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px">
+      <span style="color:var(--text2)">Total Outstanding</span>
+      <span style="color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:700">₹${custList.reduce((s,c)=>s+c.pending,0).toLocaleString()}</span>
+    </div>`
+  :`<div style="text-align:center;padding:20px;color:var(--green);font-size:13px">✅ कोई outstanding नहीं!</div>`;
+
+  // Bank summary
+  document.getElementById('bank-summary').innerHTML=banks.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">${banks.map(b=>{
+    const low=b.low_balance_alert&&(b.current_balance||0)<b.low_balance_alert;
+    return `<div style="background:var(--bg2);border:1px solid ${low?'rgba(240,79,79,0.3)':' var(--border)'};border-radius:10px;padding:13px;cursor:pointer" onclick="showSection('banks',document.querySelector('.sb-item:nth-child(3)'))">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:3px">${b.name}</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:${low?'var(--red)':'var(--text)'}">${fmt(b.current_balance||0)}</div>
+      ${low?`<div style="font-size:11px;color:var(--red);margin-top:3px">⚠️ Low Balance</div>`:''}
+    </div>`;}).join('')}</div>`:
+  `<div class="empty-state" style="padding:20px"><div style="font-size:28px;opacity:0.4">🏦</div><div style="font-size:13px;margin-top:7px">कोई bank नहीं — <button onclick="openBankModal()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px">Add करें →</button></div></div>`;
+}
+
+function buildCashflowChart(){
+  const labels=[],inData=[],outData=[];
+  if(currentPeriod==='today'||currentPeriod==='week'){
+    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];labels.push(d.toLocaleDateString('hi-IN',{weekday:'short'}));inData.push(transactions.filter(t=>t.date===ds&&t.type==='in').reduce((s,t)=>s+(t.amount||0),0));outData.push(transactions.filter(t=>t.date===ds&&t.type!=='in'&&t.type!=='transfer').reduce((s,t)=>s+(t.amount||0),0));}
+  }else{
+    for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const ms=d.toISOString().substring(0,7);labels.push(d.toLocaleDateString('hi-IN',{month:'short'}));inData.push(transactions.filter(t=>(t.date||'').startsWith(ms)&&t.type==='in').reduce((s,t)=>s+(t.amount||0),0));outData.push(transactions.filter(t=>(t.date||'').startsWith(ms)&&t.type!=='in'&&t.type!=='transfer').reduce((s,t)=>s+(t.amount||0),0));}
+  }
+  buildChart('cashflow-chart','bar',labels,[{label:'IN',data:inData,backgroundColor:'rgba(34,201,122,0.3)',borderColor:'#22c97a',borderWidth:2,borderRadius:4},{label:'OUT',data:outData,backgroundColor:'rgba(240,79,79,0.3)',borderColor:'#f04f4f',borderWidth:2,borderRadius:4}]);
+}
+
+function txnRowHTML(t){
+  const cfg=TYPE_CFG[t.type]||TYPE_CFG.in;
+  return `<div class="txn-row"><div class="txn-icon-wrap" style="background:${cfg.bg}">${cfg.icon}</div>
+    <div class="txn-info"><div class="txn-name">${t.description||'—'}</div><div class="txn-meta">${MODE_ICO[t.mode]||''} ${t.mode||''} ${t.party_name?' · '+t.party_name:''}</div></div>
+    <div><div class="txn-amount" style="color:${cfg.color}">${cfg.sign} ${fmt(t.amount)}</div><div class="txn-date">${t.date||'—'}</div></div>
+  </div>`;
+}
+
+// ─── TRANSACTIONS ───
+function renderTransactions(){
+  const typeF=document.getElementById('type-filter')?.value||'';
+  const modeF=document.getElementById('mode-filter')?.value||'';
+  const bankF=document.getElementById('bank-filter')?.value||'';
+  const search=(document.getElementById('txn-search')?.value||'').toLowerCase();
+  const{start,end}=getPeriodDates();
+
+  let list=transactions.filter(t=>{
+    if(t.date<start||t.date>end)return false;
+    if(typeF&&t.type!==typeF)return false;
+    if(modeF&&t.mode!==modeF)return false;
+    if(bankF&&t.bank_id!=bankF)return false;
+    if(search&&!(t.description||'').toLowerCase().includes(search)&&!(t.party_name||'').toLowerCase().includes(search))return false;
+    return true;
+  });
+
+  const pLabel={today:'आज',week:'इस हफ्ते',month:'इस महीने',year:'इस साल',all:'सब'};
+  document.getElementById('txn-period-label').textContent=pLabel[currentPeriod]+' — '+list.length+' transactions';
+
+  const income=list.filter(t=>t.type==='in').reduce((s,t)=>s+(t.amount||0),0);
+  const outgoing=list.filter(t=>t.type!=='in'&&t.type!=='transfer').reduce((s,t)=>s+(t.amount||0),0);
+  const net=income-outgoing;
+  document.getElementById('txn-stats').innerHTML=`
+    <div class="stat green"><div class="stat-lbl">Total IN</div><div class="stat-val" style="color:var(--green)">${fmt(income)}</div></div>
+    <div class="stat red"><div class="stat-lbl">Total OUT</div><div class="stat-val" style="color:var(--red)">${fmt(outgoing)}</div></div>
+    <div class="stat ${net>=0?'blue':'red'}"><div class="stat-lbl">Net</div><div class="stat-val" style="color:${net>=0?'var(--blue)':'var(--red)'}">${fmt(net)}</div></div>
+    <div class="stat orange"><div class="stat-lbl">Transactions</div><div class="stat-val" style="color:var(--accent)">${list.length}</div></div>
+  `;
+
+  const bankMap=banks.reduce((m,b)=>{m[b.id]=b.name;return m;},{});
+  const tb=document.getElementById('txn-tbody');
+  tb.innerHTML=list.length?list.map((t,i)=>{
+    const cfg=TYPE_CFG[t.type]||TYPE_CFG.in;
+    return `<tr>
+      <td style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">${transactions.length-transactions.indexOf(t)}</td>
+      <td><span style="background:${cfg.bg};color:${cfg.color};padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">${cfg.icon} ${cfg.label}</span></td>
+      <td style="color:var(--text);font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.description||'—'}</td>
+      <td>${t.party_name||t.employee_name||'—'}</td>
+      <td>${MODE_ICO[t.mode]||''} ${t.mode||'—'}</td>
+      <td>${bankMap[t.bank_id]||'Cash'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${cfg.color}">${cfg.sign} ${fmt(t.amount)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${t.date||'—'}</td>
+      <td style="font-size:11px;color:var(--text3)">${t.reference||t.txn_id||'—'}</td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="openTxnModal(${t.id})">✏️</button>
+        <button class="btn btn-red btn-sm" onclick="deleteTxn(${t.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="10"><div class="empty-state"><div style="font-size:32px;opacity:0.4">↕️</div><div style="font-size:13px;color:var(--text2);margin-top:8px">कोई transaction नहीं</div></div></td></tr>`;
+}
+
+// ─── BANKS ───
+function renderBanks(){
+  const bankGrid=document.getElementById('bank-grid');
+  bankGrid.innerHTML=banks.map(b=>{
+    const low=b.low_balance_alert&&(b.current_balance||0)<b.low_balance_alert;
+    const inAmt=transactions.filter(t=>t.bank_id===b.id&&t.type==='in').reduce((s,t)=>s+(t.amount||0),0);
+    const outAmt=transactions.filter(t=>t.bank_id===b.id&&t.type!=='in').reduce((s,t)=>s+(t.amount||0),0);
+    return `<div class="bank-card" style="background:${b.color||'linear-gradient(135deg,#1a1a2e,#16213e)'}" onclick="filterBankTxns(${b.id})">
+      <div class="bank-card-bg">${b.name?.charAt(0)||'🏦'}</div>
+      <div class="bank-badge">🏦 ${b.account_type||'Current'}</div>
+      <div class="bank-name">${b.name}</div>
+      <div class="bank-acc-no">${b.account_no?'xxxx '+b.account_no.slice(-4):'Account'}</div>
+      <div class="bank-balance-lbl">CURRENT BALANCE</div>
+      <div class="bank-balance">${fmt(b.current_balance||0)}</div>
+      ${low?`<div style="font-size:11px;color:#ff9999;margin-top:5px">⚠️ Low Balance Alert!</div>`:''}
+      <div class="bank-foot">
+        <div class="bank-foot-item">IN: ${fmt(inAmt)}</div>
+        <div class="bank-foot-item">OUT: ${fmt(outAmt)}</div>
+        <button style="background:rgba(255,255,255,0.15);border:none;border-radius:5px;padding:4px 8px;font-size:11px;color:#fff;cursor:pointer" onclick="event.stopPropagation();openBankModal(${b.id})">✏️ Edit</button>
+      </div>
+    </div>`;
+  }).join('')+`<div class="bank-add-card" onclick="openBankModal()">
+    <div style="font-size:32px;margin-bottom:8px;opacity:0.4">🏦</div>
+    <div style="font-size:14px;color:var(--text2);font-weight:600">+ Bank Add करें</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px">New account जोड़ें</div>
+  </div>`;
+  renderBankTxns();
+}
+
+function filterBankTxns(bankId){
+  document.getElementById('bank-txn-filter').value=bankId;
+  renderBankTxns();
+}
+
+function renderBankTxns(){
+  const bankId=document.getElementById('bank-txn-filter')?.value||'';
+  const bankMap=banks.reduce((m,b)=>{m[b.id]=b;return m;},{});
+  let list=bankId?transactions.filter(t=>t.bank_id==bankId):transactions.filter(t=>t.bank_id);
+  list=[...list].sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Calculate running balance
+  let runBal=0;
+  if(bankId){
+    const bank=bankMap[bankId];
+    runBal=bank?.opening_balance||0;
+  }
+
+  const tb=document.getElementById('bank-txn-tbody');
+  const rows=list.map(t=>{
+    const cfg=TYPE_CFG[t.type]||TYPE_CFG.in;
+    const isIn=t.type==='in';
+    if(isIn)runBal+=t.amount||0;
+    else runBal-=t.amount||0;
+    return `<tr>
+      <td><span style="background:${cfg.bg};color:${cfg.color};padding:2px 7px;border-radius:5px;font-size:11px">${cfg.icon} ${cfg.label}</span></td>
+      <td style="color:var(--text)">${t.description||'—'}</td>
+      <td>${MODE_ICO[t.mode]||''} ${t.mode||'—'}</td>
+      <td style="color:var(--green);font-family:'JetBrains Mono',monospace">${isIn?fmt(t.amount):'—'}</td>
+      <td style="color:var(--red);font-family:'JetBrains Mono',monospace">${!isIn?fmt(t.amount):'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:${runBal<0?'var(--red)':'var(--text)'}">${bankId?fmt(runBal):'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${t.date||'—'}</td>
+    </tr>`;
+  });
+
+  tb.innerHTML=rows.length?[...rows].reverse().join(''):`<tr><td colspan="7"><div class="empty-state"><div style="font-size:28px;opacity:0.4">🏦</div><div style="font-size:13px;margin-top:7px">Bank transactions नहीं</div></div></td></tr>`;
+}
+
+// ─── SALARY ───
+function renderSalary(){
+  const selMonth=document.getElementById('sal-month-filter')?.value||THIS_MONTH;
+  const salTxns=transactions.filter(t=>t.type==='salary'&&(t.date||'').startsWith(selMonth));
+  const totalDue=employees.reduce((s,e)=>s+(e.salary||0),0);
+  const totalPaid=salTxns.reduce((s,t)=>s+(t.amount||0),0);
+  const pending=Math.max(0,totalDue-totalPaid);
+
+  document.getElementById('sal-stats').innerHTML=`
+    <div class="stat orange"><div class="stat-lbl">💰 Total Due</div><div class="stat-val" style="color:var(--accent)">${fmt(totalDue)}</div><div class="stat-sub">${employees.length} employees</div></div>
+    <div class="stat green"><div class="stat-lbl">✅ Paid</div><div class="stat-val" style="color:var(--green)">${fmt(totalPaid)}</div></div>
+    <div class="stat red"><div class="stat-lbl">⏳ Pending</div><div class="stat-val" style="color:var(--red)">${fmt(pending)}</div></div>
+  `;
+
+  const AV=['background:rgba(232,108,47,0.15);color:#FF6B2B','background:rgba(59,142,255,0.15);color:#3b8eff','background:rgba(34,201,122,0.15);color:#22c97a','background:rgba(167,139,250,0.15);color:#a78bfa','background:rgba(240,180,41,0.15);color:#f0b429'];
+
+  document.getElementById('sal-tbody').innerHTML=employees.map((e,i)=>{
+    const empSalTxns=salTxns.filter(t=>t.employee_id===e.id);
+    const paid=empSalTxns.reduce((s,t)=>s+(t.amount||0),0);
+    const due=e.salary||0;
+    const pend=Math.max(0,due-paid);
+    const status=paid>=due&&due>0?'Paid':paid>0?'Partial':'Pending';
+    const sBadge={Paid:'b-green',Partial:'b-yellow',Pending:'b-red'};
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;${AV[i%AV.length]};flex-shrink:0">${e.name.substring(0,2).toUpperCase()}</div>
+        <span style="color:var(--text);font-weight:600">${e.name}</span>
+      </div></td>
+      <td>${e.role||'—'}</td>
+      <td style="color:var(--accent);font-family:'JetBrains Mono',monospace">${fmt(due)}</td>
+      <td style="color:var(--green);font-family:'JetBrains Mono',monospace">${fmt(paid)}</td>
+      <td style="color:${pend>0?'var(--red)':'var(--text3)'};font-family:'JetBrains Mono',monospace">${fmt(pend)}</td>
+      <td><span class="badge ${sBadge[status]}">${status}</span></td>
+      <td><button class="btn btn-primary btn-sm" onclick="openSalaryModal(${e.id})">💰 Pay</button></td>
+    </tr>`;
+  }).join('');
+
+  // History
+  const allSalTxns=transactions.filter(t=>t.type==='salary').slice(0,15);
+  document.getElementById('sal-history').innerHTML=allSalTxns.length?allSalTxns.map(t=>`
+    <div class="txn-row">
+      <div class="txn-icon-wrap" style="background:var(--purpleBg)">💼</div>
+      <div class="txn-info"><div class="txn-name">${t.employee_name||'—'}</div><div class="txn-meta">${t.description||''} · ${MODE_ICO[t.mode]||''} ${t.mode||''}</div></div>
+      <div><div class="txn-amount" style="color:var(--purple)">- ${fmt(t.amount)}</div><div class="txn-date">${t.date||'—'}</div></div>
+    </div>`).join(''):`<div class="empty-state" style="padding:20px"><div style="font-size:24px;opacity:0.4">💼</div><div style="font-size:13px;margin-top:7px">कोई salary payment नहीं</div></div>`;
+}
+
+// ─── CUSTOMER INVOICES ───
+function loadCustInvoices(){
+  const custId=parseInt(document.getElementById('t-customer').value);
+  const grp=document.getElementById('t-inv-grp');
+  const container=document.getElementById('t-pending-invoices');
+  selectedInvoices=[];
+  if(!custId){grp.style.display='none';return;}
+  const cust=customers.find(c=>c.id===custId);
+  const pending=invoices.filter(i=>i.customer_id===custId||(cust&&i.customer_name===cust.name));
+  if(!pending.length){
+    grp.style.display='block';
+    container.innerHTML=`<div style="text-align:center;padding:14px;color:var(--green);font-size:13px">✅ इस customer के सारे invoices paid हैं!</div>`;
+    document.getElementById('t-desc').value=(cust?.name||'')+' — Payment';
+    return;
+  }
+  grp.style.display='block';
+  container.innerHTML=pending.map(inv=>`
+    <div class="pinv-card" id="pinv-${inv.id}" onclick="toggleInvoiceSel(${inv.id})">
+      <div>
+        <div class="pinv-num">INV-${String(inv.id).padStart(4,'0')} · ${inv.date||''}</div>
+        <div class="pinv-cust">${inv.customer_name}</div>
+        <span class="badge ${inv.status==='Partial'?'b-yellow':'b-red'}" style="font-size:10px">${inv.status}</span>
+      </div>
+      <div class="pinv-amt">
+        <div class="pinv-total">₹${(inv.pending_amt||0).toLocaleString()} pending</div>
+        <div class="pinv-sub">Total: ₹${(inv.grand_total||0).toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+  // Auto-fill desc
+  document.getElementById('t-desc').value=(cust?.name||'')+' — Invoice Payment';
+}
+
+function toggleInvoiceSel(invId){
+  const inv=invoices.find(x=>x.id===invId);if(!inv)return;
+  const card=document.getElementById('pinv-'+invId);
+  const idx=selectedInvoices.findIndex(x=>x.id===invId);
+  if(idx>=0){selectedInvoices.splice(idx,1);card.classList.remove('sel');}
+  else{selectedInvoices.push(inv);card.classList.add('sel');}
+  // Update amount
+  const totalPending=selectedInvoices.reduce((s,i)=>s+(i.pending_amt||0),0);
+  if(totalPending>0)document.getElementById('t-amount').value=totalPending;
+  // Show summary
+  updatePaySummary();
+}
+
+function updatePaySummary(){
+  const existing=document.getElementById('pay-summary-box');
+  if(existing)existing.remove();
+  if(!selectedInvoices.length)return;
+  const totalPend=selectedInvoices.reduce((s,i)=>s+(i.pending_amt||0),0);
+  const box=document.createElement('div');
+  box.id='pay-summary-box';box.className='pay-summary';
+  box.innerHTML=`
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:1px">📋 Selected Invoice Summary</div>
+    ${selectedInvoices.map(i=>`<div class="pay-sum-row"><span style="color:var(--text2)">INV-${String(i.id).padStart(4,'0')}</span><span style="color:var(--red);font-family:'JetBrains Mono',monospace">₹${(i.pending_amt||0).toLocaleString()}</span></div>`).join('')}
+    <div class="pay-sum-row" style="border-top:1px solid var(--border);margin-top:5px;padding-top:7px;font-weight:700"><span style="color:var(--text)">Total Pending</span><span style="color:var(--red);font-family:'JetBrains Mono',monospace">₹${totalPend.toLocaleString()}</span></div>
+  `;
+  document.getElementById('t-pending-invoices').after(box);
+}
+
+function quickCollect(custName){
+  // Pre-fill customer in txn modal
+  openTxnModal();
+  selTxnType('in');
+  // Find customer by name
+  const cust=customers.find(c=>c.name===custName);
+  if(cust){
+    document.getElementById('t-customer').value=cust.id;
+    loadCustInvoices();
+  }else{
+    // fallback - set desc
+    document.getElementById('t-desc').value=custName+' — Payment';
+  }
+}
+
+// ─── TXN MODAL ───
+function openTxnModal(id=null){
+  editTxnId=id;
+  document.getElementById('txn-modal-title').textContent=id?'Transaction Edit':'New Transaction';
+  if(id){
+    const t=transactions.find(x=>x.id===id);if(!t)return;
+    selTxnType(t.type||'in');
+    document.getElementById('t-desc').value=t.description||'';
+    document.getElementById('t-amount').value=t.amount||'';
+    document.getElementById('t-date').value=t.date||today();
+    document.getElementById('t-party').value=t.party_name||'';
+    document.getElementById('t-emp').value=t.employee_id||'';
+    document.getElementById('t-category').value=t.category||'';
+    document.getElementById('t-ref').value=t.reference||'';
+    document.getElementById('t-bank').value=t.bank_id||'';
+    document.getElementById('t-tobank').value=t.to_bank_id||'';
+    document.getElementById('t-txnid').value=t.txn_id||'';
+    document.getElementById('t-notes').value=t.notes||'';
+    selPayMode(null,t.mode||'Cash');
+  }else{
+    selTxnType('in');
+    document.getElementById('t-date').value=today();
+    ['t-desc','t-party','t-ref','t-txnid','t-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('t-customer').value='';
+    document.getElementById('t-inv-grp').style.display='none';
+    document.getElementById('t-pending-invoices').innerHTML='';
+    selectedInvoices=[];
+    const sb=document.getElementById('pay-summary-box');if(sb)sb.remove();
+    document.getElementById('t-amount').value='';
+    document.getElementById('t-bank').value='';
+    document.getElementById('t-tobank').value='';
+    document.getElementById('t-emp').value='';
+    document.getElementById('t-category').value='';
+    selPayMode(null,'Cash');
+  }
+  openModal('txn-modal');
+}
+
+function selTxnType(type){
+  document.getElementById('t-type').value=type;
+  ['in','out','salary','transfer','expense'].forEach(t=>{
+    const el=document.getElementById('tts-'+t);
+    el.className=`tts ${t}`;
+  });
+  document.getElementById('tts-'+type).className=`tts ${type} sel`;
+  // Show/hide emp field
+  document.getElementById('t-emp-grp').style.display=type==='salary'?'flex':'none';
+  // Customer selector for IN, party name for OUT/expense/transfer
+  document.getElementById('t-cust-grp').style.display=type==='in'?'flex':'none';
+  document.getElementById('t-party-grp').style.display=(type==='out'||type==='expense'||type==='transfer')?'flex':'none';
+  document.getElementById('t-tobank-grp').style.display=type==='transfer'?'flex':'none';
+  // Clear invoice selection when type changes
+  if(type!=='in'){selectedInvoices=[];document.getElementById('t-inv-grp').style.display='none';}
+}
+
+function selPayMode(el,mode){
+  document.querySelectorAll('.pay-mode').forEach(x=>x.classList.remove('sel'));
+  if(el)el.classList.add('sel');
+  else document.querySelectorAll('.pay-mode').forEach(x=>{if(x.querySelector('.pay-mode-lbl')?.textContent===mode||(mode==='Bank Transfer'&&x.querySelector('.pay-mode-lbl')?.textContent==='Bank'))x.classList.add('sel');});
+  document.getElementById('t-mode').value=mode;
+  document.getElementById('t-bank-grp').style.display=(mode==='Cash')?'none':'flex';
+}
+
+async function saveTxn(){
+  const desc=document.getElementById('t-desc').value.trim();
+  const amount=parseFloat(document.getElementById('t-amount').value)||0;
+  const type=document.getElementById('t-type').value;
+  if(!desc){toast('❌','Description ज़रूरी है!');return;}
+  if(!amount){toast('❌','Amount ज़रूरी है!');return;}
+
+  const empId=parseInt(document.getElementById('t-emp').value)||null;
+  const emp=employees.find(e=>e.id===empId);
+  const bankId=parseInt(document.getElementById('t-bank').value)||null;
+  const toBankId=parseInt(document.getElementById('t-tobank').value)||null;
+  const bank=banks.find(b=>b.id===bankId);
+
+  const data={
+    type,description:desc,amount,date:document.getElementById('t-date').value||today(),
+    mode:document.getElementById('t-mode').value,
+    party_name:(type==='in'?customers.find(c=>c.id===parseInt(document.getElementById('t-customer').value))?.name:document.getElementById('t-party').value)||null,
+    customer_id:type==='in'?parseInt(document.getElementById('t-customer').value)||null:null,
+    employee_id:empId,employee_name:emp?.name||null,
+    category:document.getElementById('t-category').value||null,
+    reference:document.getElementById('t-ref').value||null,
+    bank_id:bankId,to_bank_id:toBankId,
+    txn_id:document.getElementById('t-txnid').value||null,
+    notes:document.getElementById('t-notes').value||null,
+    created_at:new Date().toISOString()
+  };
+
+  const btn=document.getElementById('txn-save-btn');btn.textContent='⏳...';btn.disabled=true;
+  try{
+    if(editTxnId){
+      // Reverse old bank balance
+      const old=transactions.find(x=>x.id===editTxnId);
+      if(old?.bank_id){const oldBank=banks.find(b=>b.id===old.bank_id);if(oldBank){const rev=old.type==='in'?-old.amount:old.amount;await db.from('bank_accounts').update({current_balance:(oldBank.current_balance||0)+rev}).eq('id',oldBank.id);}}
+      const{error}=await db.from('payments').update(data).eq('id',editTxnId);
+      if(error)throw error;
+    }else{
+      const{error}=await db.from('payments').insert([data]);
+      if(error)throw error;
+    }
+    // Update bank balance
+    if(bankId&&bank){
+      const change=type==='in'?amount:-amount;
+      await db.from('bank_accounts').update({current_balance:(bank.current_balance||0)+change}).eq('id',bankId);
+    }
+    if(toBankId&&type==='transfer'){
+      const toBank=banks.find(b=>b.id===toBankId);
+      if(toBank)await db.from('bank_accounts').update({current_balance:(toBank.current_balance||0)+amount}).eq('id',toBankId);
+    }
+    // Update linked invoices status
+    if(selectedInvoices.length&&type==='in'){
+      const paidAmt=amount;
+      let remaining=paidAmt;
+      for(const inv of selectedInvoices){
+        const invPay=Math.min(remaining,inv.pending_amt||0);
+        if(invPay<=0)continue;
+        const newPaid=(inv.paid_total||0)+invPay;
+        const newPending=Math.max(0,(inv.grand_total||0)-newPaid);
+        const newStatus=newPending<=0?'Paid':newPaid>0?'Partial':'Pending';
+        const payments=[...(inv.payments||[]),{mode:data.mode,amount:invPay,ref:data.txn_id||'',date:data.date}];
+        await db.from('invoices').update({paid_total:newPaid,pending_amt:newPending,status:newStatus,payments}).eq('id',inv.id);
+        remaining-=invPay;
+      }
+    }
+    closeModal('txn-modal');await loadData();
+    toast('✅',desc+' saved!');
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💾 Save';btn.disabled=false;}
+}
+
+async function deleteTxn(id){
+  if(!confirm('Transaction delete करें?'))return;
+  try{await db.from('payments').delete().eq('id',id);await loadData();toast('🗑️','Deleted');}
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',err.message);}
+}
+
+// ─── BANK MODAL ───
+function openBankModal(id=null){
+  editBankId=id;
+  document.getElementById('bank-modal-title').textContent=id?'Bank Edit करें':'Bank Account Add करें';
+  if(id){
+    const b=banks.find(x=>x.id===id);if(!b)return;
+    document.getElementById('b-name').value=b.name||'';
+    document.getElementById('b-holder').value=b.holder||'';
+    document.getElementById('b-accno').value=b.account_no||'';
+    document.getElementById('b-ifsc').value=b.ifsc||'';
+    document.getElementById('b-type').value=b.account_type||'Current';
+    document.getElementById('b-balance').value=b.current_balance||0;
+    document.getElementById('b-upi').value=b.upi||'';
+    document.getElementById('b-alert').value=b.low_balance_alert||'';
+    document.getElementById('b-color').value=b.color||'linear-gradient(135deg,#1a1a2e,#16213e)';
+  }else{
+    ['b-name','b-holder','b-accno','b-ifsc','b-upi','b-alert'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('b-type').value='Current';
+    document.getElementById('b-balance').value='0';
+    document.getElementById('b-color').value='linear-gradient(135deg,#1a1a2e,#16213e)';
+  }
+  openModal('bank-modal');
+}
+
+function selBankColor(el,color){
+  document.querySelectorAll('.color-opt').forEach(x=>x.style.border='2px solid transparent');
+  el.style.border='2px solid #FF6B2B';
+  document.getElementById('b-color').value=color;
+}
+
+async function saveBank(){
+  const name=document.getElementById('b-name').value.trim();
+  if(!name){toast('❌','Bank name ज़रूरी है!');return;}
+  const data={name,holder:document.getElementById('b-holder').value,account_no:document.getElementById('b-accno').value,ifsc:document.getElementById('b-ifsc').value,account_type:document.getElementById('b-type').value,current_balance:parseFloat(document.getElementById('b-balance').value)||0,opening_balance:parseFloat(document.getElementById('b-balance').value)||0,upi:document.getElementById('b-upi').value,low_balance_alert:parseFloat(document.getElementById('b-alert').value)||null,color:document.getElementById('b-color').value,added_on:today()};
+  const btn=document.getElementById('bank-save-btn');btn.textContent='⏳...';btn.disabled=true;
+  try{
+    if(editBankId){const{error}=await db.from('bank_accounts').update(data).eq('id',editBankId);if(error)throw error;toast('✅',name+' updated!');}
+    else{const{error}=await db.from('bank_accounts').insert([data]);if(error)throw error;toast('✅',name+' added!');}
+    closeModal('bank-modal');await loadData();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💾 Bank Save करें';btn.disabled=false;}
+}
+
+// ─── SALARY MODAL ───
+function openSalaryModal(empId=null){
+  document.getElementById('sal-emp').value=empId||'';
+  if(empId){const emp=employees.find(e=>e.id===empId);if(emp)document.getElementById('sal-amount').value=emp.salary||'';}
+  else document.getElementById('sal-amount').value='';
+  document.getElementById('sal-month-pay').value=THIS_MONTH;
+  document.getElementById('sal-mode').value='Cash';
+  document.getElementById('sal-bank').value='';
+  document.getElementById('sal-txnid').value='';
+  document.getElementById('sal-note').value='';
+  openModal('salary-modal');
+}
+
+async function saveSalaryPayment(){
+  const empId=parseInt(document.getElementById('sal-emp').value);
+  const amount=parseFloat(document.getElementById('sal-amount').value)||0;
+  const emp=employees.find(e=>e.id===empId);
+  if(!empId){toast('❌','Employee चुनें!');return;}
+  if(!amount){toast('❌','Amount ज़रूरी है!');return;}
+  const month=document.getElementById('sal-month-pay').value;
+  const bankId=parseInt(document.getElementById('sal-bank').value)||null;
+  const bank=banks.find(b=>b.id===bankId);
+  const data={type:'salary',description:(document.getElementById('sal-note').value||`${new Date(month+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'})} Salary — ${emp?.name}`),amount,date:month+'-01',mode:document.getElementById('sal-mode').value,employee_id:empId,employee_name:emp?.name||'',bank_id:bankId,txn_id:document.getElementById('sal-txnid').value||null,created_at:new Date().toISOString()};
+  const btn=document.getElementById('sal-save-btn');btn.textContent='⏳...';btn.disabled=true;
+  try{
+    const{error}=await db.from('payments').insert([data]);if(error)throw error;
+    if(bankId&&bank)await db.from('bank_accounts').update({current_balance:(bank.current_balance||0)-amount}).eq('id',bankId);
+    closeModal('salary-modal');await loadData();toast('✅',emp?.name+' को salary paid!');
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💰 Salary Pay करें';btn.disabled=false;}
+}
+
+// ─── CHART ───
+function buildChart(id,type,labels,datasets){
+  if(charts[id])charts[id].destroy();
+  const ctx=document.getElementById(id);if(!ctx)return;
+  charts[id]=new Chart(ctx.getContext('2d'),{type,data:{labels,datasets},options:{responsive:true,plugins:{legend:{labels:{color:'#8899aa',font:{size:11},padding:8}}},scales:type==='bar'||type==='line'?{x:{grid:{color:'rgba(28,42,58,0.5)'},ticks:{color:'#4a5a6a',font:{size:11}}},y:{grid:{color:'rgba(28,42,58,0.5)'},ticks:{color:'#4a5a6a',font:{size:11}}}}:{},cutout:type==='doughnut'?'60%':undefined}});
+}
+
+// ─── EXPORT ───
+function exportCSV(){
+  if(!transactions.length){toast('⚠️','Data नहीं है');return;}
+  const{start,end}=getPeriodDates();
+  const list=transactions.filter(t=>t.date>=start&&t.date<=end);
+  const rows=[['Date','Type','Description','Party','Amount','Mode','Bank','Reference']];
+  list.forEach(t=>rows.push([t.date,t.type,t.description,t.party_name||t.employee_name||'',t.amount,t.mode,banks.find(b=>b.id===t.bank_id)?.name||'Cash',t.reference||t.txn_id||'']));
+  const csv=rows.map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`rk_payments_${start}_${end}.csv`;a.click();
+  toast('✅','CSV exported!');
+}
+
+// ─── MODAL ───
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+// ─── TOAST ───
+let tT;
+function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ─── INIT ───
+loadData();
+// Loader fallback - hide after 5s if still showing
+setTimeout(()=>{const l=document.getElementById('page-loader');if(l&&l.style.display!=='none')l.style.display='none';},5000);
+</script>
+</body>
+</html>

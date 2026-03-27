@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Activity Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+.topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:8px;}
+.logo{display:flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;}
+.nav-link{padding:5px 11px;border-radius:7px;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.15s;border:none;background:none;white-space:nowrap;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+.main{flex:1;padding:20px;min-width:0;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#f08040;}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-blue{background:var(--blueBg);color:var(--blue);border:1px solid rgba(59,142,255,0.2);}
+.btn-sm{padding:4px 10px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+.section{display:none;}
+.section.active{display:block;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 15px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-bg-ico{position:absolute;right:12px;top:10px;font-size:24px;opacity:0.1;}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.stat-sub{font-size:11px;color:var(--text3);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.dcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:14px 16px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:9px 13px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(10,14,24,0.8);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.4);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child td{border-bottom:none;}
+td{padding:9px 13px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.perf-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:4px;}
+.perf-fill{height:100%;border-radius:3px;}
+.emp-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(28,42,58,0.4);}
+.emp-row:last-child{border-bottom:none;}
+.emp-av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:14px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+.help-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;}
+.urgency-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ann-preview{background:var(--card);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px;margin-bottom:8px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr;}.stats-4{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-sec">Monitor</div>
+    <button class="sb-item active" onclick="showSec('overview',this)"><span class="sb-ico">📊</span>Live Overview</button>
+    <button class="sb-item" onclick="showSec('attendance',this)"><span class="sb-ico">📍</span>Attendance<span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-att">0</span></button>
+    <button class="sb-item" onclick="showSec('performance',this)"><span class="sb-ico">🏆</span>Performance</button>
+    <button class="sb-item" onclick="showSec('reports',this)"><span class="sb-ico">📝</span>Daily Reports<span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-rep">0</span></button>
+    <button class="sb-item" onclick="showSec('activity',this)"><span class="sb-ico">⚡</span>Activity Log</button>
+    <div class="sb-sec" style="margin-top:8px">Manage</div>
+    <button class="sb-item" onclick="showSec('help',this)"><span class="sb-ico">🤝</span>Help Requests<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-help">0</span></button>
+    <button class="sb-item" onclick="showSec('meetings',this)"><span class="sb-ico">🗓️</span>Meetings</button>
+    <button class="sb-item" onclick="showSec('announcements',this)"><span class="sb-ico">📢</span>Announcements</button>
+    <button class="sb-item" onclick="showSec('recognition',this)"><span class="sb-ico">⭐</span>Recognition</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="sec-overview">
+      <div class="page-hdr"><div><div class="page-title">📊 Live Overview</div><div class="page-sub" id="ov-date"></div></div></div>
+      <div class="stats-4" id="ov-stats"></div>
+      <div class="g2">
+        <div class="dcard"><div class="dcard-hd"><div class="dcard-title">📍 आज की Attendance</div></div><div class="dcard-body" id="ov-att"></div></div>
+        <div class="dcard"><div class="dcard-hd"><div class="dcard-title">😊 Team Mood (Reports)</div></div><div class="dcard-body" id="ov-mood"></div></div>
+      </div>
+      <div class="dcard"><div class="dcard-hd"><div class="dcard-title">🤝 Pending Help Requests</div><button class="btn btn-ghost btn-sm" onclick="showSec('help',document.querySelector('.sb-item:nth-child(7)'))">सब देखें →</button></div><div class="dcard-body" id="ov-help"></div></div>
+      <div class="dcard"><div class="dcard-hd"><div class="dcard-title">⚡ Recent Activity</div></div><div class="dcard-body" id="ov-activity"></div></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="section" id="sec-attendance">
+      <div class="page-hdr"><div><div class="page-title">📍 Attendance</div><div class="page-sub">Time IN/OUT और location tracking</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <input class="input" type="date" id="att-date-filter" onchange="renderAttendance()" style="width:auto">
+        <select class="input" style="width:auto" id="att-emp-filter" onchange="renderAttendance()"><option value="">सब Employees</option></select>
+      </div>
+      <div class="stats-4" id="att-stats"></div>
+      <div class="dcard"><div style="overflow-x:auto"><table>
+        <thead><tr><th>Employee</th><th>Date</th><th>Time IN</th><th>Time OUT</th><th>Hours</th><th>Location</th><th>Status</th></tr></thead>
+        <tbody id="att-tbody"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="section" id="sec-performance">
+      <div class="page-hdr"><div><div class="page-title">🏆 Employee Performance</div><div class="page-sub">Tasks, attendance, reports के आधार पर</div></div></div>
+      <div class="stats-3" id="perf-top-stats"></div>
+      <!-- Site Photos Tab -->
+      <div class="dcard" style="margin-bottom:14px">
+        <div class="dcard-hd"><div class="dcard-title">📸 Task Site Photos</div><span id="site-photo-count" style="font-size:12px;color:var(--text2)"></span></div>
+        <div style="padding:12px">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <select class="input" style="width:auto" id="sp-emp-filter" onchange="renderSitePhotos()"><option value="">सब Employees</option></select>
+            <select class="input" style="width:auto" id="sp-task-filter" onchange="renderSitePhotos()"><option value="">सब Tasks</option></select>
+            <input class="input" type="date" id="sp-date-filter" onchange="renderSitePhotos()" style="width:auto">
+          </div>
+          <div id="site-photos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px"></div>
+        </div>
+      </div>
+      <div id="perf-cards"></div>
+    </div>
+
+    <!-- DAILY REPORTS -->
+    <div class="section" id="sec-reports">
+      <div class="page-hdr"><div><div class="page-title">📝 Daily Reports</div><div class="page-sub">Employee की daily activities</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" style="width:auto" id="rep-emp-filter" onchange="renderDailyReports()"><option value="">सब Employees</option></select>
+        <input class="input" type="date" id="rep-date-filter" onchange="renderDailyReports()" style="width:auto">
+      </div>
+      <div id="reports-container"></div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="section" id="sec-activity">
+      <div class="page-hdr"><div><div class="page-title">⚡ Activity Log</div><div class="page-sub">System use tracking</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" style="width:auto" id="act-emp-filter" onchange="renderActivity()"><option value="">सब Employees</option></select>
+        <select class="input" style="width:auto" id="act-type-filter" onchange="renderActivity()">
+          <option value="">सब Types</option><option>login</option><option>logout</option>
+          <option>punch_in</option><option>punch_out</option><option>task</option>
+          <option>report</option><option>action</option>
+        </select>
+      </div>
+      <div class="dcard"><div style="overflow-x:auto"><table>
+        <thead><tr><th>Employee</th><th>Action</th><th>Location</th><th>Time</th></tr></thead>
+        <tbody id="act-tbody"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- HELP REQUESTS -->
+    <div class="section" id="sec-help">
+      <div class="page-hdr"><div><div class="page-title">🤝 Help Requests</div><div class="page-sub">Employee concerns और issues</div></div></div>
+      <div id="help-container"></div>
+    </div>
+
+    <!-- MEETINGS -->
+    <div class="section" id="sec-meetings">
+      <div class="page-hdr"><div><div class="page-title">🗓️ Meetings</div><div class="page-sub">Schedule और manage करें</div></div>
+        <button class="btn btn-primary" onclick="openMeetingModal()">+ Meeting Schedule करें</button>
+      </div>
+      <div id="meetings-container"></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="section" id="sec-announcements">
+      <div class="page-hdr"><div><div class="page-title">📢 Announcements</div><div class="page-sub">Employee को notices और updates</div></div>
+        <button class="btn btn-primary" onclick="openAnnModal()">+ Announcement</button>
+      </div>
+      <div id="ann-container"></div>
+    </div>
+
+    <!-- RECOGNITION -->
+    <div class="section" id="sec-recognition">
+      <div class="page-hdr"><div><div class="page-title">⭐ Recognition</div><div class="page-sub">Employee को appreciate करें</div></div>
+        <button class="btn btn-primary" onclick="openRecogModal()">⭐ Recognize करें</button>
+      </div>
+      <div id="recog-container"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MEETING MODAL -->
+<div class="overlay" id="meeting-modal">
+  <div class="modal"><div class="modal-hd"><div class="modal-title" id="meet-modal-title">Meeting Schedule करें</div><button class="modal-close" onclick="closeModal('meeting-modal')">✕</button></div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group full"><label class="form-label">Title <span class="req">*</span></label><input class="input" id="m-title" placeholder="Weekly Team Meeting..."></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="input" id="m-type"><option value="weekly">📅 Weekly</option><option value="monthly">🗓️ Monthly</option><option value="training">📚 Training</option><option value="emergency">🚨 Emergency</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Date <span class="req">*</span></label><input class="input" type="date" id="m-date"></div>
+      <div class="form-group"><label class="form-label">Time</label><input class="input" type="time" id="m-time"></div>
+      <div class="form-group"><label class="form-label">Location</label><input class="input" id="m-location" placeholder="Office / Google Meet..."></div>
+      <div class="form-group"><label class="form-label">Duration</label><input class="input" id="m-duration" placeholder="1 hour, 30 min..."></div>
+      <div class="form-group full"><label class="form-label">Agenda / Description</label><textarea class="input" id="m-desc" placeholder="Meeting का agenda..."></textarea></div>
+      <div class="form-group full"><label class="form-label">Meeting Minutes (बाद में add करें)</label><textarea class="input" id="m-minutes" placeholder="Minutes of meeting..." style="min-height:50px"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('meeting-modal')">Cancel</button><button class="btn btn-primary" id="meet-save-btn" onclick="saveMeeting()">💾 Save</button></div></div>
+</div>
+
+<!-- ANNOUNCEMENT MODAL -->
+<div class="overlay" id="ann-modal">
+  <div class="modal" style="max-width:480px"><div class="modal-hd"><div class="modal-title">📢 Announcement</div><button class="modal-close" onclick="closeModal('ann-modal')">✕</button></div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group full"><label class="form-label">Title <span class="req">*</span></label><input class="input" id="an-title" placeholder="Notice, Update..."></div>
+      <div class="form-group full"><label class="form-label">Message <span class="req">*</span></label><textarea class="input" id="an-body" placeholder="पूरी announcement..."></textarea></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="input" id="an-type"><option value="general">📢 General</option><option value="urgent">⚠️ Urgent</option><option value="holiday">🎉 Holiday</option><option value="policy">📋 Policy</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Valid Till (optional)</label><input class="input" type="date" id="an-expiry"></div>
+    </div>
+  </div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('ann-modal')">Cancel</button><button class="btn btn-primary" onclick="saveAnn()">📢 Publish</button></div></div>
+</div>
+
+<!-- RECOGNITION MODAL -->
+<div class="overlay" id="recog-modal">
+  <div class="modal" style="max-width:420px"><div class="modal-hd"><div class="modal-title">⭐ Employee Recognize करें</div><button class="modal-close" onclick="closeModal('recog-modal')">✕</button></div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group full"><label class="form-label">Employee <span class="req">*</span></label><select class="input" id="r-emp"></select></div>
+      <div class="form-group full">
+        <label class="form-label">Badge चुनें</label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:4px">
+          <div onclick="selBadge('⭐')" class="badge-opt" style="text-align:center;padding:10px;background:var(--bg2);border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:22px">⭐</div>
+          <div onclick="selBadge('🏆')" class="badge-opt" style="text-align:center;padding:10px;background:var(--bg2);border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:22px">🏆</div>
+          <div onclick="selBadge('🚀')" class="badge-opt" style="text-align:center;padding:10px;background:var(--bg2);border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:22px">🚀</div>
+          <div onclick="selBadge('💪')" class="badge-opt" style="text-align:center;padding:10px;background:var(--bg2);border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:22px">💪</div>
+          <div onclick="selBadge('🎯')" class="badge-opt" style="text-align:center;padding:10px;background:var(--bg2);border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:22px">🎯</div>
+        </div>
+        <input type="hidden" id="r-badge" value="⭐">
+      </div>
+      <div class="form-group full"><label class="form-label">Title</label><input class="input" id="r-title" placeholder="Star Employee of the Month..."></div>
+      <div class="form-group full"><label class="form-label">Message</label><textarea class="input" id="r-msg" placeholder="बहुत अच्छा काम किया!..." style="min-height:60px"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('recog-modal')">Cancel</button><button class="btn btn-primary" onclick="saveRecog()">⭐ Recognize!</button></div></div>
+</div>
+
+<!-- HELP REPLY MODAL -->
+<div class="overlay" id="reply-modal">
+  <div class="modal" style="max-width:420px"><div class="modal-hd"><div class="modal-title">💬 Reply करें</div><button class="modal-close" onclick="closeModal('reply-modal')">✕</button></div>
+  <div class="modal-body">
+    <div id="reply-original" style="background:var(--bg2);border-radius:9px;padding:12px;margin-bottom:12px;font-size:13px;color:var(--text2)"></div>
+    <textarea class="input" id="reply-msg" placeholder="Your reply..." style="min-height:80px"></textarea>
+    <select class="input" id="reply-status" style="margin-top:9px"><option value="In Review">🔍 In Review</option><option value="Resolved">✅ Resolved</option><option value="Pending">⏳ Pending</option></select>
+  </div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('reply-modal')">Cancel</button><button class="btn btn-primary" onclick="saveReply()">💬 Send Reply</button></div></div>
+</div>
+
+<div class="toast" id="toast"><span id="ti">✅</span><span id="tm"></span></div>
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let employees=[],attLogs=[],tasks=[],activity=[],reports=[],helpReqs=[],meetings=[],announcements=[],recogs=[];
+let currentSec='overview',editMeetId=null,replyHelpId=null;
+const TODAY=new Date().toISOString().split('T')[0];
+const AV=['background:rgba(232,108,47,0.15);color:#FF6B2B','background:rgba(59,142,255,0.15);color:#3b8eff','background:rgba(34,201,122,0.15);color:#22c97a','background:rgba(167,139,250,0.15);color:#a78bfa','background:rgba(240,180,41,0.15);color:#f0b429'];
+
+function today(){return TODAY;}
+function fmtTime(d){return d?new Date(d).toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'}):'—';}
+
+async function loadAll(){
+  try{
+    const [eR,aR,tR,actR,rR,hR,mR,annR,recR]=await Promise.all([
+      db.from('employees').select('id,name,role,salary').eq('status','Active').order('name'),
+      db.from('attendance_log').select('*').order('date',{ascending:false}).limit(200),
+      db.from('employee_tasks').select('*').order('created_at',{ascending:false}),
+      db.from('employee_activity').select('*').order('created_at',{ascending:false}).limit(100),
+      db.from('daily_reports').select('*').order('date',{ascending:false}).limit(50),
+      db.from('help_requests').select('*').order('created_at',{ascending:false}),
+      db.from('meetings').select('*').order('date',{ascending:false}),
+      db.from('announcements').select('*').order('created_at',{ascending:false}),
+      db.from('recognition').select('*').order('created_at',{ascending:false})
+    ]);
+    employees=eR.data||[];attLogs=aR.data||[];tasks=tR.data||[];activity=actR.data||[];
+    reports=rR.data||[];helpReqs=hR.data||[];meetings=mR.data||[];announcements=annR.data||[];recogs=recR.data||[];
+    // populate selects
+    const empOpts='<option value="">सब Employees</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    ['att-emp-filter','rep-emp-filter','act-emp-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=empOpts;});
+    document.getElementById('r-emp').innerHTML='<option value="">-- चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    // badges
+    const pending=helpReqs.filter(h=>h.status==='Pending').length;
+    document.getElementById('sb-help').textContent=pending;
+    document.getElementById('sb-att').textContent=attLogs.filter(a=>a.date===today()).length;
+    document.getElementById('sb-rep').textContent=reports.filter(r=>r.date===today()).length;
+    document.getElementById('att-date-filter').value=today();
+    document.getElementById('ov-date').textContent=new Date().toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    renderCurrentSection();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+e.message);}
+}
+
+function renderCurrentSection(){renderSection(currentSec);}
+function showSec(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el)el.classList.add('active');
+  currentSec=sec;renderSection(sec);
+}
+function renderSection(sec){
+  if(sec==='overview')renderOverview();
+  else if(sec==='attendance')renderAttendance();
+  else if(sec==='performance'){renderPerformance();loadAndRenderSitePhotos();}
+  else if(sec==='reports')renderDailyReports();
+  else if(sec==='activity')renderActivity();
+  else if(sec==='help')renderHelp();
+  else if(sec==='meetings')renderMeetings();
+  else if(sec==='announcements')renderAnnouncements();
+  else if(sec==='recognition')renderRecognition();
+}
+
+// ── OVERVIEW ──
+function renderOverview(){
+  const todayAtt=attLogs.filter(a=>a.date===today());
+  const present=todayAtt.length;
+  const absent=employees.length-present;
+  const pendHelp=helpReqs.filter(h=>h.status==='Pending').length;
+  const todayRep=reports.filter(r=>r.date===today()).length;
+  document.getElementById('ov-stats').innerHTML=`
+    <div class="stat green"><div class="stat-bg-ico">📍</div><div class="stat-lbl">Present Today</div><div class="stat-val" style="color:var(--green)">${present}/${employees.length}</div></div>
+    <div class="stat red"><div class="stat-bg-ico">❌</div><div class="stat-lbl">Absent Today</div><div class="stat-val" style="color:var(--red)">${absent}</div></div>
+    <div class="stat blue"><div class="stat-bg-ico">📝</div><div class="stat-lbl">Reports Today</div><div class="stat-val" style="color:var(--blue)">${todayRep}/${employees.length}</div></div>
+    <div class="stat orange"><div class="stat-bg-ico">🤝</div><div class="stat-lbl">Help Pending</div><div class="stat-val" style="color:${pendHelp>0?'var(--red)':'var(--green)'}">${pendHelp}</div></div>
+  `;
+  // Attendance
+  document.getElementById('ov-att').innerHTML=employees.map((e,i)=>{
+    const att=todayAtt.find(a=>a.employee_id===e.id);
+    return `<div class="emp-row">
+      <div class="emp-av" style="${AV[i%AV.length]}">${e.name.substring(0,2).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${e.name}</div>
+      <div style="font-size:11px;color:var(--text3)">${att?'IN: '+fmtTime(att.time_in)+' · 📍 '+((att.location_addr||'').substring(0,30)):'—'}</div></div>
+      <span class="badge ${att?'b-green':'b-red'}">${att?'✅ Present':'❌ Absent'}</span>
+    </div>`;
+  }).join('');
+  // Mood
+  const todayReports=reports.filter(r=>r.date===today());
+  const moodIco={great:'😄',ok:'😊',meh:'😐',bad:'😔'};
+  const moodCount={great:0,ok:0,meh:0,bad:0};
+  todayReports.forEach(r=>{if(moodCount[r.mood]!==undefined)moodCount[r.mood]++;});
+  document.getElementById('ov-mood').innerHTML=todayReports.length?Object.entries(moodCount).filter(([,v])=>v>0).map(([m,c])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:22px">${moodIco[m]}</span><div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="width:${Math.round(c/todayReports.length*100)}%;height:100%;background:var(--accent);border-radius:4px"></div></div><span style="font-size:12px;color:var(--text2)">${c}</span></div>`).join(''):`<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">आज कोई report नहीं</div>`;
+  // Help
+  const pendList=helpReqs.filter(h=>h.status==='Pending').slice(0,3);
+  const urgColor={normal:'var(--text2)',urgent:'var(--yellow)',critical:'var(--red)'};
+  document.getElementById('ov-help').innerHTML=pendList.length?pendList.map(h=>`<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid rgba(28,42,58,0.3)"><div class="urgency-dot" style="background:${urgColor[h.urgency]||'var(--text2)'};margin-top:5px"></div><div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${h.anonymous?'Anonymous':h.employee_name}</div><div style="font-size:12px;color:var(--text2)">${h.message?.substring(0,80)}...</div></div><button class="btn btn-ghost btn-sm" onclick="openReply(${h.id})">Reply</button></div>`).join(''):`<div style="text-align:center;padding:14px;color:var(--green);font-size:13px">✅ कोई pending request नहीं</div>`;
+  // Activity
+  document.getElementById('ov-activity').innerHTML=activity.slice(0,8).map(a=>`<div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(28,42,58,0.3)"><div style="font-size:15px">${{login:'🔑',logout:'🚪',punch_in:'📍',punch_out:'🕐',task:'📋',report:'📝',action:'⚡',help:'🤝'}[a.type]||'•'}</div><div style="flex:1"><div style="font-size:13px;color:var(--text)">${a.employee_name||'—'} — ${a.description||a.type}</div><div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${(a.created_at||'').replace('T',' ').substring(0,16)}</div></div></div>`).join('');
+}
+
+// ── ATTENDANCE ──
+function renderAttendance(){
+  const dateF=document.getElementById('att-date-filter')?.value||today();
+  const empF=document.getElementById('att-emp-filter')?.value||'';
+  const list=attLogs.filter(a=>{if(dateF&&a.date!==dateF)return false;if(empF&&a.employee_id!=empF)return false;return true;});
+  const present=list.length;
+  const absent=employees.length-present;
+  const avgHrs=(list.reduce((s,a)=>{if(a.time_in&&a.time_out)s+=((new Date(a.time_out)-new Date(a.time_in))/3600000);return s;},0)/Math.max(present,1)).toFixed(1);
+  document.getElementById('att-stats').innerHTML=`
+    <div class="stat green"><div class="stat-lbl">Present</div><div class="stat-val" style="color:var(--green)">${present}</div></div>
+    <div class="stat red"><div class="stat-lbl">Absent</div><div class="stat-val" style="color:var(--red)">${absent}</div></div>
+    <div class="stat blue"><div class="stat-lbl">Avg Hours</div><div class="stat-val" style="color:var(--blue)">${avgHrs}h</div></div>
+    <div class="stat orange"><div class="stat-lbl">With Location</div><div class="stat-val" style="color:var(--accent)">${list.filter(a=>a.lat).length}</div></div>
+  `;
+  document.getElementById('att-tbody').innerHTML=list.length?list.map(a=>{
+    const hrs=a.time_in&&a.time_out?((new Date(a.time_out)-new Date(a.time_in))/3600000).toFixed(1)+'h':'—';
+    return `<tr><td style="color:var(--text);font-weight:600">${a.employee_name||'—'}</td><td>${a.date}</td><td style="color:var(--green)">${fmtTime(a.time_in)}</td><td style="color:var(--red)">${fmtTime(a.time_out)}</td><td style="color:var(--blue)">${hrs}</td><td style="font-size:11px">${a.location_addr?`<a href="https://maps.google.com/?q=${a.lat},${a.lng}" target="_blank" style="color:var(--blue);text-decoration:none">📍 ${(a.location_addr||'').substring(0,25)}</a>`:'—'}</td><td><span class="badge b-green">✅</span></td></tr>`;
+  }).join(''):`<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3)">कोई attendance नहीं</td></tr>`;
+}
+
+// ── SITE PHOTOS ──
+let allSitePhotos=[];
+
+async function loadAndRenderSitePhotos(){
+  try{
+    const{data}=await db.from('employee_photos')
+      .select('*').eq('photo_type','job')
+      .not('job_id','is',null)
+      .order('created_at',{ascending:false}).limit(200);
+    allSitePhotos=data||[];
+    // populate filters
+    const empIds=[...new Set(allSitePhotos.map(p=>p.employee_id))];
+    const taskIds=[...new Set(allSitePhotos.map(p=>p.job_id))];
+    const empOpts='<option value="">सब Employees</option>'+employees.filter(e=>empIds.includes(e.id)).map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    const spEmp=document.getElementById('sp-emp-filter');
+    if(spEmp)spEmp.innerHTML=empOpts;
+    document.getElementById('site-photo-count').textContent=allSitePhotos.length+' photos total';
+    renderSitePhotos();
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};}
+}
+
+function renderSitePhotos(){
+  const empF=document.getElementById('sp-emp-filter')?.value||'';
+  const dateF=document.getElementById('sp-date-filter')?.value||'';
+  let list=allSitePhotos;
+  if(empF)list=list.filter(p=>p.employee_id==empF);
+  if(dateF)list=list.filter(p=>p.date===dateF);
+  const grid=document.getElementById('site-photos-grid');
+  if(!grid)return;
+  grid.innerHTML=list.length?list.map(p=>{
+    const src=p.photo_url||p.photo_base64||'';
+    return `<div style="position:relative;border-radius:10px;overflow:hidden;background:var(--bg3);cursor:pointer" onclick="openSitePhotoLightbox('${src}','${p.employee_name||''}','${(p.description||p.task_title||'').replace(/'/g,"\'")}','${p.location_addr||''}','${p.date||''}')">
+      <div style="aspect-ratio:1">${src?`<img src="${src}" style="width:100%;height:100%;object-fit:cover">`:'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px">📷</div>'}</div>
+      <div style="padding:6px 8px;background:var(--card)">
+        <div style="font-size:11px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.employee_name||'—'}</div>
+        <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(p.description||p.task_title||'Site Photo').substring(0,25)}</div>
+        ${p.location_addr?`<div style="font-size:9px;color:var(--blue);margin-top:2px">📍 ${p.location_addr.substring(0,25)}</div>`:''}
+        <div style="font-size:9px;color:var(--text3)">${p.date||''}</div>
+      </div>
+    </div>`;
+  }).join(''):`<div style="text-align:center;padding:30px;color:var(--text3);grid-column:1/-1"><div style="font-size:32px;opacity:0.4">📸</div><div style="font-size:13px;margin-top:8px">कोई site photo नहीं</div></div>`;
+}
+
+// Site photo lightbox
+function openSitePhotoLightbox(src,emp,task,loc,date){
+  const lb=document.createElement('div');
+  lb.id='site-lb';
+  lb.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;cursor:pointer';
+  lb.onclick=()=>lb.remove();
+  lb.innerHTML=`
+    <img src="${src}" style="max-width:95%;max-height:70vh;object-fit:contain;border-radius:10px">
+    <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;text-align:center;max-width:400px;width:100%">
+      <div style="font-size:14px;color:#fff;font-weight:700;margin-bottom:4px">👷 ${emp}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">${task}</div>
+      ${loc?`<div style="font-size:12px;color:var(--blue)">📍 ${loc}</div>`:''}
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px">📅 ${date}</div>
+      ${loc&&loc.includes(',') ? `<a href="https://maps.google.com/?q=${loc}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block;margin-top:8px;padding:6px 14px;background:var(--blue);color:#fff;border-radius:7px;font-size:12px;text-decoration:none">🗺️ Map में देखें</a>` : ''}
+    </div>`;
+  document.body.appendChild(lb);
+}
+
+// ── PERFORMANCE ──
+function renderPerformance(){
+  const scores=employees.map(e=>{
+    const myTasks=tasks.filter(t=>t.employee_id===e.id);
+    const done=myTasks.filter(t=>t.status==='Done').length;
+    const taskScore=myTasks.length?Math.round(done/myTasks.length*100):0;
+    const myRep=reports.filter(r=>r.employee_id===e.id).length;
+    const repScore=Math.min(100,myRep*10);
+    const thisMonth=new Date().toISOString().substring(0,7);
+    const attCount=attLogs.filter(a=>a.employee_id===e.id&&a.date.startsWith(thisMonth)).length;
+    const attScore=Math.min(100,attCount*4);
+    const overall=Math.round(taskScore*0.5+repScore*0.3+attScore*0.2);
+    return{...e,taskScore,repScore,attScore,overall,done,total:myTasks.length,attCount,myRep};
+  }).sort((a,b)=>b.overall-a.overall);
+
+  const top=scores[0];
+  document.getElementById('perf-top-stats').innerHTML=`
+    <div class="stat orange"><div class="stat-lbl">🏆 Top Performer</div><div class="stat-val" style="color:var(--accent);font-size:16px">${top?.name||'—'}</div><div class="stat-sub">${top?.overall||0}% score</div></div>
+    <div class="stat green"><div class="stat-lbl">Avg Score</div><div class="stat-val" style="color:var(--green)">${Math.round(scores.reduce((s,e)=>s+e.overall,0)/Math.max(scores.length,1))}%</div></div>
+    <div class="stat blue"><div class="stat-lbl">Tasks Done</div><div class="stat-val" style="color:var(--blue)">${scores.reduce((s,e)=>s+e.done,0)}/${scores.reduce((s,e)=>s+e.total,0)}</div></div>
+  `;
+
+  document.getElementById('perf-cards').innerHTML=scores.map((e,i)=>{
+    const col=e.overall>=80?'var(--green)':e.overall>=50?'var(--yellow)':'var(--red)';
+    return `<div class="dcard">
+      <div class="dcard-hd">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;color:${i===0?'var(--yellow)':i===1?'var(--text3)':i===2?'var(--accent)':'var(--text3)'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+          <div class="emp-av" style="${AV[i%AV.length]}">${e.name.substring(0,2).toUpperCase()}</div>
+          <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.role||'—'}</div></div>
+        </div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:${col}">${e.overall}%</div>
+      </div>
+      <div class="dcard-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <div><div style="font-size:11px;color:var(--text3)">📋 Tasks (50%)</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green)">${e.done}/${e.total} (${e.taskScore}%)</div><div class="perf-bar"><div class="perf-fill" style="width:${e.taskScore}%;background:var(--green)"></div></div></div>
+          <div><div style="font-size:11px;color:var(--text3)">📝 Reports (30%)</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--blue)">${e.myRep} reports (${e.repScore}%)</div><div class="perf-bar"><div class="perf-fill" style="width:${e.repScore}%;background:var(--blue)"></div></div></div>
+          <div><div style="font-size:11px;color:var(--text3)">📍 Attendance (20%)</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--yellow)">${e.attCount}d (${e.attScore}%)</div><div class="perf-bar"><div class="perf-fill" style="width:${e.attScore}%;background:var(--yellow)"></div></div></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openRecogModal(${e.id})">⭐ Recognize</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── TASK SITE PHOTOS (Admin view) ──
+async function loadTaskSitePhotos(){
+  try{
+    const{data}=await db.from('employee_photos')
+      .select('*').eq('photo_type','job')
+      .not('job_id','is',null)
+      .order('created_at',{ascending:false}).limit(100);
+    return data||[];
+  }catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};return [];}
+}
+
+// ── DAILY REPORTS ──
+function renderDailyReports(){
+  const empF=document.getElementById('rep-emp-filter')?.value||'';
+  const dateF=document.getElementById('rep-date-filter')?.value||'';
+  const list=reports.filter(r=>{if(empF&&r.employee_id!=empF)return false;if(dateF&&r.date!==dateF)return false;return true;});
+  const moodIco={great:'😄',ok:'😊',meh:'😐',bad:'😔'};
+  document.getElementById('reports-container').innerHTML=list.length?list.map(r=>`
+    <div class="dcard">
+      <div class="dcard-hd">
+        <div><div class="dcard-title">${r.employee_name} — ${r.date}</div></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">${moodIco[r.mood]||'😊'}</span><span class="badge b-blue">${r.work_done?.length||0} activities</span></div>
+      </div>
+      <div class="dcard-body">
+        ${r.work_done?.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${r.work_done.map(w=>`<span class="badge b-blue" style="font-size:11px">${w}</span>`).join('')}</div>`:''}
+        ${r.details?`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">${r.details}</div>`:''}
+        ${r.problem?`<div style="background:var(--yellowBg);border:1px solid rgba(240,180,41,0.2);border-radius:7px;padding:8px 11px;font-size:12px;color:var(--yellow)">⚠️ Problem: ${r.problem}</div>`:''}
+      </div>
+    </div>`).join(''):`<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:36px;opacity:0.4">📝</div><div style="font-size:14px;margin-top:10px">कोई report नहीं</div></div>`;
+}
+
+// ── ACTIVITY ──
+function renderActivity(){
+  const empF=document.getElementById('act-emp-filter')?.value||'';
+  const typeF=document.getElementById('act-type-filter')?.value||'';
+  const list=activity.filter(a=>{if(empF&&a.employee_id!=empF)return false;if(typeF&&a.type!==typeF)return false;return true;});
+  const typeIco={login:'🔑',logout:'🚪',punch_in:'📍',punch_out:'🕐',task:'📋',report:'📝',action:'⚡',help:'🤝',login_failed:'❌'};
+  document.getElementById('act-tbody').innerHTML=list.map(a=>`<tr>
+    <td style="color:var(--text);font-weight:600">${a.employee_name||'—'}</td>
+    <td>${typeIco[a.type]||'•'} ${a.description||a.type}</td>
+    <td style="font-size:11px">${a.location?`<a href="#" style="color:var(--blue);text-decoration:none">📍 ${(a.location||'').substring(0,25)}</a>`:'—'}</td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${(a.created_at||'').replace('T',' ').substring(0,16)}</td>
+  </tr>`).join('');
+}
+
+// ── HELP ──
+function renderHelp(){
+  const urgColor={normal:'var(--text2)',urgent:'var(--yellow)',critical:'var(--red)'};
+  const catIco={work:'💼',tools:'🔧',team:'👥',salary:'💰',system:'💻',other:'💬'};
+  document.getElementById('help-container').innerHTML=helpReqs.length?helpReqs.map(h=>`
+    <div class="help-item">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
+          <div class="urgency-dot" style="background:${urgColor[h.urgency]||'var(--text2)'}"></div>
+          <strong style="font-size:14px;color:var(--text)">${h.anonymous?'🔒 Anonymous':h.employee_name}</strong>
+          <span class="badge b-grey" style="font-size:10px">${catIco[h.category]||''} ${h.category}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">${h.message}</div></div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">
+          <span class="badge ${h.status==='Resolved'?'b-green':h.status==='In Review'?'b-yellow':'b-red'}">${h.status||'Pending'}</span>
+          <button class="btn btn-ghost btn-sm" onclick="openReply(${h.id})">💬 Reply</button>
+        </div>
+      </div>
+      ${h.admin_reply?`<div style="background:var(--greenBg);border-left:3px solid var(--green);padding:8px 11px;border-radius:0 7px 7px 0;font-size:12px;color:var(--green)">Admin: ${h.admin_reply}</div>`:''}
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">${(h.created_at||'').split('T')[0]} · ${h.urgency} urgency</div>
+    </div>`).join(''):`<div style="text-align:center;padding:40px;color:var(--green)"><div style="font-size:36px">🤝</div><div style="font-size:14px;margin-top:10px">✅ कोई pending request नहीं</div></div>`;
+}
+
+function openReply(id){replyHelpId=id;const h=helpReqs.find(x=>x.id===id);if(!h)return;document.getElementById('reply-original').textContent=h.message;document.getElementById('reply-msg').value=h.admin_reply||'';document.getElementById('reply-status').value=h.status||'In Review';openModal('reply-modal');}
+async function saveReply(){const msg=document.getElementById('reply-msg').value;const status=document.getElementById('reply-status').value;try{await db.from('help_requests').update({admin_reply:msg,status}).eq('id',replyHelpId);closeModal('reply-modal');await loadAll();toast('✅','Reply sent!');}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+
+// ── MEETINGS ──
+function renderMeetings(){
+  const typeColor={weekly:'var(--blue)',monthly:'var(--purple)',training:'var(--green)',emergency:'var(--red)'};
+  const upcoming=meetings.filter(m=>m.date>=today()).sort((a,b)=>a.date.localeCompare(b.date));
+  const past=meetings.filter(m=>m.date<today());
+  document.getElementById('meetings-container').innerHTML=
+    (upcoming.length?`<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px">📅 Upcoming</div>${upcoming.map(m=>meetCard(m,typeColor)).join('')}`:'')
+    +(past.length?`<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin:16px 0 10px">📜 Past</div>${past.map(m=>meetCard(m,typeColor)).join('')}`:'')
+    ||`<div style="text-align:center;padding:40px;color:var(--text3)">कोई meeting नहीं</div>`;
+}
+
+function meetCard(m,typeColor){
+  return `<div class="dcard" style="margin-bottom:10px"><div class="dcard-hd">
+    <div><div style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:${typeColor[m.type]||'var(--accentBg)'};color:${typeColor[m.type]||'var(--accent)'};margin-bottom:6px">📅 ${m.type}</div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700">${m.title}</div>
+    <div style="font-size:12px;color:var(--text2)">📅 ${m.date} ${m.time?'· ⏰ '+m.time:''} ${m.location?'· 📍 '+m.location:''}</div></div>
+    <div style="display:flex;gap:5px"><button class="btn btn-ghost btn-sm" onclick="openMeetingModal(${m.id})">✏️</button><button class="btn btn-ghost btn-sm" onclick="deleteMeeting(${m.id})">🗑️</button></div>
+  </div>${m.description||m.minutes?`<div class="dcard-body">${m.description?`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">${m.description}</div>`:''} ${m.minutes?`<div style="background:var(--bg2);border-radius:7px;padding:9px;font-size:12px;color:var(--text2);border-left:3px solid var(--accent)">📝 Minutes: ${m.minutes}</div>`:''}</div>`:''}</div>`;
+}
+
+function openMeetingModal(id=null){
+  editMeetId=id;
+  document.getElementById('meet-modal-title').textContent=id?'Meeting Edit':'Meeting Schedule करें';
+  if(id){const m=meetings.find(x=>x.id===id);if(!m)return;document.getElementById('m-title').value=m.title||'';document.getElementById('m-type').value=m.type||'weekly';document.getElementById('m-date').value=m.date||'';document.getElementById('m-time').value=m.time||'';document.getElementById('m-location').value=m.location||'';document.getElementById('m-duration').value=m.duration||'';document.getElementById('m-desc').value=m.description||'';document.getElementById('m-minutes').value=m.minutes||'';}
+  else{['m-title','m-location','m-duration','m-desc','m-minutes'].forEach(i=>document.getElementById(i).value='');document.getElementById('m-type').value='weekly';document.getElementById('m-date').value='';}
+  openModal('meeting-modal');
+}
+async function saveMeeting(){const title=document.getElementById('m-title').value.trim();const date=document.getElementById('m-date').value;if(!title||!date){toast('❌','Title और Date ज़रूरी है');return;}const data={title,type:document.getElementById('m-type').value,date,time:document.getElementById('m-time').value,location:document.getElementById('m-location').value,duration:document.getElementById('m-duration').value,description:document.getElementById('m-desc').value,minutes:document.getElementById('m-minutes').value};try{if(editMeetId){await db.from('meetings').update(data).eq('id',editMeetId);}else{await db.from('meetings').insert([{...data,created_at:new Date().toISOString()}]);}closeModal('meeting-modal');await loadAll();toast('✅','Meeting saved!');}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+async function deleteMeeting(id){if(!confirm('Meeting delete करें?'))return;try{await db.from('meetings').delete().eq('id',id);await loadAll();toast('🗑️','Deleted');}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+
+// ── ANNOUNCEMENTS ──
+function renderAnnouncements(){
+  const typeIco={general:'📢',urgent:'⚠️',holiday:'🎉',policy:'📋'};
+  document.getElementById('ann-container').innerHTML=announcements.length?announcements.map(a=>`
+    <div class="ann-preview">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><span style="font-size:18px">${typeIco[a.type]||'📢'}</span> <strong style="font-size:14px;color:var(--text)">${a.title}</strong></div>
+        <button class="btn btn-ghost btn-sm" onclick="deleteAnn(${a.id})">🗑️</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-top:6px">${a.body}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">${(a.created_at||'').split('T')[0]} ${a.expiry_date?'· Valid till: '+a.expiry_date:''}</div>
+    </div>`).join(''):`<div style="text-align:center;padding:40px;color:var(--text3)">कोई announcement नहीं</div>`;
+}
+function openAnnModal(){document.getElementById('an-title').value='';document.getElementById('an-body').value='';document.getElementById('an-type').value='general';document.getElementById('an-expiry').value='';openModal('ann-modal');}
+async function saveAnn(){const t=document.getElementById('an-title').value.trim();const b=document.getElementById('an-body').value.trim();if(!t||!b){toast('❌','Title और message ज़रूरी है');return;}try{await db.from('announcements').insert([{title:t,body:b,type:document.getElementById('an-type').value,expiry_date:document.getElementById('an-expiry').value||null,created_at:new Date().toISOString()}]);closeModal('ann-modal');await loadAll();toast('📢','Announcement published!');}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+async function deleteAnn(id){if(!confirm('Delete?'))return;try{await db.from('announcements').delete().eq('id',id);await loadAll();}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+
+// ── RECOGNITION ──
+function renderRecognition(){
+  const badgeIco={'⭐':'⭐','🏆':'🏆','🚀':'🚀','💪':'💪','🎯':'🎯'};
+  document.getElementById('recog-container').innerHTML=recogs.length?recogs.map(r=>`
+    <div style="background:linear-gradient(135deg,rgba(240,180,41,0.08),rgba(232,108,47,0.04));border:1px solid rgba(240,180,41,0.2);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px">
+      <div style="font-size:36px">${r.badge||'⭐'}</div>
+      <div style="flex:1"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700">${r.employee_name}</div><div style="font-size:13px;color:var(--accent);font-weight:600">${r.title||'Star Employee'}</div>${r.message?`<div style="font-size:12px;color:var(--text2);margin-top:3px">${r.message}</div>`:''}<div style="font-size:10px;color:var(--text3);margin-top:5px">${(r.created_at||'').split('T')[0]}</div></div>
+    </div>`).join(''):`<div style="text-align:center;padding:40px;color:var(--text3)">कोई recognition नहीं</div>`;
+}
+function openRecogModal(empId=null){document.getElementById('r-emp').value=empId||'';document.getElementById('r-badge').value='⭐';document.getElementById('r-title').value='';document.getElementById('r-msg').value='';document.querySelectorAll('.badge-opt').forEach(b=>b.style.borderColor='var(--border)');document.querySelector('.badge-opt').style.borderColor='var(--accent)';openModal('recog-modal');}
+function selBadge(b){document.getElementById('r-badge').value=b;document.querySelectorAll('.badge-opt').forEach(el=>{el.style.borderColor=el.textContent===b?'var(--accent)':'var(--border)';});}
+async function saveRecog(){const empId=parseInt(document.getElementById('r-emp').value);const emp=employees.find(e=>e.id===empId);if(!empId){toast('❌','Employee चुनें');return;}try{await db.from('recognition').insert([{employee_id:empId,employee_name:emp?.name||'',badge:document.getElementById('r-badge').value,title:document.getElementById('r-title').value,message:document.getElementById('r-msg').value,created_at:new Date().toISOString()}]);closeModal('recog-modal');await loadAll();toast('⭐',emp?.name+' को recognize किया!');}catch(e){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌',e.message);}}
+
+// ── MODALS ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+let tT;
+function toast(icon,msg){document.getElementById('ti').textContent=icon;document.getElementById('tm').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),3500);}
+
+loadAll();
+</script>
+</body>
+</html>

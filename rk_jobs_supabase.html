@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:68px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:180px;}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
+.search-input{padding-left:34px;}
+
+/* CARDS */
+.jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.job-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.job-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.job-card-top{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.job-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:3px;}
+.job-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.job-sub{font-size:12px;color:var(--text2);}
+.job-body{padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.job-info{background:var(--bg2);border-radius:7px;padding:7px 10px;}
+.job-info-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;}
+.job-info-val{font-size:12px;color:var(--text);font-weight:500;}
+.job-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+
+/* TABLE */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+
+.view-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:4px;width:fit-content;}
+.view-tab{padding:6px 14px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.view-tab.active{background:var(--accent);color:#fff;}
+
+/* TYPE SELECT */
+.type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.type-opt{background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.type-opt:hover,.type-opt.sel{border-color:var(--accent);background:var(--accentBg);}
+.type-opt-icon{font-size:26px;margin-bottom:5px;}
+.type-opt-label{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;}
+.type-opt-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* MATERIAL */
+.mat-row{display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:6px;margin-bottom:6px;align-items:center;}
+.mat-head{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+.del-btn{width:28px;height:28px;border-radius:6px;border:1px solid rgba(240,79,79,0.2);background:var(--redBg);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:760px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px 20px;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.info-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;}
+.info-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.info-val{font-size:13px;color:var(--text);font-weight:500;}
+
+.status-flow{display:flex;gap:8px;flex-wrap:wrap;padding:14px;background:var(--bg2);border-radius:10px;margin-top:14px;}
+.status-btn{flex:1;min-width:120px;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;text-align:center;}
+.status-btn:hover{border-color:var(--accent);color:var(--accent);}
+.status-btn.go-green:hover{border-color:var(--green);color:var(--green);background:var(--greenBg);}
+.status-btn.go-red:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.empty-state{text-align:center;padding:50px;color:var(--text3);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+@media(max-width:768px){.sidebar{display:none;}.main{padding:14px;}.stats-row{grid-template-columns:repeat(3,1fr);}.jobs-grid{grid-template-columns:1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}.type-selector{grid-template-columns:1fr;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn active" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Job Type</div>
+    <button class="sidebar-item active" onclick="filterType('all',this)"><span class="si-icon">📋</span>सभी<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-all">0</span></button>
+    <button class="sidebar-item" onclick="filterType('Installation',this)"><span class="si-icon">📹</span>Installation<span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-Install">0</span></button>
+    <button class="sidebar-item" onclick="filterType('Repair',this)"><span class="si-icon">🔧</span>Repair<span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-Repair">0</span></button>
+    <button class="sidebar-item" onclick="filterType('Other',this)"><span class="si-icon">⚙️</span>Other<span class="sb-badge" style="background:var(--bg3);color:var(--text2)" id="sb-Other">0</span></button>
+    <div class="sidebar-section" style="margin-top:8px">Status</div>
+    <button class="sidebar-item" onclick="filterStatus('Pending',this)"><span class="si-icon">⏳</span>Pending<span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-Pending">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('In Progress',this)"><span class="si-icon">🔄</span>In Progress<span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-Progress">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Done',this)"><span class="si-icon">✅</span>Done<span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-Done">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('On Hold',this)"><span class="si-icon">⏸️</span>On Hold<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-Hold">0</span></button>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div><div class="page-title">📋 Jobs / Projects</div><div class="page-subtitle">Installation, Repair, Other — Supabase connected</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="setView('cards',this)">⊞ Cards</button>
+          <button class="view-tab" onclick="setView('table',this)">☰ List</button>
+        </div>
+        <button class="btn btn-primary" onclick="openTypeModal()">+ नई Job</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-ico" style="background:var(--accentBg)">📋</div><div><div class="stat-val" style="color:var(--accent)" id="s-total">0</div><div class="stat-lbl">Total Jobs</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">🔄</div><div><div class="stat-val" style="color:var(--blue)" id="s-progress">0</div><div class="stat-lbl">In Progress</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">✅</div><div><div class="stat-val" style="color:var(--green)" id="s-done">0</div><div class="stat-lbl">Done</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">⏳</div><div><div class="stat-val" style="color:var(--yellow)" id="s-pending">0</div><div class="stat-lbl">Pending</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">💰</div><div><div class="stat-val" style="color:var(--green)" id="s-revenue">₹0</div><div class="stat-lbl">Total Value</div></div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="input search-input" type="search" placeholder="Customer या Job खोजें..." id="search-inp" oninput="render()">
+      </div>
+      <select class="input" style="width:auto" id="month-filter" onchange="render()"><option value="">सब महीने</option></select>
+    </div>
+
+    <div id="cards-view"><div class="jobs-grid" id="jobs-grid"></div></div>
+    <div id="table-view" style="display:none">
+      <div class="table-card"><div class="table-wrap">
+        <table>
+          <thead><tr><th>Job #</th><th>Customer</th><th>Type</th><th>Technician</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="jobs-tbody"></tbody>
+        </table>
+      </div></div>
+    </div>
+  </main>
+</div>
+
+<!-- TYPE SELECT MODAL -->
+<div class="overlay" id="type-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><div class="modal-title">Job Type चुनें</div><button class="modal-close" onclick="closeModal('type-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="type-selector">
+        <div class="type-opt" onclick="openJobForm('Installation')"><div class="type-opt-icon">📹</div><div class="type-opt-label">Installation</div><div class="type-opt-sub">New CCTV लगाना</div></div>
+        <div class="type-opt" onclick="openJobForm('Repair')"><div class="type-opt-icon">🔧</div><div class="type-opt-label">Repair</div><div class="type-opt-sub">CCTV ठीक करना</div></div>
+        <div class="type-opt" onclick="openJobForm('Other')"><div class="type-opt-icon">⚙️</div><div class="type-opt-label">Other</div><div class="type-opt-sub">अन्य सेवा</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOB FORM MODAL -->
+<div class="overlay" id="job-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="job-modal-title">नई Job</div><button class="modal-close" onclick="closeModal('job-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-section">Basic Info</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Customer <span class="req">*</span></label><select class="input" id="j-customer" onchange="loadSites()"></select></div>
+        <div class="form-group"><label class="form-label">Site</label><select class="input" id="j-site"></select></div>
+        <div class="form-group"><label class="form-label">Technician</label><select class="input" id="j-tech"></select></div>
+        <div class="form-group"><label class="form-label">Priority</label>
+          <select class="input" id="j-priority"><option>Normal</option><option>High</option><option>Urgent</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Start Date</label><input class="input" type="date" id="j-start"></div>
+        <div class="form-group"><label class="form-label">End Date</label><input class="input" type="date" id="j-end"></div>
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input class="input" type="number" id="j-amount" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="input" id="j-status"><option>Pending</option><option>In Progress</option><option>Done</option><option>On Hold</option></select>
+        </div>
+      </div>
+
+      <!-- INSTALLATION -->
+      <div id="install-fields">
+        <div class="form-section">📹 Installation Details</div>
+        <div class="form-grid-3">
+          <div class="form-group"><label class="form-label">Camera Qty</label><input class="input" type="number" id="j-cam-qty" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Camera Type</label>
+            <select class="input" id="j-cam-type"><option>Bullet</option><option>Dome</option><option>PTZ</option><option>Mix</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Camera Brand</label><input class="input" id="j-cam-brand" placeholder="Brand"></div>
+          <div class="form-group"><label class="form-label">DVR/NVR</label>
+            <select class="input" id="j-dvr-ch"><option>4 Channel</option><option>8 Channel</option><option>16 Channel</option><option>32 Channel</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">DVR Brand</label><input class="input" id="j-dvr-brand" placeholder="Brand"></div>
+          <div class="form-group"><label class="form-label">Hard Disk</label>
+            <select class="input" id="j-hdd"><option>No HDD</option><option>1 TB</option><option>2 TB</option><option>4 TB</option><option>6 TB</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Cable (meters)</label><input class="input" type="number" id="j-cable" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Power Supply</label>
+            <select class="input" id="j-power"><option>Individual Adapters</option><option>SMPS Box</option><option>POE Switch</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">IP Rating</label>
+            <select class="input" id="j-ip"><option>Indoor</option><option>Outdoor (IP66)</option><option>Mix</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPAIR -->
+      <div id="repair-fields" style="display:none">
+        <div class="form-section">🔧 Repair Details</div>
+        <div class="form-grid">
+          <div class="form-group full"><label class="form-label">Problem Description</label><textarea class="input" id="j-problem" placeholder="क्या problem है..."></textarea></div>
+          <div class="form-group"><label class="form-label">Faulty Equipment</label>
+            <select class="input" id="j-faulty"><option>Camera</option><option>DVR/NVR</option><option>Cable</option><option>Power Supply</option><option>HDD</option><option>Multiple</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Faulty Qty</label><input class="input" type="number" id="j-faulty-qty" placeholder="0"></div>
+          <div class="form-group"><label class="form-label">Warranty?</label>
+            <select class="input" id="j-warranty"><option value="No">No</option><option value="Yes">Yes</option><option value="Check">Check करना है</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Parts Replace?</label>
+            <select class="input" id="j-parts"><option value="No">No</option><option value="Yes">Yes</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTHER -->
+      <div id="other-fields" style="display:none">
+        <div class="form-section">⚙️ Service Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Service Type</label><input class="input" id="j-service-type" placeholder="जैसे: Cable laying..."></div>
+          <div class="form-group full"><label class="form-label">Description</label><textarea class="input" id="j-service-desc" placeholder="Details..."></textarea></div>
+        </div>
+      </div>
+
+      <!-- MATERIAL -->
+      <div class="form-section">📦 Material Used</div>
+      <div style="margin-bottom:6px">
+        <div class="mat-row mat-head"><span>Item</span><span>Qty</span><span>Unit</span><span></span></div>
+      </div>
+      <div id="mat-list"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addMat()" style="margin-top:6px">+ Material जोड़ें</button>
+
+      <div class="form-section" style="margin-top:14px">Notes</div>
+      <textarea class="input" id="j-notes" placeholder="Extra details..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('job-modal')">Cancel</button>
+      <button class="btn btn-primary" id="job-save-btn" onclick="saveJob()">💾 Save Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="detail-title">Job Details</div><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-foot" id="detail-foot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+const SUPABASE_URL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let jobs=[],customers=[],employees=[];
+let editJobId=null,currentJobType='Installation';
+let typeFilter='all',statusFilter='',currentView='cards';
+let matCount=0;
+
+function today(){return new Date().toISOString().split('T')[0];}
+function jobNum(id){return 'JOB-'+String(id).padStart(4,'0');}
+function setStatus(s){document.getElementById('db-dot').className='db-dot '+s;document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Connecting...';}
+
+const statusStyle={'Pending':'background:var(--yellowBg);color:var(--yellow)','In Progress':'background:var(--blueBg);color:var(--blue)','Done':'background:var(--greenBg);color:var(--green)','On Hold':'background:var(--redBg);color:var(--red)'};
+const typeIcon={'Installation':'📹','Repair':'🔧','Other':'⚙️'};
+
+// ─── LOAD ───
+async function loadAll(){
+  try {
+    setStatus('loading');
+    const [{data:jData,error:jErr},{data:cData,error:cErr},{data:eData,error:eErr}]=await Promise.all([
+      db.from('jobs').select('*').order('created_at',{ascending:false}),
+      db.from('customers').select('id,name,phone,sites'),
+      db.from('employees').select('id,name,role').eq('status','Active')
+    ]);
+    if(jErr) throw jErr;
+    jobs=jData||[]; customers=cData||[]; employees=eData||[];
+    setStatus('connected');
+    render();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setStatus('disconnected');toast('❌','Error: '+err.message);}
+}
+
+// ─── FILTERS ───
+function filterType(t,el){typeFilter=t;statusFilter='';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+function filterStatus(s,el){statusFilter=s;typeFilter='all';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+
+function getFiltered(){
+  const search=document.getElementById('search-inp').value.toLowerCase();
+  const month=document.getElementById('month-filter').value;
+  return jobs.filter(j=>{
+    if(typeFilter!=='all'&&j.type!==typeFilter) return false;
+    if(statusFilter&&j.status!==statusFilter) return false;
+    if(search&&!(j.customer_name||'').toLowerCase().includes(search)&&!jobNum(j.id).toLowerCase().includes(search)) return false;
+    if(month&&!(j.date||'').startsWith(month)) return false;
+    return true;
+  });
+}
+
+// ─── STATS ───
+function updateStats(){
+  document.getElementById('s-total').textContent=jobs.length;
+  document.getElementById('s-progress').textContent=jobs.filter(j=>j.status==='In Progress').length;
+  document.getElementById('s-done').textContent=jobs.filter(j=>j.status==='Done').length;
+  document.getElementById('s-pending').textContent=jobs.filter(j=>j.status==='Pending').length;
+  document.getElementById('s-revenue').textContent='₹'+jobs.reduce((s,j)=>s+(j.amount||0),0).toLocaleString();
+  document.getElementById('sb-all').textContent=jobs.length;
+  document.getElementById('sb-Install').textContent=jobs.filter(j=>j.type==='Installation').length;
+  document.getElementById('sb-Repair').textContent=jobs.filter(j=>j.type==='Repair').length;
+  document.getElementById('sb-Other').textContent=jobs.filter(j=>j.type==='Other').length;
+  document.getElementById('sb-Pending').textContent=jobs.filter(j=>j.status==='Pending').length;
+  document.getElementById('sb-Progress').textContent=jobs.filter(j=>j.status==='In Progress').length;
+  document.getElementById('sb-Done').textContent=jobs.filter(j=>j.status==='Done').length;
+  document.getElementById('sb-Hold').textContent=jobs.filter(j=>j.status==='On Hold').length;
+  // months
+  const months=[...new Set(jobs.map(j=>j.date?.substring(0,7)).filter(Boolean))].sort().reverse();
+  const sel=document.getElementById('month-filter');
+  const prev=sel.value;
+  sel.innerHTML='<option value="">सब महीने</option>'+months.map(m=>`<option value="${m}" ${m===prev?'selected':''}>${new Date(m+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'})}</option>`).join('');
+}
+
+// ─── RENDER ───
+function render(){
+  updateStats();
+  if(currentView==='cards') renderCards();
+  else renderTable();
+}
+
+function renderCards(){
+  const list=getFiltered();
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const grid=document.getElementById('jobs-grid');
+  if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div style="font-size:40px;opacity:0.5;margin-bottom:12px">📋</div><div style="font-size:15px;color:var(--text2)">कोई Job नहीं</div></div>`;return;}
+  grid.innerHTML=list.map(j=>{
+    const overdue=j.end_date&&j.end_date<today()&&j.status!=='Done';
+    return `<div class="job-card" onclick="openDetail(${j.id})" style="${overdue?'border-color:var(--red)':''}">
+      <div class="job-card-top">
+        <div>
+          <div class="job-num">${jobNum(j.id)} ${overdue?'🔴':''}</div>
+          <div class="job-title">${j.customer_name||'—'}</div>
+          <div class="job-sub">📍 ${j.site||'Site not set'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <span class="badge" style="background:var(--${j.type==='Installation'?'blue':j.type==='Repair'?'yellow':'bg3'}Bg);color:var(--${j.type==='Installation'?'blue':j.type==='Repair'?'yellow':'text2'})">${typeIcon[j.type]||'📋'} ${j.type}</span>
+          <span class="badge" style="${statusStyle[j.status]||''}">${j.status}</span>
+        </div>
+      </div>
+      <div class="job-body">
+        <div class="job-info"><div class="job-info-lbl">👷 Technician</div><div class="job-info-val">${empMap[j.tech_id]||'Unassigned'}</div></div>
+        <div class="job-info"><div class="job-info-lbl">💰 Amount</div><div class="job-info-val" style="color:var(--green)">₹${(j.amount||0).toLocaleString()}</div></div>
+        ${j.type==='Installation'?`
+        <div class="job-info"><div class="job-info-lbl">📹 Cameras</div><div class="job-info-val">${j.cam_qty||0} × ${j.cam_type||'—'}</div></div>
+        <div class="job-info"><div class="job-info-lbl">📼 DVR/NVR</div><div class="job-info-val">${j.dvr_ch||'—'}</div></div>`:
+        j.type==='Repair'?`<div class="job-info" style="grid-column:1/-1"><div class="job-info-lbl">🔧 Problem</div><div class="job-info-val">${(j.problem||'—').substring(0,50)}</div></div>`:
+        `<div class="job-info" style="grid-column:1/-1"><div class="job-info-lbl">⚙️ Service</div><div class="job-info-val">${j.service_type||'—'}</div></div>`}
+      </div>
+      <div class="job-foot" onclick="event.stopPropagation()">
+        <span style="font-size:12px;color:var(--text3)">📅 ${j.start_date||'—'} → ${j.end_date||'—'}</span>
+        <div style="display:flex;gap:4px">
+          <button class="act-btn" onclick="openJobForm(null,${j.id})">✏️</button>
+          <button class="act-btn del" onclick="deleteJob(${j.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(){
+  const list=getFiltered();
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const tb=document.getElementById('jobs-tbody');
+  tb.innerHTML=list.length?list.map(j=>`<tr onclick="openDetail(${j.id})">
+    <td><strong style="color:var(--text);font-family:'JetBrains Mono',monospace">${jobNum(j.id)}</strong></td>
+    <td><strong style="color:var(--text)">${j.customer_name||'—'}</strong></td>
+    <td>${typeIcon[j.type]||''} ${j.type}</td>
+    <td>${empMap[j.tech_id]||'—'}</td>
+    <td style="color:var(--green)">₹${(j.amount||0).toLocaleString()}</td>
+    <td><span class="badge" style="${statusStyle[j.status]||''}">${j.status}</span></td>
+    <td>${j.date||'—'}</td>
+    <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+      <button class="act-btn" onclick="openJobForm(null,${j.id})">✏️</button>
+      <button class="act-btn del" onclick="deleteJob(${j.id})">🗑️</button>
+    </div></td>
+  </tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div style="font-size:36px;opacity:0.5">📋</div><div style="font-size:14px;color:var(--text2);margin-top:10px">कोई Job नहीं</div></div></td></tr>`;
+}
+
+// ─── DROPDOWNS ───
+function populateDropdowns(){
+  document.getElementById('j-customer').innerHTML='<option value="">-- Customer चुनें --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('j-tech').innerHTML='<option value="">-- Technician --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+}
+
+function loadSites(){
+  const custId=parseInt(document.getElementById('j-customer').value);
+  const cust=customers.find(c=>c.id===custId);
+  document.getElementById('j-site').innerHTML='<option value="">-- Site चुनें --</option>'+((cust?.sites)||[]).map((s,i)=>`<option value="${i}">${s.siteName||'Site '+(i+1)} — ${s.siteCity||''}</option>`).join('');
+}
+
+// ─── OPEN MODALS ───
+function openTypeModal(){closeModal('job-modal');document.getElementById('type-modal').classList.add('open');}
+
+function openJobForm(type,jobId=null){
+  closeModal('type-modal');
+  if(type) currentJobType=type;
+  editJobId=jobId;
+  if(jobId){
+    const j=jobs.find(x=>x.id===jobId);
+    if(j) currentJobType=j.type;
+  }
+  document.getElementById('job-modal-title').textContent=`${editJobId?'Edit':'नई'} ${currentJobType} Job`;
+  document.getElementById('install-fields').style.display=currentJobType==='Installation'?'block':'none';
+  document.getElementById('repair-fields').style.display=currentJobType==='Repair'?'block':'none';
+  document.getElementById('other-fields').style.display=currentJobType==='Other'?'block':'none';
+  populateDropdowns();
+  document.getElementById('mat-list').innerHTML='';
+  matCount=0;
+  if(jobId){
+    const j=jobs.find(x=>x.id===jobId); if(!j) return;
+    document.getElementById('j-customer').value=j.customer_id||'';
+    loadSites();
+    document.getElementById('j-tech').value=j.tech_id||'';
+    document.getElementById('j-priority').value=j.priority||'Normal';
+    document.getElementById('j-start').value=j.start_date||'';
+    document.getElementById('j-end').value=j.end_date||'';
+    document.getElementById('j-amount').value=j.amount||'';
+    document.getElementById('j-status').value=j.status||'Pending';
+    document.getElementById('j-notes').value=j.notes||'';
+    if(currentJobType==='Installation'){
+      document.getElementById('j-cam-qty').value=j.cam_qty||'';
+      document.getElementById('j-cam-type').value=j.cam_type||'Bullet';
+      document.getElementById('j-cam-brand').value=j.cam_brand||'';
+      document.getElementById('j-dvr-ch').value=j.dvr_ch||'8 Channel';
+      document.getElementById('j-dvr-brand').value=j.dvr_brand||'';
+      document.getElementById('j-hdd').value=j.hdd||'No HDD';
+      document.getElementById('j-cable').value=j.cable||'';
+      document.getElementById('j-power').value=j.power||'Individual Adapters';
+      document.getElementById('j-ip').value=j.ip_rating||'Indoor';
+    } else if(currentJobType==='Repair'){
+      document.getElementById('j-problem').value=j.problem||'';
+      document.getElementById('j-faulty').value=j.faulty||'Camera';
+      document.getElementById('j-faulty-qty').value=j.faulty_qty||'';
+      document.getElementById('j-warranty').value=j.warranty||'No';
+      document.getElementById('j-parts').value=j.parts||'No';
+    } else {
+      document.getElementById('j-service-type').value=j.service_type||'';
+      document.getElementById('j-service-desc').value=j.service_desc||'';
+    }
+    (j.materials||[]).forEach(m=>addMat(m));
+  } else {
+    ['j-cam-qty','j-cable','j-faulty-qty','j-amount'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('j-start').value=today();
+    document.getElementById('j-status').value='Pending';
+    document.getElementById('j-priority').value='Normal';
+    document.getElementById('j-notes').value='';
+  }
+  document.getElementById('job-modal').classList.add('open');
+}
+
+// ─── MATERIAL ───
+function addMat(data={}){
+  matCount++;
+  const id='mat-'+matCount;
+  const div=document.createElement('div');
+  div.id=id; div.className='mat-row';
+  div.innerHTML=`
+    <input class="input" placeholder="Item" value="${data.name||''}">
+    <input class="input" type="number" placeholder="Qty" value="${data.qty||''}">
+    <select class="input"><option ${data.unit==='Pcs'?'selected':''}>Pcs</option><option ${data.unit==='Meters'?'selected':''}>Meters</option><option ${data.unit==='Sets'?'selected':''}>Sets</option></select>
+    <button class="del-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+  `;
+  document.getElementById('mat-list').appendChild(div);
+}
+
+function getMats(){
+  return Array.from(document.querySelectorAll('#mat-list .mat-row')).map(row=>{
+    const inputs=row.querySelectorAll('input,select');
+    return {name:inputs[0].value.trim(),qty:inputs[1].value,unit:inputs[2].value};
+  }).filter(m=>m.name);
+}
+
+// ─── SAVE JOB ───
+async function saveJob(){
+  const custId=parseInt(document.getElementById('j-customer').value);
+  const cust=customers.find(c=>c.id===custId);
+  const techId=parseInt(document.getElementById('j-tech').value)||null;
+  const tech=employees.find(e=>e.id===techId);
+  const siteIdx=document.getElementById('j-site').value;
+  const site=cust?.sites?.[siteIdx];
+
+  const base={
+    type:currentJobType,
+    customer_id:custId||null,
+    customer_name:cust?.name||'',
+    tech_id:techId,
+    tech_name:tech?.name||'',
+    site:site?`${site.siteName||''} ${site.siteCity||''}`.trim():'',
+    priority:document.getElementById('j-priority').value,
+    start_date:document.getElementById('j-start').value||null,
+    end_date:document.getElementById('j-end').value||null,
+    amount:parseFloat(document.getElementById('j-amount').value)||0,
+    status:document.getElementById('j-status').value,
+    notes:document.getElementById('j-notes').value,
+    materials:getMats(),
+    date:today()
+  };
+
+  if(currentJobType==='Installation') Object.assign(base,{
+    cam_qty:parseInt(document.getElementById('j-cam-qty').value)||0,
+    cam_type:document.getElementById('j-cam-type').value,
+    cam_brand:document.getElementById('j-cam-brand').value,
+    dvr_ch:document.getElementById('j-dvr-ch').value,
+    dvr_brand:document.getElementById('j-dvr-brand').value,
+    hdd:document.getElementById('j-hdd').value,
+    cable:parseFloat(document.getElementById('j-cable').value)||0,
+    power:document.getElementById('j-power').value,
+    ip_rating:document.getElementById('j-ip').value
+  });
+  else if(currentJobType==='Repair') Object.assign(base,{
+    problem:document.getElementById('j-problem').value,
+    faulty:document.getElementById('j-faulty').value,
+    faulty_qty:parseInt(document.getElementById('j-faulty-qty').value)||0,
+    warranty:document.getElementById('j-warranty').value,
+    parts:document.getElementById('j-parts').value
+  });
+  else Object.assign(base,{
+    service_type:document.getElementById('j-service-type').value,
+    service_desc:document.getElementById('j-service-desc').value
+  });
+
+  const btn=document.getElementById('job-save-btn');
+  btn.textContent='⏳...'; btn.disabled=true;
+  try {
+    if(editJobId){const {error}=await db.from('jobs').update(base).eq('id',editJobId);if(error)throw error;toast('✅','Job updated!');}
+    else{const {error}=await db.from('jobs').insert([base]);if(error)throw error;toast('✅',`Job created!`);}
+    closeModal('job-modal'); await loadAll();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💾 Save Job';btn.disabled=false;}
+}
+
+// ─── DETAIL ───
+function openDetail(id){
+  const j=jobs.find(x=>x.id===id); if(!j) return;
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const overdue=j.end_date&&j.end_date<today()&&j.status!=='Done';
+  let typeDetails='';
+  if(j.type==='Installation') typeDetails=`
+    <div class="info-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="info-item"><div class="info-lbl">Cameras</div><div class="info-val">${j.cam_qty||0} × ${j.cam_type||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">Brand</div><div class="info-val">${j.cam_brand||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">DVR/NVR</div><div class="info-val">${j.dvr_ch||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">DVR Brand</div><div class="info-val">${j.dvr_brand||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">HDD</div><div class="info-val">${j.hdd||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">Cable</div><div class="info-val">${j.cable||0}m</div></div>
+    </div>`;
+  else if(j.type==='Repair') typeDetails=`
+    <div class="info-grid">
+      <div class="info-item" style="grid-column:1/-1"><div class="info-lbl">Problem</div><div class="info-val">${j.problem||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">Faulty</div><div class="info-val">${j.faulty||'—'} (${j.faulty_qty||0})</div></div>
+      <div class="info-item"><div class="info-lbl">Warranty</div><div class="info-val">${j.warranty||'—'}</div></div>
+    </div>`;
+
+  document.getElementById('detail-title').textContent=jobNum(j.id)+' — '+(j.customer_name||'');
+  document.getElementById('detail-body').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge" style="background:var(--${j.type==='Installation'?'blue':j.type==='Repair'?'yellow':'bg3'}Bg);color:var(--${j.type==='Installation'?'blue':j.type==='Repair'?'yellow':'text2'})">${typeIcon[j.type]} ${j.type}</span>
+      <span class="badge" style="${statusStyle[j.status]||''}">${j.status}</span>
+      ${overdue?`<span class="badge" style="background:var(--redBg);color:var(--red)">🔴 Overdue</span>`:''}
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-lbl">👥 Customer</div><div class="info-val">${j.customer_name||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">📍 Site</div><div class="info-val">${j.site||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">👷 Technician</div><div class="info-val">${empMap[j.tech_id]||'Unassigned'}</div></div>
+      <div class="info-item"><div class="info-lbl">💰 Amount</div><div class="info-val" style="color:var(--green)">₹${(j.amount||0).toLocaleString()}</div></div>
+      <div class="info-item"><div class="info-lbl">📅 Start</div><div class="info-val">${j.start_date||'—'}</div></div>
+      <div class="info-item"><div class="info-lbl">🏁 End</div><div class="info-val" style="color:${overdue?'var(--red)':'var(--text)'}">${j.end_date||'—'}</div></div>
+    </div>
+    ${typeDetails}
+    ${(j.materials||[]).length?`
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">📦 Materials</div>
+    <div class="table-card" style="margin-bottom:14px"><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th></tr></thead>
+    <tbody>${(j.materials||[]).map(m=>`<tr><td>${m.name}</td><td>${m.qty}</td><td>${m.unit}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${j.notes?`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px;font-size:13px;color:var(--text2);margin-bottom:14px">${j.notes}</div>`:''}
+    ${j.status!=='Done'?`
+    <div class="status-flow">
+      <button class="status-btn" onclick="quickStatus(${j.id},'In Progress')">🔄 In Progress</button>
+      <button class="status-btn go-green" onclick="quickStatus(${j.id},'Done')">✅ Mark Done</button>
+      <button class="status-btn go-red" onclick="quickStatus(${j.id},'On Hold')">⏸️ On Hold</button>
+    </div>`:''}
+  `;
+  document.getElementById('detail-foot').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal')">बंद करें</button>
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal');openJobForm(null,${j.id})">✏️ Edit</button>
+    ${j.status==='Done'?`<button class="btn btn-primary" onclick="toast('🧾','Invoice module में जाएं')">🧾 Invoice बनाएं</button>`:''}
+  `;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+async function quickStatus(id,status){
+  try {
+    const update={status};
+    if(status==='Done') update.done_date=today();
+    const {error}=await db.from('jobs').update(update).eq('id',id);
+    if(error) throw error;
+    closeModal('detail-modal'); await loadAll(); toast('✅',`Job → ${status}`);
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+async function deleteJob(id){
+  if(!confirm('Job delete करें?')) return;
+  try {const {error}=await db.from('jobs').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadAll();}
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+function setView(v,el){
+  currentView=v;
+  document.querySelectorAll('.view-tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cards-view').style.display=v==='cards'?'block':'none';
+  document.getElementById('table-view').style.display=v==='table'?'block':'none';
+  render();
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+let toastT;
+function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+
+loadAll();
+</script>
+</body>
+</html>

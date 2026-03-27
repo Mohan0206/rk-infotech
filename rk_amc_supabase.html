@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — AMC</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-blue{background:var(--blueBg);color:var(--blue);border:1px solid rgba(59,142,255,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+.alert-banner{border-radius:10px;padding:11px 15px;margin-bottom:10px;display:flex;align-items:center;gap:9px;font-size:13px;}
+.alert-red{background:var(--redBg);border:1px solid rgba(240,79,79,0.3);color:var(--red);}
+.alert-yellow{background:var(--yellowBg);border:1px solid rgba(240,180,41,0.3);color:var(--yellow);}
+/* AMC CARDS */
+.amc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.amc-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.amc-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.amc-card.expiring{border-color:rgba(240,180,41,0.4);}
+.amc-card.expired{border-color:rgba(240,79,79,0.4);}
+.amc-stripe{height:3px;}
+.amc-body{padding:15px;}
+.amc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.amc-customer{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.amc-site{font-size:12px;color:var(--text3);}
+.amc-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px;}
+.amc-info{background:var(--bg2);border-radius:7px;padding:7px 10px;}
+.amc-info-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;}
+.amc-info-val{font-size:12.5px;color:var(--text);font-weight:500;}
+.exp-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:4px 0;}
+.exp-fill{height:100%;border-radius:2px;}
+.pay-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:4px;}
+.pay-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--accent));}
+.amc-foot{padding:9px 15px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+/* TABLE */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.view-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:4px;width:fit-content;}
+.view-tab{padding:6px 14px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.view-tab.active{background:var(--accent);color:#fff;}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-lg{max-width:780px;}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:20px;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;flex-wrap:wrap;}
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.info-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;}
+.info-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.info-val{font-size:13px;color:var(--text);font-weight:500;}
+.visit-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:7px;}
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+.empty-state{text-align:center;padding:50px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:14px;}.stats-row{grid-template-columns:repeat(3,1fr);}.amc-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn active" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Status</div>
+    <button class="sidebar-item active" onclick="filterStatus('all',this)"><span class="si-icon">🔧</span>सभी<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-all">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Active',this)"><span class="si-icon">✅</span>Active<span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-Active">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Expiring',this)"><span class="si-icon">⚠️</span>Expiring<span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-Expiring">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Expired',this)"><span class="si-icon">❌</span>Expired<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-Expired">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Renewed',this)"><span class="si-icon">🔄</span>Renewed<span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-Renewed">0</span></button>
+    <div class="sidebar-section" style="margin-top:8px">Payment</div>
+    <button class="sidebar-item" onclick="filterPay('paid',this)"><span class="si-icon">💰</span>Fully Paid</button>
+    <button class="sidebar-item" onclick="filterPay('pending',this)"><span class="si-icon">⏳</span>Payment Pending</button>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div><div class="page-title">🔧 AMC Contracts</div><div class="page-subtitle">Annual Maintenance — visits, expiry और payment track करें</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="setView('cards',this)">⊞ Cards</button>
+          <button class="view-tab" onclick="setView('table',this)">☰ List</button>
+        </div>
+        <button class="btn btn-primary" onclick="openAmcModal()">+ नया AMC</button>
+      </div>
+    </div>
+
+    <div id="amc-alerts"></div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-ico" style="background:var(--accentBg)">🔧</div><div><div class="stat-val" style="color:var(--accent)" id="s-total">0</div><div class="stat-lbl">Total AMC</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">✅</div><div><div class="stat-val" style="color:var(--green)" id="s-active">0</div><div class="stat-lbl">Active</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">⚠️</div><div><div class="stat-val" style="color:var(--yellow)" id="s-expiring">0</div><div class="stat-lbl">Expiring (30d)</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--redBg)">❌</div><div><div class="stat-val" style="color:var(--red)" id="s-expired">0</div><div class="stat-lbl">Expired</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">💰</div><div><div class="stat-val" style="color:var(--blue)" id="s-revenue">₹0</div><div class="stat-lbl">Annual Value</div></div></div>
+    </div>
+
+    <div id="cards-view"><div class="amc-grid" id="amc-grid"></div></div>
+
+    <div id="table-view" style="display:none">
+      <div class="table-card"><div class="table-wrap">
+        <table>
+          <thead><tr><th>AMC #</th><th>Customer</th><th>Cameras</th><th>DVR</th><th>Amount</th><th>Paid</th><th>Start</th><th>Expiry</th><th>Days Left</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="amc-tbody"></tbody>
+        </table>
+      </div></div>
+    </div>
+  </main>
+</div>
+
+<!-- AMC FORM MODAL -->
+<div class="overlay" id="amc-modal">
+  <div class="modal"><div class="modal-head"><div class="modal-title" id="amc-modal-title">नया AMC Contract</div><button class="modal-close" onclick="closeModal('amc-modal')">✕</button></div>
+  <div class="modal-body">
+    <div class="form-section">Contract Details</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Customer <span class="req">*</span></label><select class="input" id="a-customer" onchange="loadAmcSites()"></select></div>
+      <div class="form-group"><label class="form-label">Site</label><select class="input" id="a-site"></select></div>
+      <div class="form-group"><label class="form-label">Start Date</label><input class="input" type="date" id="a-start" oninput="autoExpiry()"></div>
+      <div class="form-group"><label class="form-label">Expiry Date <span class="req">*</span></label><input class="input" type="date" id="a-expiry"></div>
+      <div class="form-group"><label class="form-label">AMC Amount (₹/year) <span class="req">*</span></label><input class="input" type="number" id="a-amount" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Amount Paid (₹)</label><input class="input" type="number" id="a-paid" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Technician</label><select class="input" id="a-tech"><option value="">-- चुनें --</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="input" id="a-status"><option>Active</option><option>Expired</option><option>Renewed</option></select></div>
+    </div>
+    <div class="form-section">Equipment Details</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Camera Qty</label><input class="input" type="number" id="a-cams" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Camera Type</label><select class="input" id="a-cam-type"><option>Bullet</option><option>Dome</option><option>PTZ</option><option>Mix</option></select></div>
+      <div class="form-group"><label class="form-label">DVR/NVR</label><select class="input" id="a-dvr"><option>4 Channel</option><option>8 Channel</option><option>16 Channel</option><option>32 Channel</option></select></div>
+      <div class="form-group"><label class="form-label">DVR Brand</label><input class="input" id="a-dvr-brand" placeholder="Hikvision, Dahua..."></div>
+      <div class="form-group full"><label class="form-label">Notes / Scope</label><textarea class="input" id="a-notes" placeholder="Service scope, special conditions..."></textarea></div>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('amc-modal')">Cancel</button><button class="btn btn-primary" id="amc-save-btn" onclick="saveAmc()">💾 Save AMC</button></div></div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal modal-lg"><div class="modal-head"><div class="modal-title" id="detail-title">AMC Details</div><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+  <div class="modal-body" id="detail-body"></div>
+  <div class="modal-foot" id="detail-foot"></div></div>
+</div>
+
+<!-- VISIT MODAL -->
+<div class="overlay" id="visit-modal">
+  <div class="modal" style="max-width:500px"><div class="modal-head"><div class="modal-title">🔧 Service Visit Record करें</div><button class="modal-close" onclick="closeModal('visit-modal')">✕</button></div>
+  <div class="modal-body">
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Visit Date</label><input class="input" type="date" id="v-date"></div>
+      <div class="form-group"><label class="form-label">Technician</label><select class="input" id="v-tech"></select></div>
+      <div class="form-group"><label class="form-label">Visit Status</label>
+        <select class="input" id="v-status"><option value="Completed">✅ Completed</option><option value="Partial">🔄 Partial</option><option value="Rescheduled">📅 Rescheduled</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Cameras Checked</label><input class="input" type="number" id="v-cams" placeholder="0"></div>
+      <div class="form-group full"><label class="form-label">Work Done / Notes</label><textarea class="input" id="v-notes" placeholder="क्या-क्या किया, कोई problem..."></textarea></div>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('visit-modal')">Cancel</button><button class="btn btn-primary" onclick="saveVisit()">✅ Visit Save</button></div></div>
+</div>
+
+<!-- RENEW MODAL -->
+<div class="overlay" id="renew-modal">
+  <div class="modal" style="max-width:420px"><div class="modal-head"><div class="modal-title">🔄 AMC Renew करें</div><button class="modal-close" onclick="closeModal('renew-modal')">✕</button></div>
+  <div class="modal-body">
+    <div style="text-align:center;padding:10px 0 16px">
+      <div style="font-size:44px;margin-bottom:8px">🔄</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px" id="renew-name"></div>
+      <div style="font-size:13px;color:var(--text2)">1 साल और extend होगा</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">नई Start Date</label><input class="input" type="date" id="r-start"></div>
+      <div class="form-group"><label class="form-label">नई Expiry Date</label><input class="input" type="date" id="r-expiry"></div>
+      <div class="form-group"><label class="form-label">Renewal Amount (₹)</label><input class="input" type="number" id="r-amount" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Amount Paid (₹)</label><input class="input" type="number" id="r-paid" placeholder="0"></div>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('renew-modal')">Cancel</button><button class="btn btn-green" onclick="confirmRenew()">🔄 Renew करें</button></div></div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let amcs=[],customers=[],employees=[];
+let editId=null,visitAmcId=null,renewAmcId=null;
+let statusFilter='all',payFilter='',currentView='cards';
+
+function today(){return new Date().toISOString().split('T')[0];}
+function amcNum(id){return 'AMC-'+String(id).padStart(4,'0');}
+function getDaysLeft(d){return Math.ceil((new Date(d)-new Date(today()))/86400000);}
+function setDbStatus(s){document.getElementById('db-dot').className='db-dot '+s;document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Connecting...';}
+
+function getAmcStatus(a){
+  if(a.status==='Renewed')return 'Renewed';
+  const dl=getDaysLeft(a.expiry_date);
+  if(dl<0)return 'Expired';
+  if(dl<=30)return 'Expiring';
+  return 'Active';
+}
+
+function statusBadge(s){
+  const m={Active:'b-green ✅ Active',Expiring:'b-yellow ⚠️ Expiring',Expired:'b-red ❌ Expired',Renewed:'b-blue 🔄 Renewed'};
+  const parts=(m[s]||'b-grey '+s).split(' ');
+  const cls=parts.shift();
+  return `<span class="badge ${cls}">${parts.join(' ')}</span>`;
+}
+
+// ─── LOAD ───
+async function loadData(){
+  try{
+    setDbStatus('loading');
+    const [{data:a,error:e1},{data:c,error:e2},{data:e,error:e3}]=await Promise.all([
+      db.from('amcs').select('*').order('created_at',{ascending:false}),
+      db.from('customers').select('id,name,phone,sites'),
+      db.from('employees').select('id,name').eq('status','Active')
+    ]);
+    if(e1||e2||e3) throw e1||e2||e3;
+    amcs=a||[]; customers=c||[]; employees=e||[];
+    setDbStatus('connected');
+    render();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setDbStatus('disconnected');toast('❌','Error: '+err.message);}
+}
+
+// ─── FILTERS ───
+function filterStatus(s,el){statusFilter=s;payFilter='';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+function filterPay(p,el){payFilter=p;statusFilter='all';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+
+function getFiltered(){
+  return amcs.filter(a=>{
+    const s=getAmcStatus(a);
+    if(statusFilter!=='all'&&s!==statusFilter)return false;
+    if(payFilter==='paid'&&(a.paid||0)<(a.amount||0))return false;
+    if(payFilter==='pending'&&(a.paid||0)>=(a.amount||0))return false;
+    return true;
+  });
+}
+
+// ─── STATS & ALERTS ───
+function updateStats(){
+  const statuses=amcs.map(a=>getAmcStatus(a));
+  document.getElementById('s-total').textContent=amcs.length;
+  document.getElementById('s-active').textContent=statuses.filter(s=>s==='Active').length;
+  document.getElementById('s-expiring').textContent=statuses.filter(s=>s==='Expiring').length;
+  document.getElementById('s-expired').textContent=statuses.filter(s=>s==='Expired').length;
+  document.getElementById('s-revenue').textContent='₹'+amcs.reduce((s,a)=>s+(a.amount||0),0).toLocaleString();
+  document.getElementById('sb-all').textContent=amcs.length;
+  ['Active','Expiring','Expired','Renewed'].forEach(s=>{const el=document.getElementById('sb-'+s);if(el)el.textContent=statuses.filter(x=>x===s).length;});
+  // Alerts
+  const expiredList=amcs.filter(a=>getAmcStatus(a)==='Expired');
+  const expiringList=amcs.filter(a=>getAmcStatus(a)==='Expiring');
+  let html='';
+  if(expiredList.length)html+=`<div class="alert-banner alert-red">❌ <strong>${expiredList.length} AMC Expired:</strong> ${expiredList.map(a=>a.customer_name).join(', ')}</div>`;
+  if(expiringList.length)html+=`<div class="alert-banner alert-yellow">⚠️ <strong>${expiringList.length} AMC जल्द expire होंगे:</strong> ${expiringList.map(a=>`${a.customer_name} (${getDaysLeft(a.expiry_date)}d)`).join(', ')}</div>`;
+  document.getElementById('amc-alerts').innerHTML=html;
+}
+
+// ─── RENDER ───
+function render(){
+  updateStats();
+  if(currentView==='cards')renderCards();
+  else renderTable();
+}
+
+function renderCards(){
+  const list=getFiltered();
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const grid=document.getElementById('amc-grid');
+  if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div style="font-size:40px;opacity:0.5;margin-bottom:10px">🔧</div><div style="font-size:15px;color:var(--text2)">कोई AMC नहीं</div></div>`;return;}
+  grid.innerHTML=list.map(a=>{
+    const s=getAmcStatus(a);const dl=getDaysLeft(a.expiry_date);
+    const stripeColor=s==='Active'?'var(--green)':s==='Expiring'?'var(--yellow)':s==='Expired'?'var(--red)':'var(--blue)';
+    const paidPct=a.amount>0?Math.min(100,Math.round((a.paid||0)/a.amount*100)):0;
+    const totalDays=Math.ceil((new Date(a.expiry_date)-new Date(a.start_date||a.expiry_date))/86400000)||365;
+    const elapsed=Math.ceil((new Date(today())-new Date(a.start_date||today()))/86400000);
+    const timePct=Math.max(0,Math.min(100,100-Math.round(elapsed/totalDays*100)));
+    const visits=(a.visits||[]).length;
+    return `<div class="amc-card ${s==='Expiring'?'expiring':s==='Expired'?'expired':''}" onclick="openDetail(${a.id})">
+      <div class="amc-stripe" style="background:${stripeColor}"></div>
+      <div class="amc-body">
+        <div class="amc-top">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;font-family:'JetBrains Mono',monospace">${amcNum(a.id)}</div>
+            <div class="amc-customer">${a.customer_name}</div>
+            <div class="amc-site">📍 ${a.site||'Site not set'}</div>
+          </div>
+          ${statusBadge(s)}
+        </div>
+        <div class="amc-info-grid">
+          <div class="amc-info"><div class="amc-info-lbl">📹 Cameras</div><div class="amc-info-val">${a.cameras||0} × ${a.cam_type||'—'}</div></div>
+          <div class="amc-info"><div class="amc-info-lbl">📼 DVR/NVR</div><div class="amc-info-val">${a.dvr||'—'} ${a.dvr_brand?'('+a.dvr_brand+')':''}</div></div>
+          <div class="amc-info"><div class="amc-info-lbl">💰 Amount</div><div class="amc-info-val" style="color:var(--accent)">₹${(a.amount||0).toLocaleString()}</div></div>
+          <div class="amc-info"><div class="amc-info-lbl">🔧 Visits</div><div class="amc-info-val" style="color:var(--blue)">${visits} done</div></div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px">
+            <span>Expiry: ${a.expiry_date}</span>
+            <span style="color:${dl<0?'var(--red)':dl<=30?'var(--yellow)':'var(--text3)'}">${dl<0?'Expired':dl===0?'आज expire':dl+'d बाकी'}</span>
+          </div>
+          <div class="exp-bar"><div class="exp-fill" style="width:${timePct}%;background:${stripeColor}"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3)">
+          <span>Paid: <strong style="color:var(--green)">₹${(a.paid||0).toLocaleString()}</strong></span>
+          <span>Pending: <strong style="color:${(a.amount-a.paid)>0?'var(--red)':'var(--text3)'}">₹${Math.max(0,(a.amount||0)-(a.paid||0)).toLocaleString()}</strong></span>
+        </div>
+        <div class="pay-bar"><div class="pay-fill" style="width:${paidPct}%"></div></div>
+      </div>
+      <div class="amc-foot" onclick="event.stopPropagation()">
+        <span style="font-size:11px;color:var(--text3)">👷 ${empMap[a.tech_id]||'Unassigned'}</span>
+        <div style="display:flex;gap:4px">
+          <button class="act-btn" style="color:var(--green)" onclick="openVisitModal(${a.id})" title="Visit">🔧</button>
+          <button class="act-btn" style="color:var(--blue)" onclick="openRenewModal(${a.id})" title="Renew">🔄</button>
+          <button class="act-btn" onclick="openAmcModal(${a.id})">✏️</button>
+          <button class="act-btn del" onclick="deleteAmc(${a.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(){
+  const list=getFiltered();
+  const tb=document.getElementById('amc-tbody');
+  tb.innerHTML=list.length?list.map(a=>{
+    const s=getAmcStatus(a);const dl=getDaysLeft(a.expiry_date);
+    return `<tr onclick="openDetail(${a.id})">
+      <td><strong style="color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px">${amcNum(a.id)}</strong></td>
+      <td><strong style="color:var(--text)">${a.customer_name}</strong><br><small style="color:var(--text3)">📍 ${a.site||'—'}</small></td>
+      <td>${a.cameras||0} × ${a.cam_type||'—'}</td>
+      <td>${a.dvr||'—'}</td>
+      <td style="color:var(--accent);font-family:'JetBrains Mono',monospace">₹${(a.amount||0).toLocaleString()}</td>
+      <td style="color:var(--green);font-family:'JetBrains Mono',monospace">₹${(a.paid||0).toLocaleString()}</td>
+      <td>${a.start_date||'—'}</td>
+      <td style="color:${s==='Expired'?'var(--red)':s==='Expiring'?'var(--yellow)':'var(--text2)'}">${a.expiry_date}</td>
+      <td style="color:${dl<0?'var(--red)':dl<=30?'var(--yellow)':'var(--text2)'};font-family:'JetBrains Mono',monospace">${dl<0?'Expired':dl+'d'}</td>
+      <td>${statusBadge(s)}</td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+        <button class="act-btn" style="color:var(--green)" onclick="openVisitModal(${a.id})">🔧</button>
+        <button class="act-btn" style="color:var(--blue)" onclick="openRenewModal(${a.id})">🔄</button>
+        <button class="act-btn" onclick="openAmcModal(${a.id})">✏️</button>
+        <button class="act-btn del" onclick="deleteAmc(${a.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="11"><div class="empty-state"><div style="font-size:36px;opacity:0.5">🔧</div><div style="font-size:14px;color:var(--text2);margin-top:10px">कोई AMC नहीं</div></div></td></tr>`;
+}
+
+// ─── AMC MODAL ───
+function openAmcModal(id=null){
+  editId=id;
+  document.getElementById('amc-modal-title').textContent=id?'AMC Edit करें':'नया AMC Contract';
+  document.getElementById('a-customer').innerHTML='<option value="">-- Customer चुनें --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('a-tech').innerHTML='<option value="">-- चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  if(id){
+    const a=amcs.find(x=>x.id===id);if(!a)return;
+    document.getElementById('a-customer').value=a.customer_id||'';loadAmcSites();
+    setTimeout(()=>document.getElementById('a-site').value=a.site_index||'',80);
+    document.getElementById('a-start').value=a.start_date||'';
+    document.getElementById('a-expiry').value=a.expiry_date||'';
+    document.getElementById('a-amount').value=a.amount||'';
+    document.getElementById('a-paid').value=a.paid||0;
+    document.getElementById('a-tech').value=a.tech_id||'';
+    document.getElementById('a-status').value=a.status||'Active';
+    document.getElementById('a-cams').value=a.cameras||'';
+    document.getElementById('a-cam-type').value=a.cam_type||'Dome';
+    document.getElementById('a-dvr').value=a.dvr||'8 Channel';
+    document.getElementById('a-dvr-brand').value=a.dvr_brand||'';
+    document.getElementById('a-notes').value=a.notes||'';
+  }else{
+    ['a-amount','a-paid','a-cams','a-dvr-brand','a-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('a-start').value=today();autoExpiry();
+    document.getElementById('a-status').value='Active';
+  }
+  openModal('amc-modal');
+}
+
+function loadAmcSites(){
+  const custId=parseInt(document.getElementById('a-customer').value);
+  const c=customers.find(x=>x.id===custId);
+  document.getElementById('a-site').innerHTML='<option value="">-- Site --</option>'+((c?.sites)||[]).map((s,i)=>`<option value="${i}">${s.siteName||'Site '+(i+1)} — ${s.siteCity||''}</option>`).join('');
+}
+
+function autoExpiry(){
+  const start=document.getElementById('a-start').value;
+  if(start){const exp=new Date(start);exp.setFullYear(exp.getFullYear()+1);document.getElementById('a-expiry').value=exp.toISOString().split('T')[0];}
+}
+
+async function saveAmc(){
+  const custId=parseInt(document.getElementById('a-customer').value);
+  const c=customers.find(x=>x.id===custId);
+  if(!custId){toast('❌','Customer ज़रूरी है!');return;}
+  const amount=parseFloat(document.getElementById('a-amount').value)||0;
+  if(!amount){toast('❌','Amount ज़रूरी है!');return;}
+  const siteIdx=document.getElementById('a-site').value;
+  const site=c?.sites?.[siteIdx];
+  const data={
+    customer_id:custId,customer_name:c?.name||'',customer_phone:c?.phone||'',
+    site:site?`${site.siteName||''} ${site.siteCity||''}`.trim():'',
+    site_index:siteIdx,
+    start_date:document.getElementById('a-start').value||null,
+    expiry_date:document.getElementById('a-expiry').value,
+    amount,paid:parseFloat(document.getElementById('a-paid').value)||0,
+    tech_id:parseInt(document.getElementById('a-tech').value)||null,
+    status:document.getElementById('a-status').value,
+    cameras:parseInt(document.getElementById('a-cams').value)||0,
+    cam_type:document.getElementById('a-cam-type').value,
+    dvr:document.getElementById('a-dvr').value,
+    dvr_brand:document.getElementById('a-dvr-brand').value,
+    notes:document.getElementById('a-notes').value,
+    visits:editId?(amcs.find(x=>x.id===editId)?.visits||[]):[],
+    renewals:editId?(amcs.find(x=>x.id===editId)?.renewals||[]):[],
+    added_on:today()
+  };
+  const btn=document.getElementById('amc-save-btn');btn.textContent='⏳...';btn.disabled=true;
+  try{
+    if(editId){const{error}=await db.from('amcs').update(data).eq('id',editId);if(error)throw error;toast('✅','AMC updated!');}
+    else{const{error}=await db.from('amcs').insert([data]);if(error)throw error;toast('✅',c.name+' AMC बनाया गया!');}
+    closeModal('amc-modal');await loadData();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💾 Save AMC';btn.disabled=false;}
+}
+
+// ─── DETAIL ───
+function openDetail(id){
+  const a=amcs.find(x=>x.id===id);if(!a)return;
+  const s=getAmcStatus(a);const dl=getDaysLeft(a.expiry_date);
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const paidPct=a.amount>0?Math.min(100,Math.round((a.paid||0)/a.amount*100)):0;
+  document.getElementById('detail-title').textContent=amcNum(a.id)+' — '+a.customer_name;
+  document.getElementById('detail-body').innerHTML=`
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      ${statusBadge(s)}
+      ${dl>=0&&dl<=30?`<span class="badge b-yellow">⚠️ ${dl} दिन बाकी</span>`:''}
+      ${dl<0?`<span class="badge b-red">❌ ${Math.abs(dl)} दिन पहले expire</span>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">📋 Contract Info</div>
+        <div class="info-grid">
+          <div class="info-item"><div class="info-lbl">Customer</div><div class="info-val">${a.customer_name}</div></div>
+          <div class="info-item"><div class="info-lbl">Site</div><div class="info-val">${a.site||'—'}</div></div>
+          <div class="info-item"><div class="info-lbl">Start</div><div class="info-val">${a.start_date||'—'}</div></div>
+          <div class="info-item"><div class="info-lbl">Expiry</div><div class="info-val" style="color:${s==='Expired'?'var(--red)':s==='Expiring'?'var(--yellow)':'var(--text)'}">${a.expiry_date}</div></div>
+          <div class="info-item"><div class="info-lbl">📹 Cameras</div><div class="info-val">${a.cameras||0} × ${a.cam_type||'—'}</div></div>
+          <div class="info-item"><div class="info-lbl">📼 DVR/NVR</div><div class="info-val">${a.dvr||'—'} ${a.dvr_brand?'('+a.dvr_brand+')':''}</div></div>
+          <div class="info-item"><div class="info-lbl">👷 Tech</div><div class="info-val">${empMap[a.tech_id]||'Unassigned'}</div></div>
+          <div class="info-item"><div class="info-lbl">🔧 Visits</div><div class="info-val" style="color:var(--blue)">${(a.visits||[]).length} done</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">💰 Payment</div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid rgba(28,42,58,0.4)"><span style="color:var(--text2)">Contract</span><span style="font-family:'JetBrains Mono',monospace;color:var(--accent)">₹${(a.amount||0).toLocaleString()}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid rgba(28,42,58,0.4)"><span style="color:var(--text2)">Paid</span><span style="font-family:'JetBrains Mono',monospace;color:var(--green)">₹${(a.paid||0).toLocaleString()}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0"><span style="color:var(--text2)">Pending</span><span style="font-family:'JetBrains Mono',monospace;color:${(a.amount-a.paid)>0?'var(--red)':'var(--text3)'}">₹${Math.max(0,(a.amount||0)-(a.paid||0)).toLocaleString()}</span></div>
+          <div class="pay-bar" style="margin-top:8px"><div class="pay-fill" style="width:${paidPct}%"></div></div>
+          <div style="font-size:11px;color:var(--text3);text-align:right;margin-top:4px">${paidPct}% paid</div>
+        </div>
+        ${a.notes?`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--text2)">${a.notes}</div>`:''}
+      </div>
+    </div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">
+      🔧 Service Visits (${(a.visits||[]).length})
+      <button class="btn btn-ghost btn-sm" style="margin-left:10px" onclick="openVisitModal(${a.id})">+ Visit जोड़ें</button>
+    </div>
+    ${(a.visits||[]).length?[...(a.visits||[])].reverse().map(v=>`
+      <div class="visit-item">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+          <div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">📅 ${v.date}</span>
+            <span style="font-size:12px;color:var(--blue);margin-left:10px">👷 ${empMap[v.techId]||v.tech||'—'}</span>
+            ${v.cams?`<span style="font-size:11px;color:var(--text3);margin-left:8px">📹 ${v.cams} cameras</span>`:''}
+          </div>
+          <span class="badge ${v.status==='Completed'?'b-green':v.status==='Partial'?'b-yellow':'b-grey'}">${v.status==='Completed'?'✅':v.status==='Partial'?'🔄':'📅'} ${v.status}</span>
+        </div>
+        ${v.notes?`<div style="font-size:12px;color:var(--text2)">💬 ${v.notes}</div>`:''}
+      </div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">कोई visit नहीं</div>`}
+    ${(a.renewals||[]).length?`
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin:14px 0 8px">🔄 Renewal History</div>
+      ${(a.renewals||[]).map(r=>`<div style="background:var(--blueBg);border:1px solid rgba(59,142,255,0.2);border-radius:9px;padding:10px 14px;margin-bottom:6px;font-size:13px">🔄 ${r.start} → ${r.expiry} · ₹${r.amount.toLocaleString()} · Paid: ₹${r.paid.toLocaleString()}</div>`).join('')}`:''}
+  `;
+  document.getElementById('detail-foot').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal')">बंद करें</button>
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal');openAmcModal(${a.id})">✏️ Edit</button>
+    <button class="btn btn-ghost" onclick="sendWhatsApp(${a.id})">💬 WhatsApp</button>
+    ${s!=='Active'?`<button class="btn btn-green" onclick="closeModal('detail-modal');openRenewModal(${a.id})">🔄 Renew</button>`:''}
+  `;
+  openModal('detail-modal');
+}
+
+// ─── VISIT ───
+function openVisitModal(id){
+  visitAmcId=id;
+  document.getElementById('v-tech').innerHTML='<option value="">-- चुनें --</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('v-date').value=today();
+  document.getElementById('v-status').value='Completed';
+  document.getElementById('v-cams').value='';
+  document.getElementById('v-notes').value='';
+  closeModal('detail-modal');
+  openModal('visit-modal');
+}
+
+async function saveVisit(){
+  const a=amcs.find(x=>x.id===visitAmcId);if(!a)return;
+  const techId=document.getElementById('v-tech').value;
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const visit={date:document.getElementById('v-date').value,techId,tech:empMap[techId]||'',status:document.getElementById('v-status').value,cams:document.getElementById('v-cams').value,notes:document.getElementById('v-notes').value};
+  const visits=[...(a.visits||[]),visit];
+  try{
+    const{error}=await db.from('amcs').update({visits}).eq('id',visitAmcId);
+    if(error)throw error;
+    closeModal('visit-modal');await loadData();toast('🔧','Visit recorded!');
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+// ─── RENEW ───
+function openRenewModal(id){
+  renewAmcId=id;const a=amcs.find(x=>x.id===id);if(!a)return;
+  document.getElementById('renew-name').textContent=a.customer_name;
+  const newExp=new Date(a.expiry_date>today()?a.expiry_date:today());
+  newExp.setFullYear(newExp.getFullYear()+1);
+  document.getElementById('r-start').value=today();
+  document.getElementById('r-expiry').value=newExp.toISOString().split('T')[0];
+  document.getElementById('r-amount').value=a.amount;
+  document.getElementById('r-paid').value='';
+  closeModal('detail-modal');openModal('renew-modal');
+}
+
+async function confirmRenew(){
+  const a=amcs.find(x=>x.id===renewAmcId);if(!a)return;
+  const renewals=[...(a.renewals||[]),{start:a.start_date,expiry:a.expiry_date,amount:a.amount,paid:a.paid||0,renewedOn:today()}];
+  const data={
+    start_date:document.getElementById('r-start').value,
+    expiry_date:document.getElementById('r-expiry').value,
+    amount:parseFloat(document.getElementById('r-amount').value)||a.amount,
+    paid:parseFloat(document.getElementById('r-paid').value)||0,
+    status:'Active',renewals
+  };
+  try{
+    const{error}=await db.from('amcs').update(data).eq('id',renewAmcId);
+    if(error)throw error;
+    closeModal('renew-modal');await loadData();toast('🔄',a.customer_name+' AMC renewed!');
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+// ─── WHATSAPP ───
+function sendWhatsApp(id){
+  const a=amcs.find(x=>x.id===id);if(!a)return;
+  const s=getAmcStatus(a);const dl=getDaysLeft(a.expiry_date);
+  const msg=s==='Expiring'||s==='Expired'?
+    `🔧 *RK Infotech — AMC Renewal*\n\nनमस्ते ${a.customer_name} जी,\n\nआपका AMC contract ${s==='Expired'?'expire हो चुका है':'जल्द expire होगा'}.\n\n📅 Expiry: ${a.expiry_date}\n📹 Cameras: ${a.cameras||0}\n💰 AMC Amount: ₹${a.amount.toLocaleString()}\n\nRenewal के लिए contact करें!\n\n_RK Infotech · CCTV Solutions_`:
+    `🔧 *RK Infotech — AMC Active*\n\nनमस्ते ${a.customer_name} जी,\n\nआपका AMC active है.\n📅 Valid till: ${a.expiry_date}\n📹 Cameras: ${a.cameras||0}\n\n_RK Infotech · CCTV Solutions_`;
+  const phone=(a.customer_phone||'').replace(/\D/g,'');
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  toast('💬','WhatsApp खुल रहा है...');
+}
+
+// ─── DELETE ───
+async function deleteAmc(id){
+  if(!confirm('AMC delete करें?'))return;
+  try{const{error}=await db.from('amcs').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadData();}
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+// ─── VIEW ───
+function setView(v,el){
+  currentView=v;
+  document.querySelectorAll('.view-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+  document.getElementById('cards-view').style.display=v==='cards'?'block':'none';
+  document.getElementById('table-view').style.display=v==='table'?'block':'none';
+  render();
+}
+
+// ─── MODAL ───
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+// ─── TOAST ───
+let toastT;
+function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ─── INIT ───
+loadData();
+</script>
+</body>
+</html>

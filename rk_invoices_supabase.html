@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Invoices</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-green:hover{background:rgba(34,201,122,0.15);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:820px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:20px;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;flex-wrap:wrap;}
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+.item-row{display:grid;grid-template-columns:2.5fr 1fr 1.2fr 1.2fr 28px;gap:5px;margin-bottom:5px;align-items:center;}
+.item-total{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:600;padding:7px 3px;}
+.del-btn{width:26px;height:26px;border-radius:6px;border:1px solid rgba(240,79,79,0.2);background:var(--redBg);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.totals-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-top:10px;}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;}
+.total-row.net{border-top:1px solid var(--border);margin-top:5px;padding-top:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;}
+.pmodes{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px;}
+.pmode{background:var(--bg2);border:2px solid var(--border);border-radius:8px;padding:9px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.pmode:hover,.pmode.sel{border-color:var(--accent);background:var(--accentBg);}
+.pmode-ico{font-size:18px;margin-bottom:3px;}
+.pmode-lbl{font-size:11px;color:var(--text2);font-weight:600;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.info-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;}
+.info-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.info-val{font-size:13px;color:var(--text);font-weight:500;}
+.pay-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.prog-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--accent));}
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+.quick-items{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;}
+.quick-item{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;transition:all 0.12s;}
+.quick-item:hover{border-color:var(--accent);color:var(--accent);}
+.empty-state{text-align:center;padding:50px;color:var(--text3);}
+.empty-icon{font-size:44px;margin-bottom:12px;opacity:0.5;}
+.empty-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;color:var(--text2);margin-bottom:5px;}
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:14px;}.stats-row{grid-template-columns:repeat(3,1fr);}.form-grid{grid-template-columns:1fr;}.pmodes{grid-template-columns:repeat(2,1fr);}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn active" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Payment Status</div>
+    <button class="sidebar-item active" onclick="filterStatus('all',this)"><span class="si-icon">🧾</span>सभी<span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-all">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Paid',this)"><span class="si-icon">✅</span>Paid<span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-Paid">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Partial',this)"><span class="si-icon">🌗</span>Partial<span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-Partial">0</span></button>
+    <button class="sidebar-item" onclick="filterStatus('Pending',this)"><span class="si-icon">⏳</span>Pending<span class="sb-badge" style="background:var(--redBg);color:var(--red)" id="sb-Pending">0</span></button>
+    <div class="sidebar-section" style="margin-top:8px">Payment Mode</div>
+    <button class="sidebar-item" onclick="filterMode('Cash',this)"><span class="si-icon">💵</span>Cash</button>
+    <button class="sidebar-item" onclick="filterMode('UPI',this)"><span class="si-icon">📱</span>UPI</button>
+    <button class="sidebar-item" onclick="filterMode('Bank Transfer',this)"><span class="si-icon">🏦</span>Bank Transfer</button>
+    <button class="sidebar-item" onclick="filterMode('Cheque',this)"><span class="si-icon">📄</span>Cheque</button>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div><div class="page-title">🧾 Invoices</div><div class="page-subtitle">Bills, payments और outstanding track करें</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇️ Export</button>
+        <button class="btn btn-primary" onclick="openInvModal()">+ नया Invoice</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-ico" style="background:var(--accentBg)">🧾</div><div><div class="stat-val" style="color:var(--accent)" id="s-total">0</div><div class="stat-lbl">Total</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">💰</div><div><div class="stat-val" style="color:var(--green)" id="s-received">₹0</div><div class="stat-lbl">Received</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--redBg)">⏳</div><div><div class="stat-val" style="color:var(--red)" id="s-outstanding">₹0</div><div class="stat-lbl">Outstanding</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">🌗</div><div><div class="stat-val" style="color:var(--yellow)" id="s-partial">0</div><div class="stat-lbl">Partial</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">📊</div><div><div class="stat-val" style="color:var(--blue)" id="s-value">₹0</div><div class="stat-lbl">Total Value</div></div></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Invoice #</th><th>Customer</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="inv-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- INVOICE FORM MODAL -->
+<div class="overlay" id="inv-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="inv-modal-title">नया Invoice</div><button class="modal-close" onclick="closeModal('inv-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-section">Invoice Info</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Customer <span class="req">*</span></label><select class="input" id="i-customer" onchange="fillAddr()"></select></div>
+        <div class="form-group"><label class="form-label">Customer Address</label><input class="input" id="i-addr" placeholder="Auto fill होगा"></div>
+        <div class="form-group"><label class="form-label">Invoice Date</label><input class="input" type="date" id="i-date"></div>
+        <div class="form-group"><label class="form-label">Due Date</label><input class="input" type="date" id="i-due"></div>
+        <div class="form-group"><label class="form-label">GST %</label>
+          <select class="input" id="i-gst" onchange="calcInvTotal()"><option value="0">No GST</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Job Reference</label><select class="input" id="i-job"><option value="">-- Job link करें --</option></select></div>
+      </div>
+
+      <div class="form-section">Items</div>
+      <div class="quick-items">
+        <span style="font-size:11px;color:var(--text3);align-self:center">Quick:</span>
+        <button class="quick-item" onclick="addInvItem('Camera','Pcs',1,0)">📹 Camera</button>
+        <button class="quick-item" onclick="addInvItem('DVR/NVR','Pcs',1,0)">📼 DVR/NVR</button>
+        <button class="quick-item" onclick="addInvItem('Hard Disk','Pcs',1,0)">💾 HDD</button>
+        <button class="quick-item" onclick="addInvItem('Cable','Meters',1,0)">🔌 Cable</button>
+        <button class="quick-item" onclick="addInvItem('Labour Charge','Job',1,0)">👷 Labour</button>
+        <button class="quick-item" onclick="addInvItem('Visit Charge','Visit',1,0)">🚗 Visit</button>
+        <button class="quick-item" onclick="addInvItem('','Pcs',1,0)">+ Other</button>
+      </div>
+      <div style="display:grid;grid-template-columns:2.5fr 1fr 1.2fr 1.2fr 28px;gap:5px;padding:5px 0;margin-bottom:4px">
+        <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Item</span>
+        <span style="font-size:10px;color:var(--text3)">Qty</span>
+        <span style="font-size:10px;color:var(--text3)">Rate (₹)</span>
+        <span style="font-size:10px;color:var(--text3)">Total</span>
+        <span></span>
+      </div>
+      <div id="inv-items-container"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addInvItem()" style="margin-top:6px">+ Row जोड़ें</button>
+
+      <div class="totals-box">
+        <div class="total-row"><span style="color:var(--text2)">Subtotal</span><span style="font-family:'JetBrains Mono',monospace" id="it-sub">₹0</span></div>
+        <div class="total-row" id="it-gst-row" style="display:none"><span style="color:var(--text2)">GST (<span id="it-gst-pct">0</span>%)</span><span style="font-family:'JetBrains Mono',monospace" id="it-gst-amt">₹0</span></div>
+        <div class="total-row">
+          <span style="color:var(--text2)">Discount (₹)</span>
+          <input class="input" type="number" id="i-discount" placeholder="0" oninput="calcInvTotal()" style="width:90px;padding:4px 8px;font-size:12px;text-align:right">
+        </div>
+        <div class="total-row net"><span style="color:var(--text)">Grand Total</span><span style="color:var(--accent)" id="it-grand">₹0</span></div>
+      </div>
+
+      <div class="form-section" style="margin-top:14px">Payment</div>
+      <div class="pmodes" id="pmodes-container">
+        <div class="pmode sel" onclick="selMode(this,'Cash')"><div class="pmode-ico">💵</div><div class="pmode-lbl">Cash</div></div>
+        <div class="pmode" onclick="selMode(this,'UPI')"><div class="pmode-ico">📱</div><div class="pmode-lbl">UPI</div></div>
+        <div class="pmode" onclick="selMode(this,'Bank Transfer')"><div class="pmode-ico">🏦</div><div class="pmode-lbl">Bank</div></div>
+        <div class="pmode" onclick="selMode(this,'Cheque')"><div class="pmode-ico">📄</div><div class="pmode-lbl">Cheque</div></div>
+      </div>
+      <input type="hidden" id="i-paymode" value="Cash">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Amount Paid (₹)</label><input class="input" type="number" id="i-paid" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="form-group"><label class="form-label">Reference / Transaction ID</label><input class="input" id="i-ref" placeholder="UPI ID, cheque no..."></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="input" id="i-notes" placeholder="Extra जानकारी..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('inv-modal')">Cancel</button>
+      <button class="btn btn-primary" id="inv-save-btn" onclick="saveInvoice()">💾 Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="detail-title">Invoice Details</div><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-foot" id="detail-foot"></div>
+  </div>
+</div>
+
+<!-- ADD PAYMENT MODAL -->
+<div class="overlay" id="addpay-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head"><div class="modal-title">💰 Payment जोड़ें</div><button class="modal-close" onclick="closeModal('addpay-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Pending: <strong style="color:var(--red)" id="addpay-pending">₹0</strong></div>
+      <div class="pmodes" id="addpay-pmodes">
+        <div class="pmode sel" onclick="selAddPayMode(this,'Cash')"><div class="pmode-ico">💵</div><div class="pmode-lbl">Cash</div></div>
+        <div class="pmode" onclick="selAddPayMode(this,'UPI')"><div class="pmode-ico">📱</div><div class="pmode-lbl">UPI</div></div>
+        <div class="pmode" onclick="selAddPayMode(this,'Bank Transfer')"><div class="pmode-ico">🏦</div><div class="pmode-lbl">Bank</div></div>
+        <div class="pmode" onclick="selAddPayMode(this,'Cheque')"><div class="pmode-ico">📄</div><div class="pmode-lbl">Cheque</div></div>
+      </div>
+      <input type="hidden" id="addpay-mode" value="Cash">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input class="input" type="number" id="addpay-amount" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Reference</label><input class="input" id="addpay-ref" placeholder="UPI ID, cheque no..."></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('addpay-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAddPayment()">✅ Payment Add करें</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+const COMPANY={name:'RK Infotech',tagline:'CCTV Installation & Security Solutions',phone:'9999999999',email:'rkinfotech@gmail.com',address:'Korba, Chhattisgarh',gst:'GSTIN: 22XXXXX0000X1Z5',upi:'rkinfotech@upi'};
+
+let invoices=[],customers=[],jobs=[];
+let editId=null,addPayId=null;
+let currentFilter='all',modeFilter='';
+let itemCount=0;
+
+function today(){return new Date().toISOString().split('T')[0];}
+function invNum(id){return 'INV-'+String(id).padStart(4,'0');}
+function jobNum(id){return 'JOB-'+String(id).padStart(4,'0');}
+function setStatus(s){document.getElementById('db-dot').className='db-dot '+s;document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Connecting...';}
+function calcStatus(total,paid){if(paid<=0)return 'Pending';if(paid>=total)return 'Paid';return 'Partial';}
+
+function statusBadge(s){
+  const m={Paid:'b-green ✅',Partial:'b-yellow 🌗',Pending:'b-red ⏳',Cancelled:'b-grey ❌'};
+  const [c,i]=(m[s]||'b-grey').split(' ');
+  return `<span class="badge ${c}">${i||''} ${s}</span>`;
+}
+
+// ─── LOAD ───
+async function loadData(){
+  try{
+    setStatus('loading');
+    const [{data:inv,error:e1},{data:c,error:e2},{data:j,error:e3}]=await Promise.all([
+      db.from('invoices').select('*').order('created_at',{ascending:false}),
+      db.from('customers').select('id,name,phone,address,city'),
+      db.from('jobs').select('id,customer_name,type,status')
+    ]);
+    if(e1||e2||e3) throw e1||e2||e3;
+    invoices=inv||[]; customers=c||[]; jobs=j||[];
+    setStatus('connected');
+    render();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setStatus('disconnected');toast('❌','Error: '+err.message);}
+}
+
+// ─── FILTERS ───
+function filterStatus(s,el){currentFilter=s;modeFilter='';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+function filterMode(m,el){modeFilter=m;currentFilter='all';document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');render();}
+
+// ─── STATS ───
+function updateStats(){
+  const received=invoices.reduce((s,i)=>s+(i.paid_total||0),0);
+  const outstanding=invoices.filter(i=>i.status!=='Cancelled').reduce((s,i)=>s+(i.pending_amt||0),0);
+  document.getElementById('s-total').textContent=invoices.length;
+  document.getElementById('s-received').textContent='₹'+received.toLocaleString();
+  document.getElementById('s-outstanding').textContent='₹'+outstanding.toLocaleString();
+  document.getElementById('s-partial').textContent=invoices.filter(i=>i.status==='Partial').length;
+  document.getElementById('s-value').textContent='₹'+invoices.reduce((s,i)=>s+(i.grand_total||0),0).toLocaleString();
+  document.getElementById('sb-all').textContent=invoices.length;
+  ['Paid','Partial','Pending'].forEach(s=>{const el=document.getElementById('sb-'+s);if(el)el.textContent=invoices.filter(i=>i.status===s).length;});
+}
+
+// ─── RENDER ───
+function render(){
+  updateStats();
+  let list=invoices.filter(i=>{
+    if(currentFilter!=='all'&&i.status!==currentFilter)return false;
+    if(modeFilter&&!(i.payments||[]).some(p=>p.mode===modeFilter))return false;
+    return true;
+  });
+  const mIcon={'Cash':'💵','UPI':'📱','Bank Transfer':'🏦','Cheque':'📄'};
+  const tb=document.getElementById('inv-tbody');
+  tb.innerHTML=list.length?list.map(i=>{
+    const modes=[...new Set((i.payments||[]).map(p=>p.mode))];
+    const modeStr=modes.length>1?'Mix':modes[0]||'—';
+    const od=i.due_date&&i.due_date<today()&&i.status!=='Paid'&&i.status!=='Cancelled';
+    return `<tr onclick="openDetail(${i.id})">
+      <td><strong style="color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px">${invNum(i.id)}</strong></td>
+      <td><strong style="color:var(--text)">${i.customer_name||'—'}</strong></td>
+      <td style="font-family:'JetBrains Mono',monospace">₹${(i.grand_total||0).toLocaleString()}</td>
+      <td style="color:var(--green);font-family:'JetBrains Mono',monospace">₹${(i.paid_total||0).toLocaleString()}</td>
+      <td style="color:${(i.pending_amt||0)>0?'var(--red)':'var(--text3)'};font-family:'JetBrains Mono',monospace">₹${(i.pending_amt||0).toLocaleString()}</td>
+      <td>${mIcon[modeStr]||'—'} ${modeStr}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td style="color:${od?'var(--red)':'var(--text2)'}">${i.date||'—'}${od?' 🔴':''}</td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+        <button class="act-btn" onclick="openInvModal(${i.id})" title="Edit">✏️</button>
+        <button class="act-btn" onclick="downloadPDF(${i.id})" title="PDF Download">📄</button><button class="act-btn" onclick="printInvoice(${i.id})" title="Print">🖨️</button>
+        <button class="act-btn" onclick="sendWhatsApp(${i.id})" title="WhatsApp">💬</button>
+        <button class="act-btn del" onclick="deleteInv(${i.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">कोई Invoice नहीं</div></div></td></tr>`;
+}
+
+// ─── ITEMS ───
+function addInvItem(name='',unit='Pcs',qty=1,rate=0){
+  itemCount++;const id='invitem-'+itemCount;
+  const div=document.createElement('div');div.id=id;div.className='item-row';
+  div.innerHTML=`
+    <input class="input" placeholder="Item" value="${name}" oninput="calcInvTotal()">
+    <input class="input" type="number" placeholder="1" value="${qty}" oninput="calcInvTotal()">
+    <input class="input" type="number" placeholder="0" value="${rate}" oninput="calcInvTotal()">
+    <div class="item-total">₹0</div>
+    <button class="del-btn" onclick="document.getElementById('${id}').remove();calcInvTotal()">✕</button>
+  `;
+  document.getElementById('inv-items-container').appendChild(div);calcInvTotal();
+}
+
+function getInvItems(){
+  return Array.from(document.querySelectorAll('#inv-items-container .item-row')).map(row=>{
+    const i=row.querySelectorAll('input');
+    const qty=parseFloat(i[1].value)||0,rate=parseFloat(i[2].value)||0;
+    return{name:i[0].value.trim(),qty,rate,total:qty*rate};
+  }).filter(i=>i.name);
+}
+
+function calcInvTotal(){
+  let sub=0;
+  document.querySelectorAll('#inv-items-container .item-row').forEach(row=>{
+    const i=row.querySelectorAll('input');
+    const t=(parseFloat(i[1].value)||0)*(parseFloat(i[2].value)||0);
+    row.querySelector('.item-total').textContent='₹'+t.toLocaleString();sub+=t;
+  });
+  const gp=parseFloat(document.getElementById('i-gst').value)||0;
+  const ga=sub*gp/100;const disc=parseFloat(document.getElementById('i-discount')?.value)||0;
+  const grand=Math.max(0,sub+ga-disc);
+  document.getElementById('it-sub').textContent='₹'+sub.toLocaleString();
+  document.getElementById('it-gst-amt').textContent='₹'+ga.toLocaleString();
+  document.getElementById('it-grand').textContent='₹'+grand.toLocaleString();
+  document.getElementById('it-gst-row').style.display=gp>0?'flex':'none';
+  document.getElementById('it-gst-pct').textContent=gp;
+  return{subtotal:sub,gstAmt:ga,grandTotal:grand};
+}
+
+function selMode(el,mode){document.querySelectorAll('#pmodes-container .pmode').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('i-paymode').value=mode;}
+function fillAddr(){const custId=parseInt(document.getElementById('i-customer').value);const c=customers.find(x=>x.id===custId);document.getElementById('i-addr').value=c?.address||c?.city||'';}
+
+// ─── OPEN MODAL ───
+function openInvModal(id=null){
+  editId=id;
+  document.getElementById('inv-modal-title').textContent=id?'Invoice Edit करें':'नया Invoice';
+  document.getElementById('i-customer').innerHTML='<option value="">-- Customer चुनें --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('i-job').innerHTML='<option value="">-- Job link करें --</option>'+jobs.map(j=>`<option value="${j.id}">${jobNum(j.id)} — ${j.customer_name}</option>`).join('');
+  document.getElementById('inv-items-container').innerHTML='';itemCount=0;
+  document.querySelectorAll('#pmodes-container .pmode').forEach(x=>x.classList.remove('sel'));
+  document.querySelector('#pmodes-container .pmode').classList.add('sel');
+  document.getElementById('i-paymode').value='Cash';
+
+  if(id){
+    const inv=invoices.find(x=>x.id===id);if(!inv)return;
+    document.getElementById('i-customer').value=inv.customer_id||'';
+    document.getElementById('i-addr').value=inv.cust_addr||'';
+    document.getElementById('i-date').value=inv.date||today();
+    document.getElementById('i-due').value=inv.due_date||'';
+    document.getElementById('i-gst').value=inv.gst_pct||0;
+    document.getElementById('i-discount').value=inv.discount||0;
+    document.getElementById('i-paid').value=inv.paid_total||0;
+    document.getElementById('i-ref').value='';
+    document.getElementById('i-notes').value=inv.notes||'';
+    (inv.items||[]).forEach(i=>addInvItem(i.name,'Pcs',i.qty,i.rate));
+  }else{
+    const due=new Date();due.setDate(due.getDate()+7);
+    document.getElementById('i-date').value=today();
+    document.getElementById('i-due').value=due.toISOString().split('T')[0];
+    document.getElementById('i-gst').value='0';
+    document.getElementById('i-discount').value='';
+    document.getElementById('i-paid').value='';
+    document.getElementById('i-ref').value='';
+    document.getElementById('i-notes').value='';
+    document.getElementById('i-addr').value='';
+    addInvItem('Labour Charge','Job',1,0);
+  }
+  calcInvTotal();openModal('inv-modal');
+}
+
+// ─── SAVE ───
+async function saveInvoice(){
+  const custId=parseInt(document.getElementById('i-customer').value);
+  const c=customers.find(x=>x.id===custId);
+  if(!custId){toast('❌','Customer ज़रूरी है!');return;}
+  const items=getInvItems();
+  if(!items.length){toast('❌','कम से कम एक item!');return;}
+
+  const{subtotal,gstAmt,grandTotal}=calcInvTotal();
+  const gstPct=parseFloat(document.getElementById('i-gst').value)||0;
+  const discount=parseFloat(document.getElementById('i-discount').value)||0;
+  const paidNow=parseFloat(document.getElementById('i-paid').value)||0;
+  const payMode=document.getElementById('i-paymode').value;
+  const ref=document.getElementById('i-ref').value;
+
+  let payments=[];
+  if(editId){const existing=invoices.find(x=>x.id===editId);payments=(existing?.payments)||[];}
+  if(paidNow>0&&!editId)payments=[{mode:payMode,amount:paidNow,ref,date:today()}];
+  const paidTotal=payments.reduce((s,p)=>s+p.amount,0);
+  const pendingAmt=Math.max(0,grandTotal-paidTotal);
+  const status=calcStatus(grandTotal,paidTotal);
+
+  const data={
+    customer_id:custId,customer_name:c?.name||'',customer_phone:c?.phone||'',
+    cust_addr:document.getElementById('i-addr').value,
+    job_id:parseInt(document.getElementById('i-job').value)||null,
+    date:document.getElementById('i-date').value,
+    due_date:document.getElementById('i-due').value||null,
+    gst_pct:gstPct,gst_amt:gstAmt,discount,subtotal,
+    grand_total:grandTotal,paid_total:paidTotal,pending_amt:pendingAmt,
+    status,items,payments,notes:document.getElementById('i-notes').value,created_on:today()
+  };
+
+  const btn=document.getElementById('inv-save-btn');btn.textContent='⏳...';btn.disabled=true;
+  try{
+    if(editId){const{error}=await db.from('invoices').update(data).eq('id',editId);if(error)throw error;toast('✅','Invoice updated!');}
+    else{const{error}=await db.from('invoices').insert([data]);if(error)throw error;toast('✅',`${invNum(data.date)} Invoice बनाया गया!`);}
+    closeModal('inv-modal');await loadData();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+  finally{btn.textContent='💾 Save Invoice';btn.disabled=false;}
+}
+
+// ─── DETAIL ───
+function openDetail(id){
+  const inv=invoices.find(x=>x.id===id);if(!inv)return;
+  const paidPct=inv.grand_total>0?Math.min(100,Math.round((inv.paid_total||0)/inv.grand_total*100)):0;
+  const mIcon={'Cash':'💵','UPI':'📱','Bank Transfer':'🏦','Cheque':'📄'};
+  const od=inv.due_date&&inv.due_date<today()&&inv.status!=='Paid';
+
+  document.getElementById('detail-title').textContent=invNum(inv.id)+' — '+inv.customer_name;
+  document.getElementById('detail-body').innerHTML=`
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      ${statusBadge(inv.status)}
+      ${od?`<span class="badge b-red">🔴 Due: ${inv.due_date}</span>`:''}
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">CUSTOMER</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700">${inv.customer_name}</div>
+        ${inv.cust_addr?`<div style="font-size:12px;color:var(--text2)">📍 ${inv.cust_addr}</div>`:''}
+        ${inv.customer_phone?`<div style="font-size:12px"><a href="tel:${inv.customer_phone}" style="color:var(--blue);text-decoration:none">📞 ${inv.customer_phone}</a></div>`:''}
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text)">${invNum(inv.id)}</div>
+        <div style="font-size:12px;color:var(--text3)">Date: ${inv.date}</div>
+        ${inv.due_date?`<div style="font-size:12px;color:${od?'var(--red)':'var(--text3)'}">Due: ${inv.due_date}</div>`:''}
+      </div>
+    </div>
+
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">📦 Items</div>
+    <div class="table-card" style="margin-bottom:14px">
+      <table><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+      <tbody>${(inv.items||[]).map(i=>`<tr><td style="color:var(--text)">${i.name}</td><td>${i.qty}</td><td>₹${(i.rate||0).toLocaleString()}</td><td style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600">₹${(i.total||0).toLocaleString()}</td></tr>`).join('')}</tbody></table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px">
+          <div class="total-row" style="padding:4px 0;font-size:13px"><span style="color:var(--text2)">Subtotal</span><span>₹${(inv.subtotal||0).toLocaleString()}</span></div>
+          ${inv.gst_pct>0?`<div class="total-row" style="padding:4px 0;font-size:13px"><span style="color:var(--text2)">GST (${inv.gst_pct}%)</span><span>₹${(inv.gst_amt||0).toLocaleString()}</span></div>`:''}
+          ${inv.discount>0?`<div class="total-row" style="padding:4px 0;font-size:13px"><span style="color:var(--text2)">Discount</span><span style="color:var(--green)">-₹${inv.discount.toLocaleString()}</span></div>`:''}
+          <div class="total-row" style="border-top:1px solid var(--border);margin-top:5px;padding-top:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800"><span>Grand Total</span><span style="color:var(--accent)">₹${(inv.grand_total||0).toLocaleString()}</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px">
+          <span>Paid: <strong style="color:var(--green)">₹${(inv.paid_total||0).toLocaleString()}</strong></span>
+          <span>Pending: <strong style="color:${(inv.pending_amt||0)>0?'var(--red)':'var(--text3)'}">₹${(inv.pending_amt||0).toLocaleString()}</strong></span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${paidPct}%"></div></div>
+        <div style="font-size:11px;color:var(--text3);text-align:right;margin-top:4px">${paidPct}% paid</div>
+      </div>
+
+      <div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:8px">💰 Payment History</div>
+        ${(inv.payments||[]).length?(inv.payments||[]).map(p=>`
+          <div class="pay-item">
+            <div><div style="color:var(--green);font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700">₹${p.amount.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--text3)">${mIcon[p.mode]||''} ${p.mode} · ${p.date}${p.ref?' · '+p.ref:''}</div></div>
+          </div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">कोई payment नहीं</div>`}
+        ${inv.status!=='Paid'&&inv.status!=='Cancelled'?`<button class="btn btn-green btn-sm" style="width:100%;margin-top:8px" onclick="openAddPayModal(${inv.id})">+ Payment जोड़ें</button>`:''}
+      </div>
+    </div>
+
+    ${inv.notes?`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px;font-size:13px;color:var(--text2)">${inv.notes}</div>`:''}
+  `;
+
+  document.getElementById('detail-foot').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal')">बंद करें</button>
+    <button class="btn btn-ghost" onclick="closeModal('detail-modal');openInvModal(${inv.id})">✏️ Edit</button>
+    <button class="btn btn-ghost" onclick="sendWhatsApp(${inv.id})">💬 WhatsApp</button>
+    <button class="btn btn-ghost" onclick="downloadPDF(${inv.id})">📄 PDF Download</button><button class="btn btn-primary" onclick="printInvoice(${inv.id})">🖨️ Print</button>
+  `;
+  openModal('detail-modal');
+}
+
+// ─── ADD PAYMENT ───
+function openAddPayModal(id){
+  addPayId=id;const inv=invoices.find(x=>x.id===id);
+  document.getElementById('addpay-pending').textContent='₹'+(inv?.pending_amt||0).toLocaleString();
+  document.getElementById('addpay-amount').value=inv?.pending_amt||0;
+  document.getElementById('addpay-ref').value='';
+  document.querySelectorAll('#addpay-pmodes .pmode').forEach(x=>x.classList.remove('sel'));
+  document.querySelector('#addpay-pmodes .pmode').classList.add('sel');
+  document.getElementById('addpay-mode').value='Cash';
+  closeModal('detail-modal');openModal('addpay-modal');
+}
+
+function selAddPayMode(el,mode){document.querySelectorAll('#addpay-pmodes .pmode').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('addpay-mode').value=mode;}
+
+async function confirmAddPayment(){
+  const amount=parseFloat(document.getElementById('addpay-amount').value)||0;
+  if(!amount){toast('❌','Amount ज़रूरी है!');return;}
+  const inv=invoices.find(x=>x.id===addPayId);if(!inv)return;
+  const payments=[...(inv.payments||[]),{mode:document.getElementById('addpay-mode').value,amount,ref:document.getElementById('addpay-ref').value,date:today()}];
+  const paidTotal=payments.reduce((s,p)=>s+p.amount,0);
+  const pendingAmt=Math.max(0,inv.grand_total-paidTotal);
+  const status=calcStatus(inv.grand_total,paidTotal);
+  try{
+    const{error}=await db.from('invoices').update({payments,paid_total:paidTotal,pending_amt:pendingAmt,status}).eq('id',addPayId);
+    if(error)throw error;
+    closeModal('addpay-modal');await loadData();toast('✅','₹'+amount.toLocaleString()+' payment added!');
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+// ─── WHATSAPP ───
+function sendWhatsApp(id){
+  const inv=invoices.find(x=>x.id===id);if(!inv)return;
+  const items=(inv.items||[]).map(i=>`• ${i.name}: ${i.qty} × ₹${i.rate} = ₹${i.total}`).join('\n');
+  const msg=`🧾 *RK Infotech — Invoice*\n\nनमस्ते ${inv.customer_name} जी,\n\n*${invNum(inv.id)}*\n\n${items}\n\n---\nTotal: *₹${inv.grand_total}*\nPaid: ₹${inv.paid_total||0}\nPending: *₹${inv.pending_amt||0}*\n\nPay via UPI: ${COMPANY.upi}\n\n_RK Infotech · ${COMPANY.phone}_`;
+  const phone=(inv.customer_phone||'').replace(/\D/g,'');
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  toast('💬','WhatsApp खुल रहा है...');
+}
+
+// ─── PRINT ───
+
+// ─── PDF DOWNLOAD ───
+function getInvHTML(inv){
+  const items=(inv.items||[]).map((i,idx)=>`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px">${idx+1}</td><td style="padding:8px 12px">${i.name}</td><td style="padding:8px 12px;text-align:center">${i.qty}</td><td style="padding:8px 12px;text-align:right">₹${(i.rate||0).toLocaleString()}</td><td style="padding:8px 12px;text-align:right;font-weight:600">₹${(i.total||0).toLocaleString()}</td></tr>`).join('');
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`upi://pay?pa=${COMPANY.upi}&pn=RK+Infotech&am=${inv.pending_amt||0}&cu=INR&tn=${invNum(inv.id)}`)}`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>body{font-family:'Plus Jakarta Sans','Outfit',sans-serif;padding:36px;max-width:700px;margin:auto;color:#111;}@media print{.no-print{display:none!important;}}</style></head><body>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #FF6B2B"><div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:#FF6B2B">📹 ${COMPANY.name}</div><div style="font-size:12px;color:#777">${COMPANY.tagline}</div><div style="font-size:12px;color:#555">📞 ${COMPANY.phone} · ${COMPANY.email}</div><div style="font-size:11px;color:#FF6B2B">${COMPANY.gst}</div></div><div style="text-align:right"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800">INVOICE</div><div style="font-size:14px;color:#FF6B2B;font-weight:700">${invNum(inv.id)}</div><div style="font-size:12px;color:#777">Date: ${inv.date}</div>${inv.due_date?`<div style="font-size:12px;color:#FF6B2B">Due: ${inv.due_date}</div>`:""}</div></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:18px;gap:18px"><div style="background:#f9f9f9;border-radius:8px;padding:13px;flex:1"><div style="font-size:11px;color:#999;text-transform:uppercase;margin-bottom:3px">Bill To:</div><div style="font-size:17px;font-weight:700">${inv.customer_name}</div>${inv.cust_addr?`<div style="font-size:13px;color:#555">📍 ${inv.cust_addr}</div>`:""}</div>${(inv.pending_amt||0)>0?`<div style="background:#f9f9f9;border-radius:8px;padding:13px;min-width:150px;text-align:center"><div style="font-size:11px;color:#999;margin-bottom:5px">PAY VIA UPI</div><img src="${qrUrl}" width="80" height="80" style="border-radius:5px"><div style="font-size:10px;color:#777;margin-top:3px">${COMPANY.upi}</div><div style="font-size:12px;color:#FF6B2B;font-weight:700;margin-top:3px">₹${(inv.pending_amt||0).toLocaleString()} pending</div></div>`:""}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px"><thead><tr style="background:#FF6B2B;color:#fff"><th style="padding:9px 12px;text-align:left;width:30px">#</th><th style="padding:9px 12px;text-align:left">Description</th><th style="padding:9px 12px;text-align:center">Qty</th><th style="padding:9px 12px;text-align:right">Rate</th><th style="padding:9px 12px;text-align:right">Amount</th></tr></thead><tbody>${items}</tbody></table>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:18px"><div style="min-width:250px"><div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">Subtotal</span><span>₹${(inv.subtotal||0).toLocaleString()}</span></div>${inv.gst_pct>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">GST (${inv.gst_pct}%)</span><span>₹${(inv.gst_amt||0).toLocaleString()}</span></div>`:""}${inv.discount>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">Discount</span><span style="color:green">-₹${inv.discount.toLocaleString()}</span></div>`:""}<div style="display:flex;justify-content:space-between;padding:9px 12px;background:#fff3ee;border:1px solid #FF6B2B;border-radius:6px;margin-top:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:#FF6B2B"><span>Grand Total</span><span>₹${(inv.grand_total||0).toLocaleString()}</span></div><div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;margin-top:5px"><span style="color:#777">Paid</span><span style="color:green;font-weight:600">₹${(inv.paid_total||0).toLocaleString()}</span></div>${(inv.pending_amt||0)>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px"><span style="color:#777">Pending</span><span style="color:red;font-weight:600">₹${(inv.pending_amt||0).toLocaleString()}</span></div>`:""}</div></div>
+    ${inv.notes?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;font-size:12px;color:#555;border-left:3px solid #FF6B2B;white-space:pre-line;margin-bottom:18px">${inv.notes}</div>`:""}
+    <div style="margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px"><div>Customer Signature: _________________</div><div>For ${COMPANY.name}: _________________</div></div>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:#ccc">Thank you! · ${COMPANY.phone}</div>
+    </body></html>`;
+}
+
+function downloadPDF(id){
+  const inv=invoices.find(x=>x.id===id);if(!inv)return;
+  toast('⏳','PDF तैयार हो रहा है...');
+  const html=getInvHTML(inv);
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{
+    w.focus();
+    w.print();
+    toast('📄',invNum(inv.id)+' — Save as PDF चुनें!');
+  },1000);
+}
+
+
+function printInvoice(id){
+  const inv=invoices.find(x=>x.id===id);if(!inv)return;
+  const items=(inv.items||[]).map((i,idx)=>`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px">${idx+1}</td><td style="padding:8px 12px">${i.name}</td><td style="padding:8px 12px;text-align:center">${i.qty}</td><td style="padding:8px 12px;text-align:right">₹${(i.rate||0).toLocaleString()}</td><td style="padding:8px 12px;text-align:right;font-weight:600">₹${(i.total||0).toLocaleString()}</td></tr>`).join('');
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`upi://pay?pa=${COMPANY.upi}&pn=RK+Infotech&am=${inv.pending_amt||0}&cu=INR&tn=${invNum(inv.id)}`)}`;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>body{font-family:'Plus Jakarta Sans','Outfit',sans-serif;padding:36px;max-width:700px;margin:auto;color:#111;}</style></head><body>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #FF6B2B">
+      <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:#FF6B2B">📹 ${COMPANY.name}</div><div style="font-size:12px;color:#777">${COMPANY.tagline}</div><div style="font-size:12px;color:#555">📞 ${COMPANY.phone} · ${COMPANY.email}</div><div style="font-size:11px;color:#FF6B2B">${COMPANY.gst}</div></div>
+      <div style="text-align:right"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800">INVOICE</div><div style="font-size:14px;color:#FF6B2B;font-weight:700">${invNum(inv.id)}</div><div style="font-size:12px;color:#777">Date: ${inv.date}</div>${inv.due_date?`<div style="font-size:12px;color:#FF6B2B">Due: ${inv.due_date}</div>`:''}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:18px;gap:18px">
+      <div style="background:#f9f9f9;border-radius:8px;padding:13px;flex:1"><div style="font-size:11px;color:#999;text-transform:uppercase;margin-bottom:3px">Bill To:</div><div style="font-size:17px;font-weight:700">${inv.customer_name}</div>${inv.cust_addr?`<div style="font-size:13px;color:#555">📍 ${inv.cust_addr}</div>`:''}</div>
+      ${(inv.pending_amt||0)>0?`<div style="background:#f9f9f9;border-radius:8px;padding:13px;min-width:150px;text-align:center"><div style="font-size:11px;color:#999;margin-bottom:5px">PAY VIA UPI</div><img src="${qrUrl}" width="80" height="80" style="border-radius:5px"><div style="font-size:10px;color:#777;margin-top:3px">${COMPANY.upi}</div><div style="font-size:12px;color:#FF6B2B;font-weight:700;margin-top:3px">₹${(inv.pending_amt||0).toLocaleString()} pending</div></div>`:''}
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px">
+      <thead><tr style="background:#FF6B2B;color:#fff"><th style="padding:9px 12px;text-align:left;width:30px">#</th><th style="padding:9px 12px;text-align:left">Description</th><th style="padding:9px 12px;text-align:center">Qty</th><th style="padding:9px 12px;text-align:right">Rate</th><th style="padding:9px 12px;text-align:right">Amount</th></tr></thead>
+      <tbody>${items}</tbody>
+    </table>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+      <div style="min-width:250px">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">Subtotal</span><span>₹${(inv.subtotal||0).toLocaleString()}</span></div>
+        ${inv.gst_pct>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">GST (${inv.gst_pct}%)</span><span>₹${(inv.gst_amt||0).toLocaleString()}</span></div>`:''}
+        ${inv.discount>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px"><span style="color:#777">Discount</span><span style="color:green">-₹${inv.discount.toLocaleString()}</span></div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:9px 12px;background:#fff3ee;border:1px solid #FF6B2B;border-radius:6px;margin-top:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:#FF6B2B"><span>Grand Total</span><span>₹${(inv.grand_total||0).toLocaleString()}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;margin-top:5px"><span style="color:#777">Paid</span><span style="color:green;font-weight:600">₹${(inv.paid_total||0).toLocaleString()}</span></div>
+        ${(inv.pending_amt||0)>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px"><span style="color:#777">Pending</span><span style="color:red;font-weight:600">₹${(inv.pending_amt||0).toLocaleString()}</span></div>`:''}
+      </div>
+    </div>
+    ${inv.notes?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;font-size:12px;color:#555;border-left:3px solid #FF6B2B;white-space:pre-line;margin-bottom:18px">${inv.notes}</div>`:''}
+    <div style="margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px"><div>Customer Signature: _________________</div><div>For ${COMPANY.name}: _________________</div></div>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:#ccc">Thank you! · ${COMPANY.phone}</div>
+    <script>window.print();<\/script></body></html>`);
+}
+
+// ─── DELETE ───
+async function deleteInv(id){
+  if(!confirm('Invoice delete करें?'))return;
+  try{const{error}=await db.from('invoices').delete().eq('id',id);if(error)throw error;toast('🗑️','Deleted');await loadData();}
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};toast('❌','Error: '+err.message);}
+}
+
+// ─── EXPORT ───
+function exportCSV(){
+  if(!invoices.length){toast('⚠️','कोई data नहीं');return;}
+  const rows=[['Invoice#','Customer','Date','Total','Paid','Pending','Status']];
+  invoices.forEach(i=>rows.push([invNum(i.id),i.customer_name,i.date,i.grand_total,i.paid_total||0,i.pending_amt||0,i.status]));
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='rk_invoices.csv';a.click();
+  toast('✅','CSV exported!');
+}
+
+// ─── MODAL ───
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+// ─── TOAST ───
+let toastT;
+function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ─── INIT ───
+loadData();
+</script>
+</body>
+</html>

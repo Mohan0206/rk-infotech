@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Customers</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+
+/* DB STATUS */
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.layout{display:flex;min-height:calc(100vh - 58px);}
+
+/* SIDEBAR MODERN */
+.sidebar{width:224px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sb-sec,.sb-label{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:12px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;display:block;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:var(--accentBg);color:var(--accent);font-weight:600;}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:72px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:180px;}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;}
+.search-input{padding-left:34px;}
+
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;cursor:pointer;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:11px 14px;color:var(--text2);vertical-align:middle;}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-home{background:var(--blueBg);color:var(--blue);}
+.badge-shop{background:var(--accentBg);color:var(--accent);}
+.badge-office{background:var(--greenBg);color:var(--green);}
+.badge-factory{background:var(--yellowBg);color:var(--yellow);}
+.badge-society{background:rgba(139,92,246,0.1);color:#a78bfa;}
+.badge-other{background:var(--bg3);color:var(--text2);}
+
+.cust-info{display:flex;align-items:center;gap:10px;}
+.cust-avatar{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0;}
+.cust-name{font-weight:600;color:var(--text);font-size:14px;}
+.cust-city{font-size:12px;color:var(--text3);margin-top:1px;}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(16px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:20px 22px;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:18px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);margin-left:2px;}
+
+.site-row{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
+.site-num{width:22px;height:22px;background:var(--accentBg);color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.site-fields{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.site-del{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.12s;margin-top:1px;}
+.site-del:hover{color:var(--red);border-color:var(--red);background:var(--redBg);}
+
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.empty-state{text-align:center;padding:50px;color:var(--text3);}
+.empty-icon{font-size:44px;margin-bottom:12px;opacity:0.5;}
+.empty-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;color:var(--text2);margin-bottom:5px;}
+
+/* LOADING */
+.loading-row td{text-align:center;padding:30px;color:var(--text3);}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{padding:16px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .site-fields{grid-template-columns:1fr;}
+}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn active" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Customers</div>
+    <button class="sidebar-item active" onclick="filterBy('all',this)">
+      <span class="si-icon">👥</span>सभी
+      <span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-all">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Home',this)">
+      <span class="si-icon">🏠</span>Home
+      <span class="sb-badge" style="background:var(--blueBg);color:var(--blue)" id="sb-Home">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Shop',this)">
+      <span class="si-icon">🏪</span>Shop
+      <span class="sb-badge" style="background:var(--accentBg);color:var(--accent)" id="sb-Shop">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Office',this)">
+      <span class="si-icon">🏢</span>Office
+      <span class="sb-badge" style="background:var(--greenBg);color:var(--green)" id="sb-Office">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Factory',this)">
+      <span class="si-icon">🏭</span>Factory
+      <span class="sb-badge" style="background:var(--yellowBg);color:var(--yellow)" id="sb-Factory">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Society',this)">
+      <span class="si-icon">🏘️</span>Society
+      <span class="sb-badge" style="background:rgba(139,92,246,0.1);color:#a78bfa" id="sb-Society">0</span>
+    </button>
+    <button class="sidebar-item" onclick="filterBy('Other',this)">
+      <span class="si-icon">📌</span>Other
+      <span class="sb-badge" style="background:var(--bg3);color:var(--text2)" id="sb-Other">0</span>
+    </button>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Customers</div>
+        <div class="page-subtitle">RK Infotech के सभी clients — Supabase से connected</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇️ Export</button>
+        <button class="btn btn-primary" onclick="openAddModal()">+ नया Customer</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-ico" style="background:var(--accentBg)">👥</div><div><div class="stat-val" style="color:var(--accent)" id="s-total">0</div><div class="stat-lbl">Total Customers</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">📍</div><div><div class="stat-val" style="color:var(--green)" id="s-sites">0</div><div class="stat-lbl">Total Sites</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">🏪</div><div><div class="stat-val" style="color:var(--blue)" id="s-commercial">0</div><div class="stat-lbl">Commercial</div></div></div>
+      <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">🏠</div><div><div class="stat-val" style="color:var(--yellow)" id="s-home">0</div><div class="stat-lbl">Residential</div></div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input class="input search-input" type="search" placeholder="नाम, phone, या शहर..." id="search-inp" oninput="render()">
+      </div>
+      <select class="input" style="width:auto" id="sort-sel" onchange="render()">
+        <option value="newest">नया पहले</option>
+        <option value="name">A–Z नाम</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Customer</th><th>Phone</th><th>WhatsApp</th>
+            <th>City</th><th>Type</th><th>Sites</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="cust-tbody">
+            <tr class="loading-row"><td colspan="7"><span class="spinner"></span>Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CUSTOMER MODAL -->
+<div class="overlay" id="cust-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">नया Customer जोड़ें</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">Basic Information</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">नाम <span class="req">*</span></label><input class="input" id="f-name" placeholder="Customer का पूरा नाम"></div>
+        <div class="form-group"><label class="form-label">Type <span class="req">*</span></label>
+          <select class="input" id="f-type">
+            <option value="Home">🏠 Home</option><option value="Shop">🏪 Shop</option>
+            <option value="Office">🏢 Office</option><option value="Factory">🏭 Factory</option>
+            <option value="Society">🏘️ Society</option><option value="Other">📌 Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Phone <span class="req">*</span></label><input class="input" id="f-phone" placeholder="10 digit" maxlength="10" type="tel"></div>
+        <div class="form-group"><label class="form-label">WhatsApp</label><input class="input" id="f-whatsapp" placeholder="अगर phone से अलग है"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="input" id="f-email" placeholder="email@example.com" type="email"></div>
+        <div class="form-group"><label class="form-label">City / Area</label><input class="input" id="f-city" placeholder="शहर या इलाका"></div>
+        <div class="form-group full"><label class="form-label">Address</label><textarea class="input" id="f-address" placeholder="पूरा पता"></textarea></div>
+      </div>
+      <div class="form-section">Sites / Locations</div>
+      <div id="sites-container"></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addSite()">+ Site जोड़ें</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveCustomer()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+// ─── SUPABASE CONFIG ───
+const SUPABASE_URL = 'https://hkspejyyzicejxvucvtc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── STATE ───
+let customers = [];
+let editingId = null;
+let currentFilter = 'all';
+let siteCount = 0;
+
+const COLORS = [
+  'background:rgba(232,108,47,0.15);color:#FF6B2B',
+  'background:rgba(59,142,255,0.15);color:#3b8eff',
+  'background:rgba(34,201,122,0.15);color:#22c97a',
+  'background:rgba(167,139,250,0.15);color:#a78bfa',
+  'background:rgba(240,180,41,0.15);color:#f0b429'
+];
+
+function initials(name){ const p=name.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():name.substring(0,2).toUpperCase(); }
+function avColor(name){ return COLORS[name.charCodeAt(0)%COLORS.length]; }
+
+// ─── DB STATUS ───
+function setStatus(status){
+  const dot=document.getElementById('db-dot');
+  const text=document.getElementById('db-text');
+  dot.className='db-dot '+status;
+  text.textContent=status==='connected'?'Connected':status==='disconnected'?'Disconnected':'Connecting...';
+}
+
+// ─── LOAD DATA ───
+async function loadCustomers(){
+  try {
+    setStatus('loading');
+    const { data, error } = await db.from('customers').select('*').order('created_at', { ascending: false });
+    if(error) throw error;
+    customers = data || [];
+    setStatus('connected');
+    render();
+  } catch(err) {
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    setStatus('disconnected');
+    toast('❌', 'Database error: '+err.message);
+    document.getElementById('cust-tbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--red)">❌ Database connect नहीं हो पाया। Internet check करें।</td></tr>`;
+  }
+}
+
+// ─── FILTER ───
+function filterBy(type, el){
+  currentFilter = type;
+  document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ─── STATS ───
+function updateStats(){
+  const total = customers.length;
+  const sites = customers.reduce((s,c)=>s+(c.sites||[]).length,0);
+  const commercial = customers.filter(c=>['Shop','Office','Factory','Society'].includes(c.type)).length;
+  const home = customers.filter(c=>c.type==='Home').length;
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-sites').textContent = sites;
+  document.getElementById('s-commercial').textContent = commercial;
+  document.getElementById('s-home').textContent = home;
+
+  document.getElementById('sb-all').textContent = total;
+  ['Home','Shop','Office','Factory','Society','Other'].forEach(t=>{
+    const el=document.getElementById('sb-'+t);
+    if(el) el.textContent = customers.filter(c=>c.type===t).length;
+  });
+}
+
+// ─── RENDER ───
+function render(){
+  updateStats();
+  const search = document.getElementById('search-inp').value.toLowerCase();
+  const sort = document.getElementById('sort-sel').value;
+
+  let list = [...customers];
+  if(currentFilter !== 'all') list = list.filter(c=>c.type===currentFilter);
+  if(search) list = list.filter(c=>
+    c.name.toLowerCase().includes(search) ||
+    (c.phone||'').includes(search) ||
+    (c.city||'').toLowerCase().includes(search)
+  );
+  if(sort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+
+  const tb = document.getElementById('cust-tbody');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">कोई Customer नहीं</div><div style="font-size:13px">नया customer जोड़ें</div></div></td></tr>`;
+    return;
+  }
+
+  const typeBadge={
+    'Home':'badge-home 🏠','Shop':'badge-shop 🏪','Office':'badge-office 🏢',
+    'Factory':'badge-factory 🏭','Society':'badge-society 🏘️','Other':'badge-other 📌'
+  };
+
+  tb.innerHTML = list.map(c=>{
+    const [badgeClass, icon] = (typeBadge[c.type]||'badge-other 📌').split(' ');
+    const siteCount = (c.sites||[]).length;
+    const wa = c.whatsapp || c.phone;
+    return `<tr>
+      <td>
+        <div class="cust-info">
+          <div class="cust-avatar" style="${avColor(c.name)}">${initials(c.name)}</div>
+          <div>
+            <div class="cust-name">${c.name}</div>
+            <div class="cust-city">${c.city||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td><a href="tel:${c.phone}" style="color:var(--blue);text-decoration:none">${c.phone}</a></td>
+      <td><a href="https://wa.me/91${wa}" target="_blank" style="color:var(--green);text-decoration:none">💬 ${wa}</a></td>
+      <td>${c.city||'—'}</td>
+      <td><span class="badge ${badgeClass}">${icon} ${c.type}</span></td>
+      <td><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:13px">${siteCount} site${siteCount!==1?'s':''}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="act-btn" onclick="openEditModal(${c.id})" title="Edit">✏️</button>
+          <button class="act-btn del" onclick="deleteCustomer(${c.id},'${c.name.replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── SITES ───
+function addSite(data={}){
+  siteCount++;
+  const n = siteCount;
+  const div = document.createElement('div');
+  div.className = 'site-row';
+  div.id = 'site-'+n;
+  div.innerHTML = `
+    <div class="site-num">${n}</div>
+    <div class="site-fields">
+      <input class="input" placeholder="Site का नाम (जैसे: Main Office)" value="${data.siteName||''}">
+      <input class="input" placeholder="City / Area" value="${data.siteCity||''}">
+      <textarea class="input" placeholder="Site का पता" style="min-height:48px;grid-column:1/-1">${data.siteAddr||''}</textarea>
+    </div>
+    <button class="site-del" onclick="document.getElementById('site-${n}').remove()">✕</button>
+  `;
+  document.getElementById('sites-container').appendChild(div);
+}
+
+function getSites(){
+  return Array.from(document.querySelectorAll('#sites-container .site-row')).map(row=>{
+    const inputs = row.querySelectorAll('input,textarea');
+    return { siteName:inputs[0].value.trim(), siteCity:inputs[1].value.trim(), siteAddr:inputs[2].value.trim() };
+  }).filter(s=>s.siteName||s.siteAddr);
+}
+
+// ─── MODALS ───
+function openAddModal(){
+  editingId = null;
+  siteCount = 0;
+  document.getElementById('modal-title').textContent = 'नया Customer जोड़ें';
+  ['f-name','f-phone','f-whatsapp','f-email','f-city','f-address'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type').value = 'Home';
+  document.getElementById('sites-container').innerHTML = '';
+  addSite();
+  document.getElementById('cust-modal').classList.add('open');
+}
+
+function openEditModal(id){
+  const c = customers.find(x=>x.id===id);
+  if(!c) return;
+  editingId = id;
+  siteCount = 0;
+  document.getElementById('modal-title').textContent = 'Customer Edit करें';
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-type').value = c.type;
+  document.getElementById('f-phone').value = c.phone;
+  document.getElementById('f-whatsapp').value = c.whatsapp||'';
+  document.getElementById('f-email').value = c.email||'';
+  document.getElementById('f-city').value = c.city||'';
+  document.getElementById('f-address').value = c.address||'';
+  document.getElementById('sites-container').innerHTML = '';
+  (c.sites||[]).forEach(s=>addSite(s));
+  if(!(c.sites||[]).length) addSite();
+  document.getElementById('cust-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('cust-modal').classList.remove('open');
+}
+
+// ─── SAVE ───
+async function saveCustomer(){
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if(!name){ toast('❌','नाम ज़रूरी है!'); return; }
+  if(!phone){ toast('❌','Phone ज़रूरी है!'); return; }
+  if(!/^\d{10}$/.test(phone)){ toast('❌','Phone 10 digits का होना चाहिए'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '⏳ Saving...';
+  btn.disabled = true;
+
+  const data = {
+    name, phone,
+    whatsapp: document.getElementById('f-whatsapp').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    city: document.getElementById('f-city').value.trim(),
+    address: document.getElementById('f-address').value.trim(),
+    type: document.getElementById('f-type').value,
+    sites: getSites()
+  };
+
+  try {
+    if(editingId){
+      const { error } = await db.from('customers').update(data).eq('id', editingId);
+      if(error) throw error;
+      toast('✅', `${name} updated!`);
+    } else {
+      const { error } = await db.from('customers').insert([data]);
+      if(error) throw error;
+      toast('✅', `${name} जोड़ा गया!`);
+    }
+    closeModal();
+    await loadCustomers();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    toast('❌', 'Error: '+err.message);
+  } finally {
+    btn.textContent = '💾 Save';
+    btn.disabled = false;
+  }
+}
+
+// ─── DELETE ───
+async function deleteCustomer(id, name){
+  if(!confirm(`"${name}" को delete करना चाहते हैं?`)) return;
+  try {
+    const { error } = await db.from('customers').delete().eq('id', id);
+    if(error) throw error;
+    toast('🗑️', `${name} deleted`);
+    await loadCustomers();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};
+    toast('❌', 'Error: '+err.message);
+  }
+}
+
+// ─── EXPORT ───
+function exportCSV(){
+  if(!customers.length){ toast('⚠️','Export के लिए कोई data नहीं'); return; }
+  const rows = [['ID','Name','Type','Phone','WhatsApp','Email','City','Address','Sites']];
+  customers.forEach(c=>{
+    rows.push([c.id,c.name,c.type,c.phone,c.whatsapp||'',c.email||'',c.city||'',c.address||'',(c.sites||[]).map(s=>s.siteName).join('|')]);
+  });
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download = 'rk_customers.csv';
+  a.click();
+  toast('✅','CSV exported!');
+}
+
+// ─── MODAL CLOSE ON OUTSIDE CLICK ───
+document.getElementById('cust-modal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+// ─── TOAST ───
+let toastT;
+function toast(icon, msg){
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ─── INIT ───
+loadCustomers();
+</script>
+</body>
+</html>

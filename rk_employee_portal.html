@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RK Infotech — Employee Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+.login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(232,108,47,0.08) 0%,transparent 70%);}
+.login-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:var(--shadow);animation:fadeUp 0.4s ease;position:relative;z-index:1;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo-mark{width:64px;height:64px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;box-shadow:0 8px 24px rgba(232,108,47,0.3);}
+.login-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text2);}
+.login-step{margin-bottom:20px;}
+.login-label{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.phone-input{background:var(--bg2);border:2px solid var(--border);color:var(--text);padding:13px 16px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-size:18px;outline:none;width:100%;transition:border-color 0.15s;letter-spacing:2px;}
+.phone-input:focus{border-color:var(--accent);}
+.phone-input::placeholder{color:var(--text3);letter-spacing:0;font-size:14px;}
+
+/* PIN PAD */
+.pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:20px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);transition:all 0.15s;}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);transform:scale(1.1);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pin-key{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.12s;user-select:none;}
+.pin-key:hover{background:var(--bg3);border-color:var(--border2);}
+.pin-key:active{transform:scale(0.95);background:var(--accentBg);border-color:var(--accent);}
+.pin-key.clear{font-size:14px;color:var(--text2);}
+.pin-key.enter{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pin-key.enter:hover{background:#f08040;}
+
+.login-btn{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#CC3300);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(232,108,47,0.3);transition:all 0.15s;margin-top:8px;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,108,47,0.4);}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.login-error{background:var(--redBg);border:1px solid rgba(240,79,79,0.3);color:var(--red);padding:10px 14px;border-radius:9px;font-size:13px;text-align:center;margin-top:12px;display:none;}
+.login-error.show{display:block;}
+
+/* ── EMPLOYEE DASHBOARD ── */
+.emp-topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.emp-topbar-logo{display:flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;}
+.emp-topbar-logo span{color:var(--accent);}
+.emp-user{display:flex;align-items:center;gap:8px;}
+.emp-av{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;background:linear-gradient(135deg,var(--accent),#CC3300);color:#fff;}
+.emp-name-lbl{font-size:13px;font-weight:600;}
+.logout-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;}
+.logout-btn:hover{color:var(--red);border-color:var(--red);}
+
+.emp-main{padding:20px;max-width:900px;margin:0 auto;}
+.emp-greeting{margin-bottom:20px;}
+.emp-greeting-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;}
+.emp-greeting-sub{font-size:13px;color:var(--text2);}
+
+/* TASKS SECTION */
+.task-section{margin-bottom:24px;}
+.sec-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.task-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:15px;margin-bottom:10px;transition:all 0.15s;}
+.task-card:hover{border-color:var(--border2);}
+.task-card.done{opacity:0.6;}
+.task-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.task-title{font-weight:700;font-size:14px;color:var(--text);}
+.task-desc{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.task-meta{display:flex;gap:10px;font-size:11px;color:var(--text3);flex-wrap:wrap;margin-bottom:10px;}
+.task-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.task-btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:12px;font-weight:600;transition:all 0.15s;}
+.task-btn-start{background:var(--blueBg);color:var(--blue);border:1px solid rgba(59,142,255,0.2);}
+.task-btn-done{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+
+/* MODULES SECTION */
+.modules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:18px;cursor:pointer;transition:all 0.18s;text-decoration:none;display:flex;align-items:center;gap:14px;}
+.mod-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+.mod-ico{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.mod-info-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.mod-info-sub{font-size:12px;color:var(--text2);}
+.mod-arrow{margin-left:auto;color:var(--text3);font-size:16px;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:13px 15px;text-align:center;}
+.mini-stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;margin-bottom:3px;}
+.mini-stat-lbl{font-size:11px;color:var(--text2);}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-red{background:var(--redBg);color:var(--red);}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+@media(min-width:600px){.modules-grid{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">📹</div>
+      <div class="login-title">RK Infotech</div>
+      <div class="login-sub">Employee Portal</div>
+    </div>
+
+    <!-- STEP 1: Phone -->
+    <div id="step-phone">
+      <div class="login-step">
+        <div class="login-label">📱 अपना Phone Number डालें</div>
+        <input class="phone-input" id="login-phone" type="tel" maxlength="10" placeholder="10-digit number" oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <button class="login-btn" onclick="checkPhone()">आगे बढ़ें →</button>
+      <div class="login-error" id="phone-error">❌ यह phone number नहीं मिला</div>
+    </div>
+
+    <!-- STEP 2: PIN -->
+    <div id="step-pin" style="display:none">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px">नमस्ते!</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700" id="emp-name-display"></div>
+      </div>
+      <div class="login-label">🔐 4-digit PIN डालें</div>
+      <div class="pin-display">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <div class="pin-key" onclick="pinPress('1')">1</div>
+        <div class="pin-key" onclick="pinPress('2')">2</div>
+        <div class="pin-key" onclick="pinPress('3')">3</div>
+        <div class="pin-key" onclick="pinPress('4')">4</div>
+        <div class="pin-key" onclick="pinPress('5')">5</div>
+        <div class="pin-key" onclick="pinPress('6')">6</div>
+        <div class="pin-key" onclick="pinPress('7')">7</div>
+        <div class="pin-key" onclick="pinPress('8')">8</div>
+        <div class="pin-key" onclick="pinPress('9')">9</div>
+        <div class="pin-key clear" onclick="pinClear()">← Back</div>
+        <div class="pin-key" onclick="pinPress('0')">0</div>
+        <div class="pin-key enter" onclick="checkPIN()">✓</div>
+      </div>
+      <div class="login-error" id="pin-error">❌ PIN गलत है। दोबारा try करें।</div>
+      <button class="login-btn" style="margin-top:14px;background:var(--bg3);color:var(--text2);box-shadow:none;border:1px solid var(--border)" onclick="backToPhone()">← Phone बदलें</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EMPLOYEE DASHBOARD ══ -->
+<div id="emp-dashboard" style="display:none">
+  <div class="emp-topbar">
+    <div class="emp-topbar-logo">📹 RK <span>Infotech</span></div>
+    <div class="emp-user">
+      <div class="emp-av" id="topbar-av">RK</div>
+      <div class="emp-name-lbl" id="topbar-name"></div>
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="emp-main">
+    <div class="emp-greeting">
+      <div class="emp-greeting-title" id="dash-greeting">नमस्ते! 👋</div>
+      <div class="emp-greeting-sub" id="dash-sub"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row" id="emp-dash-stats"></div>
+
+    <!-- TASKS -->
+    <div class="task-section">
+      <div class="sec-title">📋 मेरे Tasks</div>
+      <div id="my-tasks-list"></div>
+    </div>
+
+    <!-- MODULES -->
+    <div>
+      <div class="sec-title">🚀 मेरे Modules</div>
+      <div class="modules-grid" id="my-modules-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let currentAcc=null,currentEmp=null,pinBuffer='';
+const TODAY=new Date().toISOString().split('T')[0];
+
+const MODULES_INFO={
+  dashboard:{label:'Dashboard',icon:'📊',sub:'Business overview',href:'rk_dashboard_supabase.html',bg:'var(--accentBg)',col:'var(--accent)'},
+  leads:{label:'Leads',icon:'🎯',sub:'Enquiries manage करें',href:'rk_leads_supabase.html',bg:'var(--yellowBg)',col:'var(--yellow)'},
+  customers:{label:'Customers',icon:'👥',sub:'Client records',href:'rk_customers_supabase.html',bg:'var(--blueBg)',col:'var(--blue)'},
+  jobs:{label:'Jobs',icon:'📋',sub:'Work assignments',href:'rk_jobs_supabase.html',bg:'var(--purpleBg)',col:'var(--purple)'},
+  quotations:{label:'Quotations',icon:'📝',sub:'Price quotes',href:'rk_quotations_supabase.html',bg:'var(--greenBg)',col:'var(--green)'},
+  invoices:{label:'Invoices',icon:'🧾',sub:'Bills & payments',href:'rk_invoices_supabase.html',bg:'var(--accentBg)',col:'var(--accent)'},
+  inventory:{label:'Inventory',icon:'📦',sub:'Stock management',href:'rk_inventory_supabase.html',bg:'var(--blueBg)',col:'var(--blue)'},
+  amc:{label:'AMC',icon:'🔧',sub:'Maintenance contracts',href:'rk_amc_supabase.html',bg:'var(--greenBg)',col:'var(--green)'},
+  employees:{label:'Employees',icon:'👷',sub:'Staff management',href:'rk_employees_supabase.html',bg:'var(--purpleBg)',col:'var(--purple)'},
+  reports:{label:'Reports',icon:'📈',sub:'Analytics & reports',href:'rk_reports_supabase.html',bg:'var(--greenBg)',col:'var(--green)'},
+};
+
+function today(){return TODAY;}
+function toast(icon,msg){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ─── AUTO LOGIN (session) ───
+window.onload=()=>{
+  const saved=sessionStorage.getItem('rk_emp_session');
+  if(saved){
+    const s=JSON.parse(saved);
+    currentAcc=s.acc;currentEmp=s.emp;
+    showDashboard();
+  }
+};
+
+// ─── STEP 1: PHONE ───
+async function checkPhone(){
+  const phone=document.getElementById('login-phone').value.trim();
+  if(phone.length!==10){document.getElementById('phone-error').classList.add('show');document.getElementById('phone-error').textContent='❌ 10 digit phone number डालें';return;}
+  try{
+    const{data,error}=await db.from('employee_access').select('*').eq('phone',phone).eq('status','Active').single();
+    if(error||!data){document.getElementById('phone-error').classList.add('show');document.getElementById('phone-error').textContent='❌ यह phone number नहीं मिला या account inactive है';return;}
+    currentAcc=data;
+    // Get employee details
+    const{data:emp}=await db.from('employees').select('*').eq('id',data.employee_id).single();
+    currentEmp=emp||{name:data.employee_name};
+    document.getElementById('phone-error').classList.remove('show');
+    document.getElementById('emp-name-display').textContent=currentEmp.name;
+    document.getElementById('step-phone').style.display='none';
+    document.getElementById('step-pin').style.display='block';
+    pinBuffer='';updatePinDisplay();
+  }catch(err){document.getElementById('phone-error').classList.add('show');document.getElementById('phone-error').textContent='❌ Error: '+err.message;}
+}
+
+function backToPhone(){
+  document.getElementById('step-pin').style.display='none';
+  document.getElementById('step-phone').style.display='block';
+  pinBuffer='';updatePinDisplay();
+  document.getElementById('pin-error').classList.remove('show');
+  currentAcc=null;currentEmp=null;
+}
+
+// ─── STEP 2: PIN ───
+function pinPress(d){if(pinBuffer.length>=4)return;pinBuffer+=d;updatePinDisplay();if(pinBuffer.length===4)setTimeout(checkPIN,200);}
+function pinClear(){pinBuffer=pinBuffer.slice(0,-1);updatePinDisplay();document.getElementById('pin-error').classList.remove('show');}
+function updatePinDisplay(){[0,1,2,3].forEach(i=>{const dot=document.getElementById('pd'+i);dot.className='pin-dot'+(i<pinBuffer.length?' filled':'');});}
+
+async function checkPIN(){
+  if(pinBuffer.length!==4){toast('❌','PIN पूरा नहीं है');return;}
+  if(pinBuffer!==currentAcc.pin){
+    document.getElementById('pin-error').classList.add('show');
+    pinBuffer='';updatePinDisplay();
+    // Log failed attempt
+    try{await db.from('employee_activity').insert([{employee_id:currentAcc.employee_id,employee_name:currentEmp?.name||'',type:'login_failed',description:'Wrong PIN attempt',created_at:new Date().toISOString()}]);}catch(e){}
+    return;
+  }
+  document.getElementById('pin-error').classList.remove('show');
+  // Log successful login
+  try{await db.from('employee_activity').insert([{employee_id:currentAcc.employee_id,employee_name:currentEmp?.name||'',type:'login',description:'Logged in successfully',created_at:new Date().toISOString()}]);}catch(e){}
+  // Save session
+  sessionStorage.setItem('rk_emp_session',JSON.stringify({acc:currentAcc,emp:currentEmp}));
+  showDashboard();
+}
+
+// ─── DASHBOARD ───
+async function showDashboard(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('emp-dashboard').style.display='block';
+  // Topbar
+  const initials=(currentEmp?.name||'RK').substring(0,2).toUpperCase();
+  document.getElementById('topbar-av').textContent=initials;
+  document.getElementById('topbar-name').textContent=currentEmp?.name||'';
+  // Greeting
+  const h=new Date().getHours();
+  const g=h<12?'शुभ प्रभात ☀️':h<17?'नमस्ते 🙏':h<20?'शुभ संध्या 🌆':'शुभ रात्रि 🌙';
+  document.getElementById('dash-greeting').textContent=g+' '+currentEmp?.name+'!';
+  document.getElementById('dash-sub').textContent='आज: '+new Date().toLocaleDateString('hi-IN',{weekday:'long',day:'numeric',month:'long'});
+  // Load tasks
+  await loadMyTasks();
+  // Modules
+  renderMyModules();
+}
+
+async function loadMyTasks(){
+  try{
+    const{data:t}=await db.from('employee_tasks').select('*').eq('employee_id',currentAcc.employee_id).order('created_at',{ascending:false});
+    const tasks=t||[];
+    const pending=tasks.filter(x=>x.status==='Pending').length;
+    const inprog=tasks.filter(x=>x.status==='In Progress').length;
+    const done=tasks.filter(x=>x.status==='Done').length;
+    // Stats
+    document.getElementById('emp-dash-stats').innerHTML=`
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--yellow)">${pending}</div><div class="mini-stat-lbl">⏳ Pending</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--blue)">${inprog}</div><div class="mini-stat-lbl">🔄 In Progress</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--green)">${done}</div><div class="mini-stat-lbl">✅ Done</div></div>
+    `;
+    // Tasks list
+    const priColor={Low:'var(--green)',Medium:'var(--yellow)',High:'var(--red)'};
+    const container=document.getElementById('my-tasks-list');
+    if(!tasks.length){container.innerHTML=`<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:32px;opacity:0.4;margin-bottom:8px">📋</div><div>अभी कोई task नहीं है</div></div>`;return;}
+    container.innerHTML=tasks.map(t=>`
+      <div class="task-card ${t.status==='Done'?'done':''}">
+        <div class="task-header">
+          <div>
+            <div class="task-title">${t.title}</div>
+            <div class="task-meta">
+              ${t.module?`<span>📦 ${t.module}</span>`:''}
+              ${t.due_date?`<span>📅 Due: ${t.due_date}</span>`:''}
+              <span style="color:${priColor[t.priority]||'var(--text3)'}">● ${t.priority||'Medium'}</span>
+            </div>
+          </div>
+          <span class="badge ${t.status==='Done'?'b-green':t.status==='In Progress'?'b-blue':'b-yellow'}">${t.status==='Done'?'✅':t.status==='In Progress'?'🔄':'⏳'} ${t.status}</span>
+        </div>
+        ${t.description?`<div class="task-desc">${t.description}</div>`:''}
+        <div class="task-actions">
+          ${t.status==='Pending'?`<button class="task-btn task-btn-start" onclick="updateMyTask(${t.id},'In Progress')">🔄 Start करें</button>`:''}
+          ${t.status==='In Progress'?`<button class="task-btn task-btn-done" onclick="updateMyTask(${t.id},'Done')">✅ Done करें</button>`:''}
+          ${t.status==='Done'?`<span style="font-size:12px;color:var(--green)">✅ Completed</span>`:''}
+        </div>
+      </div>`).join('');
+  }catch(err){document.getElementById('my-tasks-list').innerHTML=`<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">Tasks load नहीं हुए</div>`;}
+}
+
+async function updateMyTask(taskId,status){
+  try{
+    await db.from('employee_tasks').update({status}).eq('id',taskId);
+    // Log activity
+    await db.from('employee_activity').insert([{employee_id:currentAcc.employee_id,employee_name:currentEmp?.name||'',type:'task',description:`Task ${status} किया`,created_at:new Date().toISOString()}]);
+    toast(status==='Done'?'✅':'🔄',status==='Done'?'Task complete!':'Task started!');
+    await loadMyTasks();
+  }catch(err){toast('❌',err.message);}
+}
+
+function renderMyModules(){
+  const mods=currentAcc.modules||[];
+  const grid=document.getElementById('my-modules-grid');
+  if(!mods.length){grid.innerHTML=`<div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:20px">कोई module assign नहीं है। Admin से contact करें।</div>`;return;}
+  grid.innerHTML=mods.map(m=>{
+    const info=MODULES_INFO[m];
+    if(!info)return '';
+    return `<a href="${info.href}" class="mod-card" onclick="logModuleAccess('${m}')">
+      <div class="mod-ico" style="background:${info.bg}">${info.icon}</div>
+      <div class="mod-info">
+        <div class="mod-info-name">${info.label}</div>
+        <div class="mod-info-sub">${info.sub}</div>
+      </div>
+      <div class="mod-arrow">→</div>
+    </a>`;
+  }).join('');
+}
+
+async function logModuleAccess(module){
+  try{await db.from('employee_activity').insert([{employee_id:currentAcc.employee_id,employee_name:currentEmp?.name||'',type:'action',module,description:module+' module खोला',created_at:new Date().toISOString()}]);}catch(e){}
+}
+
+// ─── LOGOUT ───
+async function logout(){
+  try{await db.from('employee_activity').insert([{employee_id:currentAcc.employee_id,employee_name:currentEmp?.name||'',type:'logout',description:'Logged out',created_at:new Date().toISOString()}]);}catch(e){}
+  sessionStorage.removeItem('rk_emp_session');
+  currentAcc=null;currentEmp=null;pinBuffer='';
+  document.getElementById('emp-dashboard').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('step-pin').style.display='none';
+  document.getElementById('step-phone').style.display='block';
+  document.getElementById('login-phone').value='';
+}
+
+// Phone enter key
+document.getElementById('login-phone').addEventListener('keydown',e=>{if(e.key==='Enter')checkPhone();});
+</script>
+</body>
+</html>

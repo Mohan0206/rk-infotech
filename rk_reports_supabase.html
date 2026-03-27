@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Reports & Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:8px;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;overflow-x:auto;}
+.nav-link{padding:6px 13px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;white-space:nowrap;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);flex-shrink:0;}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+.main{padding:24px;max-width:1300px;margin:0 auto;}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+select.input{cursor:pointer;}
+
+/* TABS */
+.report-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:20px;flex-wrap:wrap;}
+.rtab{padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.rtab.active{background:var(--accent);color:#fff;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 18px;}
+.filter-label{font-size:12px;color:var(--text3);font-weight:600;}
+
+/* STATS */
+.stats-grid{display:grid;gap:12px;margin-bottom:20px;}
+.stats-4{grid-template-columns:repeat(4,1fr);}
+.stats-3{grid-template-columns:repeat(3,1fr);}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:16px 18px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat-ico{font-size:28px;opacity:0.12;position:absolute;right:16px;top:14px;}
+.stat-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;line-height:1;margin-bottom:4px;}
+.stat-sub{font-size:11px;color:var(--text3);}
+.stat-trend{font-size:12px;margin-top:5px;display:flex;align-items:center;gap:4px;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.g-full{margin-bottom:16px;}
+
+/* CARD */
+.rcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+.rcard-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rcard-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.rcard-body{padding:16px 18px;}
+
+/* TABLE */
+.rtable{width:100%;border-collapse:collapse;font-size:13px;}
+.rtable th{padding:9px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(10,14,24,0.8);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+.rtable td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(28,42,58,0.4);vertical-align:middle;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:rgba(255,255,255,0.02);}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+
+/* PROGRESS BAR */
+.prog-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:3px;}
+
+/* RANK ROW */
+.rank-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(28,42,58,0.4);}
+.rank-row:last-child{border-bottom:none;}
+.rank-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;}
+.rank-name{flex:1;font-size:13px;color:var(--text);font-weight:600;}
+.rank-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+
+/* SECTION */
+.section{display:none;}
+.section.active{display:block;}
+
+/* PRINT BUTTON */
+.print-area{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.print-info{font-size:13px;color:var(--text2);}
+
+/* LOADING */
+.loader{text-align:center;padding:60px;color:var(--text3);}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.main{padding:14px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.nav-links{display:none;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn active" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="main">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">📈 Reports & Analytics</div>
+      <div class="page-sub">Business performance — monthly reports और insights</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="printReport()">🖨️ Print Report</button>
+      <button class="btn btn-ghost" onclick="exportAllCSV()">⬇️ Export CSV</button>
+      <button class="btn btn-primary" onclick="loadAll()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <!-- REPORT TABS -->
+  <div class="report-tabs">
+    <button class="rtab active" onclick="showSection('overview',this)">📊 Overview</button>
+    <button class="rtab" onclick="showSection('revenue',this)">💰 Revenue</button>
+    <button class="rtab" onclick="showSection('leads',this)">🎯 Leads</button>
+    <button class="rtab" onclick="showSection('jobs',this)">📋 Jobs</button>
+    <button class="rtab" onclick="showSection('employees',this)">👷 Employees</button>
+    <button class="rtab" onclick="showSection('amc',this)">🔧 AMC</button>
+    <button class="rtab" onclick="showSection('inventory',this)">📦 Inventory</button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">📅 Period:</span>
+    <select class="input" id="period-filter" onchange="renderCurrentSection()" style="width:auto">
+      <option value="this_month">इस महीने</option>
+      <option value="last_month">पिछला महीना</option>
+      <option value="last_3">पिछले 3 महीने</option>
+      <option value="last_6">पिछले 6 महीने</option>
+      <option value="this_year">इस साल</option>
+      <option value="all">सब कुछ</option>
+    </select>
+    <span id="period-label" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div>Data load हो रहा है...</div>
+  </div>
+
+  <div id="report-content" style="display:none">
+
+  <!-- ══ OVERVIEW ══ -->
+  <div class="section active" id="sec-overview">
+    <div class="stats-grid stats-4" id="ov-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">💰 Revenue Trend</div></div><div class="rcard-body"><canvas id="rev-trend-chart" height="200"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📋 Jobs Trend</div></div><div class="rcard-body"><canvas id="job-trend-chart" height="200"></canvas></div></div>
+    </div>
+    <div class="g3">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🎯 Lead Conversion</div></div><div class="rcard-body" id="ov-leads"></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 Job Types</div></div><div class="rcard-body"><canvas id="job-type-chart" height="180"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">💳 Payment Modes</div></div><div class="rcard-body"><canvas id="pay-mode-chart" height="180"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ══ REVENUE ══ -->
+  <div class="section" id="sec-revenue">
+    <div class="stats-grid stats-4" id="rev-stats"></div>
+    <div class="g-full">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📈 Monthly Revenue Chart</div></div><div class="rcard-body"><canvas id="rev-monthly-chart" height="180"></canvas></div></div>
+    </div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🧾 Invoice Status</div></div><div class="rcard-body"><canvas id="inv-status-chart" height="200"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">💰 Top Customers by Revenue</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Rank</th><th>Customer</th><th>Invoices</th><th>Total</th><th>Paid</th></tr></thead><tbody id="top-customers"></tbody></table></div>
+      </div>
+    </div>
+    <div class="g-full">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🧾 All Invoices — Period में</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th><th>Status</th></tr></thead><tbody id="rev-invoices"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LEADS ══ -->
+  <div class="section" id="sec-leads">
+    <div class="stats-grid stats-4" id="lead-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 Lead Stage Distribution</div></div><div class="rcard-body"><canvas id="lead-stage-chart" height="220"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📌 Lead Sources</div></div><div class="rcard-body"><canvas id="lead-source-chart" height="220"></canvas></div></div>
+    </div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🏆 Conversion Funnel</div></div><div class="rcard-body" id="lead-funnel"></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">❌ Lost Reasons</div></div><div class="rcard-body" id="lost-reasons"></div></div>
+    </div>
+  </div>
+
+  <!-- ══ JOBS ══ -->
+  <div class="section" id="sec-jobs">
+    <div class="stats-grid stats-4" id="job-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 Jobs by Type</div></div><div class="rcard-body"><canvas id="jobs-type-chart" height="220"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 Jobs by Status</div></div><div class="rcard-body"><canvas id="jobs-status-chart" height="220"></canvas></div></div>
+    </div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🏆 Top Technicians</div></div><div class="rcard-body" id="top-techs"></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📋 Recent Jobs</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Job</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody id="jobs-list"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EMPLOYEES ══ -->
+  <div class="section" id="sec-employees">
+    <div class="stats-grid stats-4" id="emp-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">🏆 Employee Performance</div></div><div class="rcard-body" id="emp-performance"></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📅 Attendance Summary</div></div><div class="rcard-body" id="emp-attendance"></div></div>
+    </div>
+    <div class="g-full">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">💰 Salary Summary</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Employee</th><th>Role</th><th>Salary Type</th><th>Base Salary</th><th>Present Days</th><th>Estimated Pay</th></tr></thead><tbody id="salary-summary"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AMC ══ -->
+  <div class="section" id="sec-amc">
+    <div class="stats-grid stats-4" id="amc-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 AMC Status</div></div><div class="rcard-body"><canvas id="amc-status-chart" height="220"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">⚠️ Expiry Timeline</div></div><div class="rcard-body" id="amc-expiry-list"></div></div>
+    </div>
+    <div class="g-full">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📋 All AMC Contracts</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>AMC #</th><th>Customer</th><th>Cameras</th><th>Amount</th><th>Paid</th><th>Expiry</th><th>Days Left</th><th>Status</th></tr></thead><tbody id="amc-table"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INVENTORY ══ -->
+  <div class="section" id="sec-inventory">
+    <div class="stats-grid stats-4" id="inv-stats"></div>
+    <div class="g2">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📊 Stock by Category</div></div><div class="rcard-body"><canvas id="inv-cat-chart" height="220"></canvas></div></div>
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">⚠️ Low/Out of Stock</div></div><div class="rcard-body" id="inv-alert-list"></div></div>
+    </div>
+    <div class="g-full">
+      <div class="rcard"><div class="rcard-hd"><div class="rcard-title">📦 Complete Stock List</div></div>
+        <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Min</th><th>Buy Rate</th><th>Sell Rate</th><th>Value</th><th>Status</th></tr></thead><tbody id="inv-table"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- report-content -->
+</div><!-- main -->
+
+<script>
+
+// Safe fetch - returns empty array if table doesn't exist
+async function safeFetch(query){
+  try{const{data,error}=await query;if(error)throw error;return data||[];}
+  catch(e){console.warn('Table fetch failed:',e.message);return [];}
+}
+
+const SURL='https://hkspejyyzicejxvucvtc.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const {createClient}=supabase;
+const db=createClient(SURL,SKEY);
+
+let DATA={customers:[],leads:[],jobs:[],invoices:[],inventory:[],amcs:[],employees:[],tasks:[],attendance:{}};
+let CHARTS={};
+let currentSection='overview';
+
+function today(){return new Date().toISOString().split('T')[0];}
+function invNum(id){return 'INV-'+String(id).padStart(4,'0');}
+function jobNum(id){return 'JOB-'+String(id).padStart(4,'0');}
+function amcNum(id){return 'AMC-'+String(id).padStart(4,'0');}
+function getDaysLeft(d){return Math.ceil((new Date(d)-new Date(today()))/86400000);}
+function getAmcStatus(a){if(a.status==='Renewed')return 'Renewed';const dl=getDaysLeft(a.expiry_date);if(dl<0)return 'Expired';if(dl<=30)return 'Expiring';return 'Active';}
+function setDbStatus(s){document.getElementById('db-dot').className='db-dot '+s;document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Loading...';}
+function fmt(n){return '₹'+(n||0).toLocaleString();}
+function fmtN(n){return (n||0).toLocaleString();}
+
+// ─── PERIOD FILTER ───
+function getPeriodDates(){
+  const filter=document.getElementById('period-filter').value;
+  const now=new Date();
+  let start,end=today();
+  if(filter==='this_month'){start=now.toISOString().substring(0,7)+'-01';}
+  else if(filter==='last_month'){const lm=new Date(now.getFullYear(),now.getMonth()-1,1);const lme=new Date(now.getFullYear(),now.getMonth(),0);start=lm.toISOString().split('T')[0];end=lme.toISOString().split('T')[0];}
+  else if(filter==='last_3'){const d=new Date(now);d.setMonth(d.getMonth()-3);start=d.toISOString().split('T')[0];}
+  else if(filter==='last_6'){const d=new Date(now);d.setMonth(d.getMonth()-6);start=d.toISOString().split('T')[0];}
+  else if(filter==='this_year'){start=now.getFullYear()+'-01-01';}
+  else{start='2020-01-01';}
+  const labels={this_month:'इस महीने',last_month:'पिछला महीना',last_3:'पिछले 3 महीने',last_6:'पिछले 6 महीने',this_year:'इस साल '+now.getFullYear(),all:'सब डेटा'};
+  document.getElementById('period-label').textContent='📅 '+labels[filter];
+  return{start,end};
+}
+
+function filterByPeriod(arr,dateField){
+  const{start,end}=getPeriodDates();
+  return arr.filter(x=>{const d=(x[dateField]||'').split('T')[0];return d>=start&&d<=end;});
+}
+
+// ─── LOAD ───
+async function loadAll(){
+  setDbStatus('loading');
+  document.getElementById('loader').style.display='block';
+  document.getElementById('report-content').style.display='none';
+  try{
+    const results=await Promise.all([
+      db.from('customers').select('*'),
+      db.from('leads').select('*').order('created_at',{ascending:false}),
+      db.from('jobs').select('*').order('created_at',{ascending:false}),
+      db.from('invoices').select('*').order('created_at',{ascending:false}),
+      db.from('inventory').select('*'),
+      db.from('amcs').select('*').order('expiry_date'),
+      db.from('employees').select('*').eq('status','Active'),
+      db.from('tasks').select('*'),
+      db.from('attendance').select('*'),
+    ]);
+    const errs=results.map(r=>r.error).filter(Boolean);
+    if(errs.length)throw errs[0];
+    DATA.customers=results[0].data||[];DATA.leads=results[1].data||[];
+    DATA.jobs=results[2].data||[];DATA.invoices=results[3].data||[];
+    DATA.inventory=results[4].data||[];DATA.amcs=results[5].data||[];
+    DATA.employees=results[6].data||[];DATA.tasks=results[7].data||[];
+    DATA.attendance={};
+    (results[8].data||[]).forEach(a=>{if(!DATA.attendance[a.employee_id])DATA.attendance[a.employee_id]={};DATA.attendance[a.employee_id][a.date]=a.status;});
+    setDbStatus('connected');
+    document.getElementById('loader').style.display='none';
+    document.getElementById('report-content').style.display='block';
+    renderCurrentSection();
+  }catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){};setDbStatus('disconnected');document.getElementById('loader').innerHTML=`<div style="color:var(--red)">❌ ${err.message}</div><button onclick="loadAll()" style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;">Retry</button>`;}
+}
+
+// ─── SECTIONS ───
+function showSection(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  el.classList.add('active');
+  currentSection=sec;
+  renderSection(sec);
+}
+
+function renderCurrentSection(){renderSection(currentSection);}
+function renderSection(sec){
+  if(sec==='overview')renderOverview();
+  else if(sec==='revenue')renderRevenue();
+  else if(sec==='leads')renderLeads();
+  else if(sec==='jobs')renderJobs();
+  else if(sec==='employees')renderEmployees();
+  else if(sec==='amc')renderAmc();
+  else if(sec==='inventory')renderInventory();
+}
+
+// ─── CHART HELPER ───
+function makeChart(id,type,labels,datasets,opts={}){
+  if(CHARTS[id])CHARTS[id].destroy();
+  const ctx=document.getElementById(id).getContext('2d');
+  CHARTS[id]=new Chart(ctx,{type,data:{labels,datasets},options:{responsive:true,plugins:{legend:{labels:{color:'#8899aa',font:{size:11},padding:10}},...(opts.legend||{})},scales:type==='bar'||type==='line'?{x:{grid:{color:'rgba(28,42,58,0.5)'},ticks:{color:'#4a5a6a',font:{size:11}}},y:{grid:{color:'rgba(28,42,58,0.5)'},ticks:{color:'#4a5a6a',font:{size:11},callback:opts.yFormat||undefined}}}:{},cutout:type==='doughnut'?'60%':undefined,...(opts.scale||{})}});
+}
+
+function getLast6Months(){
+  const months=[];
+  for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);months.push(d.toISOString().substring(0,7));}
+  return months;
+}
+
+// ══ OVERVIEW ══
+function renderOverview(){
+  const invF=filterByPeriod(DATA.invoices,'date');
+  const jobsF=filterByPeriod(DATA.jobs,'date');
+  const leadsF=filterByPeriod(DATA.leads,'date');
+  const revenue=invF.reduce((s,i)=>s+(i.paid_total||0),0);
+  const outstanding=invF.filter(i=>i.status!=='Cancelled').reduce((s,i)=>s+(i.pending_amt||0),0);
+  const won=leadsF.filter(l=>l.stage==='Won').length;
+  const convRate=leadsF.length>0?Math.round(won/leadsF.length*100):0;
+
+  document.getElementById('ov-stats').innerHTML=`
+    <div class="stat green"><div class="stat-ico">💰</div><div class="stat-lbl">Revenue Collected</div><div class="stat-val" style="color:var(--green)">${fmt(revenue)}</div><div class="stat-sub">${invF.filter(i=>i.status==='Paid').length} invoices paid</div></div>
+    <div class="stat red"><div class="stat-ico">⏳</div><div class="stat-lbl">Outstanding</div><div class="stat-val" style="color:var(--red)">${fmt(outstanding)}</div><div class="stat-sub">${invF.filter(i=>i.status==='Pending'||i.status==='Partial').length} pending</div></div>
+    <div class="stat blue"><div class="stat-ico">📋</div><div class="stat-lbl">Jobs Done</div><div class="stat-val" style="color:var(--blue)">${jobsF.filter(j=>j.status==='Done').length}</div><div class="stat-sub">of ${jobsF.length} total jobs</div></div>
+    <div class="stat purple"><div class="stat-ico">🎯</div><div class="stat-lbl">Conversion Rate</div><div class="stat-val" style="color:var(--purple)">${convRate}%</div><div class="stat-sub">${won} won of ${leadsF.length} leads</div></div>
+  `;
+
+  // Revenue trend chart
+  const months=getLast6Months();
+  const revData=months.map(m=>DATA.invoices.filter(i=>(i.date||'').startsWith(m)).reduce((s,i)=>s+(i.paid_total||0),0));
+  const jobData=months.map(m=>DATA.jobs.filter(j=>(j.date||'').startsWith(m)).length);
+  const mLabels=months.map(m=>new Date(m+'-01').toLocaleDateString('hi-IN',{month:'short'}));
+  makeChart('rev-trend-chart','bar',mLabels,[{label:'Revenue',data:revData,backgroundColor:'rgba(232,108,47,0.3)',borderColor:'#FF6B2B',borderWidth:2,borderRadius:5}],{yFormat:v=>v>=100000?(v/100000).toFixed(1)+'L':'₹'+v.toLocaleString()});
+  makeChart('job-trend-chart','line',mLabels,[{label:'Jobs',data:jobData,borderColor:'#3b8eff',backgroundColor:'rgba(59,142,255,0.1)',fill:true,tension:0.4}]);
+
+  // Lead conversion
+  const stages=['New','Site Visit','Quoted','Follow Up','Won','Lost'];
+  const stageCols={New:'var(--blue)',SiteVisit:'var(--yellow)',Quoted:'var(--purple)',FollowUp:'var(--accent)',Won:'var(--green)',Lost:'var(--red)'};
+  const maxL=Math.max(1,...stages.map(s=>DATA.leads.filter(l=>l.stage===s).length));
+  document.getElementById('ov-leads').innerHTML=stages.map(s=>{
+    const cnt=DATA.leads.filter(l=>l.stage===s).length;
+    const pct=Math.round(cnt/maxL*100);
+    const col=s==='Won'?'var(--green)':s==='Lost'?'var(--red)':s==='New'?'var(--blue)':s==='Quoted'?'var(--purple)':'var(--accent)';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><div style="font-size:12px;color:var(--text2);width:70px;flex-shrink:0">${s}</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="width:${pct}%;height:100%;border-radius:3px;background:${col}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);width:24px;text-align:right">${cnt}</div></div>`;
+  }).join('');
+
+  // Job type
+  const typeData=[DATA.jobs.filter(j=>j.type==='Installation').length,DATA.jobs.filter(j=>j.type==='Repair').length,DATA.jobs.filter(j=>j.type==='Other').length];
+  makeChart('job-type-chart','doughnut',['Installation','Repair','Other'],[{data:typeData,backgroundColor:['rgba(59,142,255,0.7)','rgba(240,180,41,0.7)','rgba(74,90,106,0.7)'],borderWidth:2}]);
+
+  // Payment modes
+  const modes={Cash:0,UPI:0,'Bank Transfer':0,Cheque:0};
+  DATA.invoices.forEach(i=>(i.payments||[]).forEach(p=>{if(modes[p.mode]!==undefined)modes[p.mode]+=p.amount;}));
+  makeChart('pay-mode-chart','doughnut',Object.keys(modes),[{data:Object.values(modes),backgroundColor:['rgba(34,201,122,0.7)','rgba(59,142,255,0.7)','rgba(167,139,250,0.7)','rgba(240,180,41,0.7)'],borderWidth:2}]);
+}
+
+// ══ REVENUE ══
+function renderRevenue(){
+  const invF=filterByPeriod(DATA.invoices,'date');
+  const totalRev=invF.reduce((s,i)=>s+(i.grand_total||0),0);
+  const collected=invF.reduce((s,i)=>s+(i.paid_total||0),0);
+  const outstanding=invF.reduce((s,i)=>s+(i.pending_amt||0),0);
+  const paid=invF.filter(i=>i.status==='Paid').length;
+
+  document.getElementById('rev-stats').innerHTML=`
+    <div class="stat green"><div class="stat-ico">💰</div><div class="stat-lbl">Total Billed</div><div class="stat-val" style="color:var(--green)">${fmt(totalRev)}</div><div class="stat-sub">${invF.length} invoices</div></div>
+    <div class="stat blue"><div class="stat-ico">✅</div><div class="stat-lbl">Collected</div><div class="stat-val" style="color:var(--blue)">${fmt(collected)}</div><div class="stat-sub">${paid} fully paid</div></div>
+    <div class="stat red"><div class="stat-ico">⏳</div><div class="stat-lbl">Outstanding</div><div class="stat-val" style="color:var(--red)">${fmt(outstanding)}</div><div class="stat-sub">${invF.filter(i=>i.status!=='Paid').length} pending</div></div>
+    <div class="stat orange"><div class="stat-ico">📊</div><div class="stat-lbl">Collection Rate</div><div class="stat-val" style="color:var(--accent)">${totalRev>0?Math.round(collected/totalRev*100):0}%</div><div class="stat-sub">of total billed</div></div>
+  `;
+
+  // Monthly chart
+  const months=getLast6Months();
+  const mLabels=months.map(m=>new Date(m+'-01').toLocaleDateString('hi-IN',{month:'short'}));
+  const billedData=months.map(m=>DATA.invoices.filter(i=>(i.date||'').startsWith(m)).reduce((s,i)=>s+(i.grand_total||0),0));
+  const collData=months.map(m=>DATA.invoices.filter(i=>(i.date||'').startsWith(m)).reduce((s,i)=>s+(i.paid_total||0),0));
+  makeChart('rev-monthly-chart','bar',mLabels,[{label:'Billed',data:billedData,backgroundColor:'rgba(59,142,255,0.3)',borderColor:'#3b8eff',borderWidth:2,borderRadius:5},{label:'Collected',data:collData,backgroundColor:'rgba(34,201,122,0.3)',borderColor:'#22c97a',borderWidth:2,borderRadius:5}],{yFormat:v=>'₹'+v.toLocaleString()});
+
+  // Invoice status pie
+  const statuses={Paid:invF.filter(i=>i.status==='Paid').length,Partial:invF.filter(i=>i.status==='Partial').length,Pending:invF.filter(i=>i.status==='Pending').length};
+  makeChart('inv-status-chart','doughnut',Object.keys(statuses),[{data:Object.values(statuses),backgroundColor:['rgba(34,201,122,0.7)','rgba(240,180,41,0.7)','rgba(240,79,79,0.7)'],borderWidth:2}]);
+
+  // Top customers
+  const custRev={};
+  invF.forEach(i=>{if(!custRev[i.customer_name])custRev[i.customer_name]={total:0,paid:0,count:0};custRev[i.customer_name].total+=(i.grand_total||0);custRev[i.customer_name].paid+=(i.paid_total||0);custRev[i.customer_name].count++;});
+  const topCust=Object.entries(custRev).sort((a,b)=>b[1].total-a[1].total).slice(0,8);
+  const rankColors=['#f0b429','#8899aa','#a78bfa'];
+  document.getElementById('top-customers').innerHTML=topCust.map(([name,d],i)=>`<tr><td><span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:${rankColors[i]||'var(--text3)'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span></td><td style="color:var(--text);font-weight:600">${name}</td><td>${d.count}</td><td style="color:var(--accent);font-weight:600">${fmt(d.total)}</td><td style="color:var(--green)">${fmt(d.paid)}</td></tr>`).join('');
+
+  // Invoice table
+  document.getElementById('rev-invoices').innerHTML=[...invF].reverse().slice(0,20).map(i=>{
+    const mIcon={'Cash':'💵','UPI':'📱','Bank Transfer':'🏦','Cheque':'📄'};
+    const modes=[...new Set((i.payments||[]).map(p=>p.mode))];
+    const sBadge={Paid:'b-green',Partial:'b-yellow',Pending:'b-red'};
+    return `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${invNum(i.id)}</td><td style="color:var(--text)">${i.customer_name}</td><td>${i.date||'—'}</td><td style="color:var(--accent)">${fmt(i.grand_total)}</td><td style="color:var(--green)">${fmt(i.paid_total)}</td><td style="color:${(i.pending_amt||0)>0?'var(--red)':'var(--text3)'}">${fmt(i.pending_amt)}</td><td>${modes.map(m=>mIcon[m]||'').join(' ')}</td><td><span class="badge ${sBadge[i.status]||'b-grey'}">${i.status}</span></td></tr>`;
+  }).join('');
+}
+
+// ══ LEADS ══
+function renderLeads(){
+  const leadsF=filterByPeriod(DATA.leads,'date');
+  const won=leadsF.filter(l=>l.stage==='Won').length;
+  const lost=leadsF.filter(l=>l.stage==='Lost').length;
+  const active=leadsF.filter(l=>l.stage!=='Won'&&l.stage!=='Lost').length;
+  const convRate=leadsF.length>0?Math.round(won/leadsF.length*100):0;
+
+  document.getElementById('lead-stats').innerHTML=`
+    <div class="stat blue"><div class="stat-ico">🎯</div><div class="stat-lbl">Total Leads</div><div class="stat-val" style="color:var(--blue)">${leadsF.length}</div><div class="stat-sub">इस period में</div></div>
+    <div class="stat green"><div class="stat-ico">✅</div><div class="stat-lbl">Won</div><div class="stat-val" style="color:var(--green)">${won}</div><div class="stat-sub">Converted to customer</div></div>
+    <div class="stat red"><div class="stat-ico">❌</div><div class="stat-lbl">Lost</div><div class="stat-val" style="color:var(--red)">${lost}</div><div class="stat-sub">Lost leads</div></div>
+    <div class="stat purple"><div class="stat-ico">📊</div><div class="stat-lbl">Conversion Rate</div><div class="stat-val" style="color:var(--purple)">${convRate}%</div><div class="stat-sub">${active} still active</div></div>
+  `;
+
+  // Stage chart
+  const stages=['New','Site Visit','Quoted','Follow Up','Won','Lost'];
+  const stageData=stages.map(s=>DATA.leads.filter(l=>l.stage===s).length);
+  makeChart('lead-stage-chart','doughnut',stages,[{data:stageData,backgroundColor:['rgba(59,142,255,0.7)','rgba(240,180,41,0.7)','rgba(167,139,250,0.7)','rgba(232,108,47,0.7)','rgba(34,201,122,0.7)','rgba(240,79,79,0.7)'],borderWidth:2}]);
+
+  // Source chart
+  const sources={};
+  DATA.leads.forEach(l=>{sources[l.source]=(sources[l.source]||0)+1;});
+  makeChart('lead-source-chart','bar',Object.keys(sources),[{data:Object.values(sources),backgroundColor:'rgba(59,142,255,0.4)',borderColor:'#3b8eff',borderWidth:2,borderRadius:5}]);
+
+  // Funnel
+  const funnelStages=[{s:'New',c:'var(--blue)'},{s:'Site Visit',c:'var(--yellow)'},{s:'Quoted',c:'var(--purple)'},{s:'Follow Up',c:'var(--accent)'},{s:'Won',c:'var(--green)'}];
+  const totalL=DATA.leads.length||1;
+  document.getElementById('lead-funnel').innerHTML=funnelStages.map(({s,c})=>{
+    const cnt=DATA.leads.filter(l=>l.stage===s).length;
+    const pct=Math.round(cnt/totalL*100);
+    return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>${s}</span><span style="font-family:'JetBrains Mono',monospace">${cnt} (${pct}%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+  }).join('');
+
+  // Lost reasons
+  const lostReasons={};
+  DATA.leads.filter(l=>l.stage==='Lost'&&l.lost_reason).forEach(l=>{lostReasons[l.lost_reason]=(lostReasons[l.lost_reason]||0)+1;});
+  const sorted=Object.entries(lostReasons).sort((a,b)=>b[1]-a[1]);
+  const maxR=sorted[0]?.[1]||1;
+  document.getElementById('lost-reasons').innerHTML=sorted.length?sorted.map(([r,cnt])=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:3px"><span>${r}</span><span style="font-family:'JetBrains Mono',monospace">${cnt}</span></div><div class="prog-bar"><div class="prog-fill" style="width:${Math.round(cnt/maxR*100)}%;background:var(--red)"></div></div></div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">कोई lost reason नहीं</div>`;
+}
+
+// ══ JOBS ══
+function renderJobs(){
+  const jobsF=filterByPeriod(DATA.jobs,'date');
+  const empMap=DATA.employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+
+  document.getElementById('job-stats').innerHTML=`
+    <div class="stat blue"><div class="stat-ico">📋</div><div class="stat-lbl">Total Jobs</div><div class="stat-val" style="color:var(--blue)">${jobsF.length}</div><div class="stat-sub">इस period में</div></div>
+    <div class="stat green"><div class="stat-ico">✅</div><div class="stat-lbl">Completed</div><div class="stat-val" style="color:var(--green)">${jobsF.filter(j=>j.status==='Done').length}</div></div>
+    <div class="stat yellow"><div class="stat-ico">⏳</div><div class="stat-lbl">In Progress</div><div class="stat-val" style="color:var(--yellow)">${jobsF.filter(j=>j.status==='In Progress').length}</div></div>
+    <div class="stat orange"><div class="stat-ico">💰</div><div class="stat-lbl">Total Value</div><div class="stat-val" style="color:var(--accent)">${fmt(jobsF.reduce((s,j)=>s+(j.amount||0),0))}</div></div>
+  `;
+
+  const typeData=[jobsF.filter(j=>j.type==='Installation').length,jobsF.filter(j=>j.type==='Repair').length,jobsF.filter(j=>j.type==='Other').length];
+  makeChart('jobs-type-chart','doughnut',['📹 Installation','🔧 Repair','⚙️ Other'],[{data:typeData,backgroundColor:['rgba(59,142,255,0.7)','rgba(240,180,41,0.7)','rgba(74,90,106,0.7)'],borderWidth:2}]);
+
+  const statData=[jobsF.filter(j=>j.status==='Pending').length,jobsF.filter(j=>j.status==='In Progress').length,jobsF.filter(j=>j.status==='Done').length,jobsF.filter(j=>j.status==='On Hold').length];
+  makeChart('jobs-status-chart','doughnut',['Pending','In Progress','Done','On Hold'],[{data:statData,backgroundColor:['rgba(240,180,41,0.7)','rgba(59,142,255,0.7)','rgba(34,201,122,0.7)','rgba(240,79,79,0.7)'],borderWidth:2}]);
+
+  // Top technicians
+  const techJobs={};
+  jobsF.filter(j=>j.tech_id).forEach(j=>{const name=empMap[j.tech_id]||'Unknown';if(!techJobs[name])techJobs[name]={total:0,done:0,amount:0};techJobs[name].total++;if(j.status==='Done')techJobs[name].done++;techJobs[name].amount+=(j.amount||0);});
+  const topTechs=Object.entries(techJobs).sort((a,b)=>b[1].total-a[1].total);
+  const rankColors=['#f0b429','#8899aa','#a78bfa'];
+  document.getElementById('top-techs').innerHTML=topTechs.length?topTechs.map(([name,d],i)=>`
+    <div class="rank-row">
+      <div class="rank-num" style="background:${i===0?'var(--yellowBg)':i===1?'var(--bg3)':'var(--purpleBg)'};color:${rankColors[i]||'var(--text3)'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="rank-name">${name}<br><span style="font-size:11px;color:var(--text3)">${d.done}/${d.total} done</span></div>
+      <div class="rank-val" style="color:var(--accent)">${fmt(d.amount)}</div>
+    </div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">Data नहीं</div>`;
+
+  document.getElementById('jobs-list').innerHTML=jobsF.slice(0,10).map(j=>{
+    const sStyle={'Pending':'b-yellow','In Progress':'b-blue','Done':'b-green','On Hold':'b-red'};
+    const tIcon={'Installation':'📹','Repair':'🔧','Other':'⚙️'};
+    return `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${jobNum(j.id)}</td><td style="color:var(--text)">${j.customer_name||'—'}</td><td>${tIcon[j.type]||''} ${j.type}</td><td style="color:var(--accent)">${fmt(j.amount)}</td><td><span class="badge ${sStyle[j.status]||'b-grey'}">${j.status}</span></td></tr>`;
+  }).join('');
+}
+
+// ══ EMPLOYEES ══
+function renderEmployees(){
+  const curMonth=new Date().toISOString().substring(0,7);
+  const totalSalary=DATA.employees.filter(e=>e.salary_type==='Fixed').reduce((s,e)=>s+(e.salary||0),0);
+  const todayAtt=DATA.employees.filter(e=>DATA.attendance[e.id]?.[today()]==='present').length;
+
+  document.getElementById('emp-stats').innerHTML=`
+    <div class="stat green"><div class="stat-ico">👷</div><div class="stat-lbl">Active Staff</div><div class="stat-val" style="color:var(--green)">${DATA.employees.length}</div></div>
+    <div class="stat blue"><div class="stat-ico">📅</div><div class="stat-lbl">आज Present</div><div class="stat-val" style="color:var(--blue)">${todayAtt}</div><div class="stat-sub">of ${DATA.employees.length}</div></div>
+    <div class="stat orange"><div class="stat-ico">💰</div><div class="stat-lbl">Monthly Salary</div><div class="stat-val" style="color:var(--accent)">${fmt(totalSalary)}</div></div>
+    <div class="stat purple"><div class="stat-ico">📋</div><div class="stat-lbl">Active Tasks</div><div class="stat-val" style="color:var(--purple)">${DATA.tasks.filter(t=>t.status!=='Done').length}</div></div>
+  `;
+
+  const AV=['background:rgba(232,108,47,0.15);color:#FF6B2B','background:rgba(59,142,255,0.15);color:#3b8eff','background:rgba(34,201,122,0.15);color:#22c97a','background:rgba(167,139,250,0.15);color:#a78bfa','background:rgba(240,180,41,0.15);color:#f0b429'];
+
+  // Performance
+  const empPerf=DATA.employees.map(e=>{
+    const myTasks=DATA.tasks.filter(t=>t.employee_id===e.id);
+    const doneTasks=myTasks.filter(t=>t.status==='Done').length;
+    const attData=DATA.attendance[e.id]||{};
+    const present=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='present').length;
+    const score=myTasks.length>0?Math.round((doneTasks/myTasks.length)*100):0;
+    return{...e,myTasks:myTasks.length,doneTasks,present,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  document.getElementById('emp-performance').innerHTML=empPerf.map((e,i)=>`
+    <div class="rank-row">
+      <div style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${AV[i%AV.length]};flex-shrink:0">${e.name.substring(0,2).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.role} · ${e.doneTasks}/${e.myTasks} tasks</div><div class="prog-bar" style="margin-top:3px"><div class="prog-fill" style="width:${e.score}%;background:${e.score>=80?'var(--green)':e.score>=50?'var(--yellow)':'var(--red)'}"></div></div></div>
+      <div style="text-align:right"><div class="rank-val" style="color:${e.score>=80?'var(--green)':e.score>=50?'var(--yellow)':'var(--red)'}">${e.score}%</div><div style="font-size:10px;color:var(--text3)">${e.present}d present</div></div>
+    </div>`).join('');
+
+  // Attendance
+  document.getElementById('emp-attendance').innerHTML=DATA.employees.map((e,i)=>{
+    const attData=DATA.attendance[e.id]||{};
+    const present=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='present').length;
+    const half=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='half').length;
+    const leave=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='leave').length;
+    const daysInMonth=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+    const pct=Math.round((present+half*0.5)/daysInMonth*100);
+    return `<div class="rank-row">
+      <div style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;${AV[i%AV.length]};flex-shrink:0">${e.name.substring(0,2).toUpperCase()}</div>
+      <div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${e.name}</div><div style="font-size:11px;color:var(--text3)">P:${present} H:${half} L:${leave}</div><div class="prog-bar" style="margin-top:3px"><div class="prog-fill" style="width:${pct}%;background:var(--green)"></div></div></div>
+      <div class="rank-val" style="color:var(--green)">${present}d</div>
+    </div>`;
+  }).join('');
+
+  // Salary table
+  document.getElementById('salary-summary').innerHTML=DATA.employees.map(e=>{
+    const attData=DATA.attendance[e.id]||{};
+    const present=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='present').length;
+    const half=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='half').length;
+    const base=e.salary_type==='Fixed'?e.salary||0:(e.daily_wage||0)*(present+half*0.5);
+    return `<tr><td style="color:var(--text);font-weight:600">${e.name}</td><td>${e.role}</td><td><span class="badge ${e.salary_type==='Fixed'?'b-blue':'b-yellow'}">${e.salary_type}</span></td><td>${e.salary_type==='Fixed'?fmt(e.salary):fmt(e.daily_wage)+'/day'}</td><td style="color:var(--blue)">${present} days</td><td style="color:var(--green);font-weight:600">${fmt(base)}</td></tr>`;
+  }).join('');
+}
+
+// ══ AMC ══
+function renderAmc(){
+  const activeAmc=DATA.amcs.filter(a=>getAmcStatus(a)==='Active').length;
+  const expiringAmc=DATA.amcs.filter(a=>getAmcStatus(a)==='Expiring').length;
+  const expiredAmc=DATA.amcs.filter(a=>getAmcStatus(a)==='Expired').length;
+  const totalAmt=DATA.amcs.reduce((s,a)=>s+(a.amount||0),0);
+
+  document.getElementById('amc-stats').innerHTML=`
+    <div class="stat green"><div class="stat-ico">🔧</div><div class="stat-lbl">Active AMC</div><div class="stat-val" style="color:var(--green)">${activeAmc}</div></div>
+    <div class="stat yellow"><div class="stat-ico">⚠️</div><div class="stat-lbl">Expiring Soon</div><div class="stat-val" style="color:var(--yellow)">${expiringAmc}</div><div class="stat-sub">30 दिन में</div></div>
+    <div class="stat red"><div class="stat-ico">❌</div><div class="stat-lbl">Expired</div><div class="stat-val" style="color:var(--red)">${expiredAmc}</div></div>
+    <div class="stat orange"><div class="stat-ico">💰</div><div class="stat-lbl">Annual Value</div><div class="stat-val" style="color:var(--accent)">${fmt(totalAmt)}</div></div>
+  `;
+
+  const statCounts={Active:activeAmc,Expiring:expiringAmc,Expired:expiredAmc,Renewed:DATA.amcs.filter(a=>getAmcStatus(a)==='Renewed').length};
+  makeChart('amc-status-chart','doughnut',Object.keys(statCounts),[{data:Object.values(statCounts),backgroundColor:['rgba(34,201,122,0.7)','rgba(240,180,41,0.7)','rgba(240,79,79,0.7)','rgba(59,142,255,0.7)'],borderWidth:2}]);
+
+  const expList=DATA.amcs.filter(a=>getDaysLeft(a.expiry_date)<=60).sort((a,b)=>getDaysLeft(a.expiry_date)-getDaysLeft(b.expiry_date)).slice(0,8);
+  document.getElementById('amc-expiry-list').innerHTML=expList.length?expList.map(a=>{const dl=getDaysLeft(a.expiry_date);return `<div class="rank-row"><div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${a.customer_name}</div><div style="font-size:11px;color:var(--text3)">📍 ${a.site||'—'} · ${a.cameras||0} cameras</div></div><div style="text-align:right"><div class="rank-val" style="color:${dl<0?'var(--red)':dl<=7?'var(--red)':dl<=30?'var(--yellow)':'var(--text2)'}">${dl<0?'Expired':dl+'d'}</div><div style="font-size:11px;color:var(--text3)">${fmt(a.amount)}</div></div></div>`;}).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">कोई expiry नहीं</div>`;
+
+  document.getElementById('amc-table').innerHTML=DATA.amcs.map(a=>{
+    const s=getAmcStatus(a);const dl=getDaysLeft(a.expiry_date);
+    const sBadge={Active:'b-green',Expiring:'b-yellow',Expired:'b-red',Renewed:'b-blue'};
+    return `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${amcNum(a.id)}</td><td style="color:var(--text)">${a.customer_name}</td><td>${a.cameras||0}</td><td style="color:var(--accent)">${fmt(a.amount)}</td><td style="color:var(--green)">${fmt(a.paid)}</td><td>${a.expiry_date}</td><td style="color:${dl<0?'var(--red)':dl<=30?'var(--yellow)':'var(--text2)'}">${dl<0?'Expired':dl+'d'}</td><td><span class="badge ${sBadge[s]||'b-grey'}">${s}</span></td></tr>`;
+  }).join('');
+}
+
+// ══ INVENTORY ══
+function renderInventory(){
+  const total=DATA.inventory.length;
+  const outStock=DATA.inventory.filter(i=>i.stock<=0).length;
+  const lowStock=DATA.inventory.filter(i=>i.stock>0&&i.stock<=(i.min_qty||0)).length;
+  const totalVal=DATA.inventory.reduce((s,i)=>s+((i.stock||0)*(i.buy_rate||0)),0);
+
+  document.getElementById('inv-stats').innerHTML=`
+    <div class="stat blue"><div class="stat-ico">📦</div><div class="stat-lbl">Total Items</div><div class="stat-val" style="color:var(--blue)">${total}</div></div>
+    <div class="stat green"><div class="stat-ico">✅</div><div class="stat-lbl">In Stock</div><div class="stat-val" style="color:var(--green)">${total-outStock-lowStock}</div></div>
+    <div class="stat yellow"><div class="stat-ico">⚠️</div><div class="stat-lbl">Low Stock</div><div class="stat-val" style="color:var(--yellow)">${lowStock}</div></div>
+    <div class="stat red"><div class="stat-ico">🚨</div><div class="stat-lbl">Out of Stock</div><div class="stat-val" style="color:var(--red)">${outStock}</div></div>
+  `;
+
+  // Category chart
+  const cats={};
+  DATA.inventory.forEach(i=>{cats[i.category]=(cats[i.category]||0)+(i.stock||0);});
+  const catColors=['rgba(232,108,47,0.7)','rgba(59,142,255,0.7)','rgba(34,201,122,0.7)','rgba(240,180,41,0.7)','rgba(167,139,250,0.7)','rgba(240,79,79,0.7)','rgba(74,90,106,0.7)'];
+  makeChart('inv-cat-chart','doughnut',Object.keys(cats),[{data:Object.values(cats),backgroundColor:catColors,borderWidth:2}]);
+
+  // Alert list
+  const alertItems=DATA.inventory.filter(i=>i.stock<=(i.min_qty||0)).sort((a,b)=>a.stock-b.stock);
+  document.getElementById('inv-alert-list').innerHTML=alertItems.length?alertItems.map(i=>{
+    const col=i.stock<=0?'var(--red)':'var(--yellow)';
+    const pct=i.min_qty>0?Math.min(100,Math.round(i.stock/i.min_qty*100)):0;
+    return `<div class="rank-row"><div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">${i.name}</div><div class="prog-bar" style="margin-top:3px"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div></div><div style="text-align:right;margin-left:10px"><div class="rank-val" style="color:${col}">${i.stock} ${i.unit||''}</div><div style="font-size:10px;color:var(--text3)">Min: ${i.min_qty||0}</div></div></div>`;
+  }).join(''):`<div style="color:var(--text3);font-size:13px;padding:10px 0">✅ Stock सब ठीक है</div>`;
+
+  // Full table
+  const CATICONS={'Camera':'📹','DVR/NVR':'📼','Hard Disk':'💾','Cable':'🔌','Power Supply':'⚡','Connector/Fitting':'🔩','Other':'📌'};
+  document.getElementById('inv-table').innerHTML=DATA.inventory.map(i=>{
+    const status=i.stock<=0?'Out of Stock':i.stock<=(i.min_qty||0)?'Low Stock':'In Stock';
+    const sBadge=i.stock<=0?'b-red':i.stock<=(i.min_qty||0)?'b-yellow':'b-green';
+    return `<tr><td style="color:var(--text);font-weight:600">${CATICONS[i.category]||'📌'} ${i.name}</td><td>${i.category}</td><td style="font-family:'JetBrains Mono',monospace;color:${i.stock<=0?'var(--red)':i.stock<=(i.min_qty||0)?'var(--yellow)':'var(--text)'}">${i.stock} ${i.unit||''}</td><td style="color:var(--text3)">${i.min_qty||0}</td><td>${fmt(i.buy_rate)}</td><td style="color:var(--green)">${fmt(i.sell_rate)}</td><td style="color:var(--blue)">${fmt((i.stock||0)*(i.buy_rate||0))}</td><td><span class="badge ${sBadge}">${status}</span></td></tr>`;
+  }).join('');
+}
+
+// ─── PRINT ───
+function printReport(){
+  window.print();
+}
+
+// ─── EXPORT CSV ───
+function exportAllCSV(){
+  const{start,end}=getPeriodDates();
+  const invF=DATA.invoices.filter(i=>{const d=(i.date||'').split('T')[0];return d>=start&&d<=end;});
+  const rows=[['Invoice#','Customer','Date','Total','Paid','Pending','Status']];
+  invF.forEach(i=>rows.push([invNum(i.id),i.customer_name,i.date,i.grand_total,i.paid_total||0,i.pending_amt||0,i.status]));
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`rk_report_${start}_${end}.csv`;
+  a.click();
+}
+
+// ─── INIT ───
+loadAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK Infotech — Employees</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06080F;--bg2:#0A0E18;--bg3:#0E1420;--card:#101829;--card2:#141E2D;
+  --border:#1A2740;--border2:#223352;
+  --accent:#FF6B35;--accent2:#FF8C5A;--accentBg:rgba(255,107,53,0.1);--accentBorder:rgba(255,107,53,0.25);
+  --blue:#3B82F6;--blueBg:rgba(59,130,246,0.1);--blueBorder:rgba(59,130,246,0.25);
+  --green:#10B981;--greenBg:rgba(16,185,129,0.1);--greenBorder:rgba(16,185,129,0.25);
+  --red:#EF4444;--redBg:rgba(239,68,68,0.1);--redBorder:rgba(239,68,68,0.25);
+  --yellow:#F59E0B;--yellowBg:rgba(245,158,11,0.1);--yellowBorder:rgba(245,158,11,0.25);
+  --purple:#8B5CF6;--purpleBg:rgba(139,92,246,0.1);--purpleBorder:rgba(139,92,246,0.25);
+  --cyan:#06B6D4;--cyanBg:rgba(6,182,212,0.1);
+  --text:#F0F4FF;--text2:#8892A4;--text3:#3D4F63;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);--shadow-lg:0 8px 40px rgba(0,0,0,0.7);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-family:'Plus Jakarta Sans','Outfit',sans-serif;min-height:100vh;}
+
+.topnav{background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#CC3300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:4px;}
+.nav-link{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Plus Jakarta Sans','Outfit',sans-serif;border:none;background:none;}
+.nav-link:hover{color:var(--text);background:var(--bg3);}
+.nav-link.active{color:var(--accent);background:var(--accentBg);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;color:var(--text2);}
+.av{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.db-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.db-dot{width:7px;height:7px;border-radius:50%;}
+.db-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);}
+.db-dot.disconnected{background:var(--red);}
+.db-dot.loading{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.layout{display:flex;min-height:calc(100vh - 58px);}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;flex-shrink:0;}
+.sidebar-section{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding:10px 10px 6px;font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all 0.12s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
+.sidebar-item:hover{background:var(--bg3);color:var(--text);}
+.sidebar-item.active{background:var(--accentBg);color:var(--accent);}
+.si-icon{font-size:15px;width:18px;text-align:center;}
+
+.main{flex:1;padding:24px;min-width:0;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-subtitle{font-size:13px;color:var(--text2);}
+
+/* TABS */
+.page-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:20px;}
+.page-tab{padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-weight:600;transition:all 0.15s;}
+.page-tab.active{background:var(--accent);color:#fff;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.3);}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(34,201,122,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+
+.input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:68px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text2);}
+
+/* EMP CARDS */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.emp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:18px;transition:all 0.15s;position:relative;overflow:hidden;}
+.emp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.emp-card.active-e::before{background:linear-gradient(90deg,var(--green),transparent);}
+.emp-card.inactive-e::before{background:linear-gradient(90deg,var(--red),transparent);}
+.emp-card.leave-e::before{background:linear-gradient(90deg,var(--yellow),transparent);}
+.emp-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.emp-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.emp-avatar{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0;}
+.emp-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.emp-role{font-size:11px;color:var(--text2);}
+.emp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.emp-stat{background:var(--bg2);border-radius:8px;padding:8px;text-align:center;}
+.emp-stat-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:2px;}
+.emp-stat-lbl{font-size:10px;color:var(--text3);}
+.emp-actions{display:flex;gap:6px;}
+
+/* ATTENDANCE */
+.att-grid-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
+.att-head{text-align:center;font-size:10px;color:var(--text3);padding:4px;}
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.att-day{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:6px 4px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.att-day:hover{border-color:var(--accent);}
+.att-day.present{background:var(--greenBg);border-color:rgba(34,201,122,0.3);}
+.att-day.absent{background:var(--redBg);border-color:rgba(240,79,79,0.3);}
+.att-day.half{background:var(--yellowBg);border-color:rgba(240,180,41,0.3);}
+.att-day.leave{background:var(--purpleBg);border-color:rgba(167,139,250,0.3);}
+.att-day.future{opacity:0.3;cursor:not-allowed;}
+.att-day-num{font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.att-day-icon{font-size:10px;margin-top:2px;}
+
+/* TASK */
+.task-card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:8px;}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+
+/* SALARY */
+.salary-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.sal-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(28,42,58,0.4);font-size:13px;}
+.sal-row:last-child{border-bottom:none;}
+.sal-total{background:var(--accentBg);border:1px solid rgba(232,108,47,0.2);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.badge-active{background:var(--greenBg);color:var(--green);}
+.badge-inactive{background:var(--redBg);color:var(--red);}
+.badge-leave{background:var(--yellowBg);color:var(--yellow);}
+.badge-pending{background:var(--yellowBg);color:var(--yellow);}
+.badge-progress{background:var(--blueBg);color:var(--blue);}
+.badge-done{background:var(--greenBg);color:var(--green);}
+
+/* TABLE */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(28,42,58,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px 20px;}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+
+.form-section{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.form-section:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;}
+.req{color:var(--accent);}
+
+.act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.12s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--redBg);}
+
+.empty-state{text-align:center;padding:40px;color:var(--text3);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(10,14,24,0.95);backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+@media(max-width:768px){.sidebar{display:none;}.main{padding:14px;}.stats-row{grid-template-columns:1fr 1fr;}.emp-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+/* COMMON MODERN */
+.main{flex:1;padding:22px 24px;min-width:0;}
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.dcard,.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.dcard-hd,.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dcard-title,.card-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;}
+.dcard-body{padding:15px 17px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,0.28);}
+.btn-primary:hover{background:#FF8C5A;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2);}
+.btn-green{background:var(--greenBg);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-red{background:var(--redBg);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px;}
+.input{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Plus Jakarta Sans','Outfit',sans-serif;font-size:13px;outline:none;transition:all 0.15s;width:100%;}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
+.input::placeholder{color:var(--text3);}
+select.input{cursor:pointer;}
+textarea.input{resize:vertical;min-height:65px;}
+thead th{padding:10px 14px;text-align:left;font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(30,45,66,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.b-green{background:var(--greenBg);color:var(--green);}
+.b-red{background:var(--redBg);color:var(--red);}
+.b-yellow{background:var(--yellowBg);color:var(--yellow);}
+.b-blue{background:var(--blueBg);color:var(--blue);}
+.b-purple{background:var(--purpleBg);color:var(--purple);}
+.b-grey{background:var(--bg3);color:var(--text2);}
+.b-orange{background:var(--accentBg);color:var(--accent);}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-hd{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;}
+.modal-close{width:29px;height:29px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--red);border-color:var(--red);}
+.modal-body{padding:18px;}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;background:var(--card);position:sticky;bottom:0;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius,14px);padding:14px 16px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.green::after{background:linear-gradient(90deg,var(--green),transparent);}
+.stat.red::after{background:linear-gradient(90deg,var(--red),transparent);}
+.stat.blue::after{background:linear-gradient(90deg,var(--blue),transparent);}
+.stat.orange::after{background:linear-gradient(90deg,var(--accent),transparent);}
+.stat.yellow::after{background:linear-gradient(90deg,var(--yellow),transparent);}
+.stat.purple::after{background:linear-gradient(90deg,var(--purple),transparent);}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text2);font-weight:500;}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:2px;}
+.stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px;}
+.stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-sec{font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);font-weight:700;}
+.form-sec:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:12px;color:var(--text2);font-weight:600;}
+.req{color:var(--accent);}
+.empty-state{text-align:center;padding:44px;color:var(--text3);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card2,var(--card));border:1px solid var(--border2);border-radius:11px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.period-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;}
+.period-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'Plus Jakarta Sans','Outfit',sans-serif;transition:all 0.15s;}
+.period-tab.active{background:var(--accent);color:#fff;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.section{display:none;}.section.active{display:block;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+@media(max-width:1024px){.stats-4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sidebar{display:none;}.main{padding:12px;}.stats-4,.stats-3{grid-template-columns:1fr 1fr;}.g2,.g3{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="logo"><div class="logo-ico">📹</div><div class="logo-name">RK <span>Infotech</span></div></a>
+  <div class="nav-scroll">
+    <button class="nav-btn" onclick="location.href='index.html'">🏠 Home</button>
+    <button class="nav-btn" onclick="location.href='rk_dashboard_supabase.html'">📊 Dashboard</button>
+    <button class="nav-btn" onclick="location.href='rk_leads_supabase.html'">🎯 Leads</button>
+    <button class="nav-btn" onclick="location.href='rk_customers_supabase.html'">👥 Customers</button>
+    <button class="nav-btn" onclick="location.href='rk_jobs_supabase.html'">📋 Jobs</button>
+    <button class="nav-btn" onclick="location.href='rk_quotations_supabase.html'">📝 Quotations</button>
+    <button class="nav-btn" onclick="location.href='rk_invoices_supabase.html'">🧾 Invoices</button>
+    <button class="nav-btn" onclick="location.href='rk_payments_supabase.html'">💰 Payments</button>
+    <button class="nav-btn" onclick="location.href='rk_inventory_supabase.html'">📦 Inventory</button>
+    <button class="nav-btn" onclick="location.href='rk_amc_supabase.html'">🔧 AMC</button>
+    <button class="nav-btn active" onclick="location.href='rk_employees_supabase.html'">👷 Employees</button>
+    <button class="nav-btn" onclick="location.href='rk_photos_supabase.html'">📸 Photos</button>
+    <button class="nav-btn" onclick="location.href='rk_reports_supabase.html'">📈 Reports</button>
+  </div>
+  <div class="db-status"><div class="db-dot loading" id="db-dot"></div><span id="db-txt" style="font-size:11px">Connecting</span></div>
+</nav>
+
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Sections</div>
+    <button class="sidebar-item active" onclick="switchTab('employees',this)"><span class="si-icon">👷</span>Employees</button>
+    <button class="sidebar-item" onclick="switchTab('attendance',this)"><span class="si-icon">📅</span>Attendance</button>
+    <button class="sidebar-item" onclick="switchTab('tasks',this)"><span class="si-icon">📋</span>Tasks</button>
+    <button class="sidebar-item" onclick="switchTab('salary',this)"><span class="si-icon">💰</span>Salary</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- EMPLOYEES TAB -->
+    <div id="tab-employees">
+      <div class="page-header">
+        <div><div class="page-title">👷 Employees</div><div class="page-subtitle">RK Infotech की team — Supabase connected</div></div>
+        <button class="btn btn-primary" onclick="openEmpModal()">+ नया Employee</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">👷</div><div><div class="stat-val" style="color:var(--green)" id="s-active">0</div><div class="stat-lbl">Active</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--blueBg)">📋</div><div><div class="stat-val" style="color:var(--blue)" id="s-tasks">0</div><div class="stat-lbl">Active Tasks</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">📅</div><div><div class="stat-val" style="color:var(--yellow)" id="s-present">0</div><div class="stat-lbl">आज Present</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--accentBg)">💰</div><div><div class="stat-val" style="color:var(--accent)" id="s-salary">₹0</div><div class="stat-lbl">Monthly Salary</div></div></div>
+      </div>
+      <div class="emp-grid" id="emp-grid"></div>
+    </div>
+
+    <!-- ATTENDANCE TAB -->
+    <div id="tab-attendance" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">📅 Attendance</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="input" style="width:auto" id="att-emp-sel" onchange="renderAttendance()"></select>
+          <select class="input" style="width:auto" id="att-month-sel" onchange="renderAttendance()"></select>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-ico" style="background:var(--greenBg)">✅</div><div><div class="stat-val" style="color:var(--green)" id="att-present">0</div><div class="stat-lbl">Present</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--redBg)">❌</div><div><div class="stat-val" style="color:var(--red)" id="att-absent">0</div><div class="stat-lbl">Absent</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--yellowBg)">🌗</div><div><div class="stat-val" style="color:var(--yellow)" id="att-half">0</div><div class="stat-lbl">Half Day</div></div></div>
+        <div class="stat"><div class="stat-ico" style="background:var(--purpleBg)">🏖️</div><div><div class="stat-val" style="color:var(--purple)" id="att-leave">0</div><div class="stat-lbl">Leave</div></div></div>
+      </div>
+      <div class="table-card" style="padding:20px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px" id="att-month-label"></span>
+          <div style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--green)">■ Present</span>
+            <span style="font-size:11px;color:var(--red)">■ Absent</span>
+            <span style="font-size:11px;color:var(--yellow)">■ Half Day</span>
+            <span style="font-size:11px;color:var(--purple)">■ Leave</span>
+          </div>
+        </div>
+        <div class="att-grid-head">
+          <div class="att-head">Sun</div><div class="att-head">Mon</div><div class="att-head">Tue</div>
+          <div class="att-head">Wed</div><div class="att-head">Thu</div><div class="att-head">Fri</div><div class="att-head">Sat</div>
+        </div>
+        <div class="att-grid" id="att-calendar"></div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3);text-align:center">किसी दिन पर click करें — attendance बदलें</div>
+      </div>
+    </div>
+
+    <!-- TASKS TAB -->
+    <div id="tab-tasks" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">📋 Tasks</div></div>
+        <button class="btn btn-primary" onclick="openTaskModal()">+ Task Assign</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="input" style="width:auto" id="task-emp-filter" onchange="renderTasks()">
+          <option value="">सभी Employees</option>
+        </select>
+        <select class="input" style="width:auto" id="task-status-filter" onchange="renderTasks()">
+          <option value="">सब Status</option>
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Done">Done</option>
+        </select>
+      </div>
+      <div id="tasks-list"></div>
+    </div>
+
+    <!-- SALARY TAB -->
+    <div id="tab-salary" style="display:none">
+      <div class="page-header">
+        <div><div class="page-title">💰 Salary</div></div>
+        <div style="display:flex;gap:8px">
+          <select class="input" style="width:auto" id="sal-emp-sel" onchange="renderSalary()"></select>
+          <select class="input" style="width:auto" id="sal-month-sel" onchange="renderSalary()"></select>
+        </div>
+      </div>
+      <div id="salary-view"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EMP MODAL -->
+<div class="overlay" id="emp-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="emp-modal-title">नया Employee</div><button class="modal-close" onclick="closeModal('emp-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-section">Basic Info</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">नाम <span class="req">*</span></label><input class="input" id="e-name" placeholder="पूरा नाम"></div>
+        <div class="form-group"><label class="form-label">Role</label>
+          <select class="input" id="e-role">
+            <option>Technician</option><option>Senior Technician</option><option>Installer</option>
+            <option>Supervisor</option><option>Office Staff</option><option>Sales</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="input" id="e-phone" placeholder="Mobile" type="tel"></div>
+        <div class="form-group"><label class="form-label">Join Date</label><input class="input" type="date" id="e-join"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="input" id="e-status"><option>Active</option><option>Inactive</option><option>On Leave</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Salary Type</label>
+          <select class="input" id="e-sal-type" onchange="toggleSalFields()">
+            <option value="Fixed">Fixed Monthly</option><option value="Daily">Daily Wages</option>
+          </select>
+        </div>
+        <div class="form-group" id="fixed-grp"><label class="form-label">Monthly Salary (₹)</label><input class="input" type="number" id="e-salary" placeholder="0"></div>
+        <div class="form-group" id="daily-grp" style="display:none"><label class="form-label">Daily Wage (₹)</label><input class="input" type="number" id="e-daily" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Bank Account</label><input class="input" id="e-bank" placeholder="Account no."></div>
+        <div class="form-group"><label class="form-label">IFSC</label><input class="input" id="e-ifsc" placeholder="IFSC code"></div>
+        <div class="form-group full"><label class="form-label">Address</label><textarea class="input" id="e-address" placeholder="पता"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('emp-modal')">Cancel</button>
+      <button class="btn btn-primary" id="emp-save-btn" onclick="saveEmployee()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">📋 Task Assign</div><button class="modal-close" onclick="closeModal('task-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Employee <span class="req">*</span></label><select class="input" id="t-emp"></select></div>
+        <div class="form-group"><label class="form-label">Task Type</label>
+          <select class="input" id="t-type">
+            <option>Site Visit</option><option>Installation</option><option>Repair</option>
+            <option>AMC Service</option><option>Material Pickup</option><option>Office Work</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group full"><label class="form-label">Details <span class="req">*</span></label><textarea class="input" id="t-desc" placeholder="क्या करना है..."></textarea></div>
+        <div class="form-group"><label class="form-label">Due Date</label><input class="input" type="date" id="t-due"></div>
+        <div class="form-group"><label class="form-label">Priority</label>
+          <select class="input" id="t-priority"><option>Normal</option><option>High</option><option>Urgent</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Incentive (₹)</label><input class="input" type="number" id="t-incentive" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('task-modal')">Cancel</button>
+      <button class="btn btn-primary" id="task-save-btn" onclick="saveTask()">✅ Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK UPDATE MODAL -->
+<div class="overlay" id="task-update-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head"><div class="modal-title">Task Update</div><button class="modal-close" onclick="closeModal('task-update-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Status</label>
+        <select class="input" id="tu-status"><option value="Pending">⏳ Pending</option><option value="In Progress">🔄 In Progress</option><option value="Done">✅ Done</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="input" id="tu-notes" placeholder="क्या किया..."></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('task-update-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateTask()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADJ MODAL -->
+<div class="overlay" id="adj-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head"><div class="modal-title">Salary Adjustment</div><button class="modal-close" onclick="closeModal('adj-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="input" id="adj-type">
+            <option value="bonus">🎁 Bonus</option><option value="advance">💸 Advance</option>
+            <option value="deduction">➖ Deduction</option><option value="overtime">⏰ Overtime</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input class="input" type="number" id="adj-amount" placeholder="0"></div>
+        <div class="form-group full"><label class="form-label">Reason</label><input class="input" id="adj-reason" placeholder="कारण"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('adj-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAdjustment()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+<script>
+// ─── SUPABASE ───
+const SUPABASE_URL = 'https://hkspejyyzicejxvucvtc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3Blanl5emljZWp4dnVjdnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTMwODIsImV4cCI6MjA4OTU2OTA4Mn0.G1Fr2jZ8ClNhDIVLPK6NH8VmVi82gw4Z6xHFQoBFSxU';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let employees=[], tasks=[], attendance={}, salaryAdj=[];
+let editEmpId=null, updateTaskId=null, adjEmpId=null, adjMonth=null;
+const AV=['background:rgba(232,108,47,0.15);color:#FF6B2B','background:rgba(59,142,255,0.15);color:#3b8eff','background:rgba(34,201,122,0.15);color:#22c97a','background:rgba(167,139,250,0.15);color:#a78bfa','background:rgba(240,180,41,0.15);color:#f0b429'];
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+function initials(n){ const p=n.trim().split(' '); return p.length>1?(p[0][0]+p[p.length-1][0]).toUpperCase():n.substring(0,2).toUpperCase(); }
+function avStyle(n){ return AV[n.charCodeAt(0)%AV.length]; }
+function setStatus(s){ document.getElementById('db-dot').className='db-dot '+s; document.getElementById('db-text').textContent=s==='connected'?'Connected':s==='disconnected'?'Disconnected':'Connecting...'; }
+
+// ─── MONTHS ───
+function monthOpts(selId){
+  const months=[];
+  for(let i=5;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); months.push(d.toISOString().substring(0,7)); }
+  const cur=new Date().toISOString().substring(0,7);
+  const el=document.getElementById(selId); if(!el) return;
+  const prev=el.value||cur;
+  el.innerHTML=months.map(m=>`<option value="${m}" ${m===prev?'selected':''}>${new Date(m+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'})}</option>`).join('');
+}
+
+function empOpts(selId, allOpt=false){
+  const el=document.getElementById(selId); if(!el) return;
+  const prev=el.value;
+  el.innerHTML=(allOpt?'<option value="">सभी</option>':'')+employees.filter(e=>e.status==='Active').map(e=>`<option value="${e.id}" ${e.id==prev?'selected':''}>${e.name}</option>`).join('');
+}
+
+// ─── LOAD ───
+async function loadAll(){
+  try {
+    setStatus('loading');
+    const [{ data:eData,error:eErr },{ data:tData,error:tErr },{ data:aData,error:aErr },{ data:sData,error:sErr }] = await Promise.all([
+      db.from('employees').select('*').order('created_at',{ascending:false}),
+      db.from('tasks').select('*').order('created_at',{ascending:false}),
+      db.from('attendance').select('*'),
+      db.from('salary_adjustments').select('*')
+    ]);
+    if(eErr) throw eErr;
+    employees=eData||[]; tasks=tData||[];
+    // Build attendance map
+    attendance={};
+    (aData||[]).forEach(a=>{ if(!attendance[a.employee_id]) attendance[a.employee_id]={}; attendance[a.employee_id][a.date]=a.status; });
+    salaryAdj=sData||[];
+    setStatus('connected');
+    renderEmployees();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; setStatus('disconnected'); toast('❌','Error: '+err.message); }
+}
+
+// ─── TABS ───
+function switchTab(tab,el){
+  ['employees','attendance','tasks','salary'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
+  document.getElementById('tab-'+tab).style.display='block';
+  document.querySelectorAll('.sidebar-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='attendance'){ empOpts('att-emp-sel'); monthOpts('att-month-sel'); renderAttendance(); }
+  if(tab==='tasks'){ renderTaskFilters(); renderTasks(); }
+  if(tab==='salary'){ empOpts('sal-emp-sel'); monthOpts('sal-month-sel'); renderSalary(); }
+  if(tab==='employees') renderEmployees();
+}
+
+// ─── EMPLOYEES ───
+function renderEmployees(){
+  const active=employees.filter(e=>e.status==='Active').length;
+  const activeTasks=tasks.filter(t=>t.status!=='Done').length;
+  const todayAtt=Object.values(attendance).filter(a=>a[today()]==='present').length;
+  const totalSal=employees.filter(e=>e.status==='Active'&&e.salary_type==='Fixed').reduce((s,e)=>s+(e.salary||0),0);
+  document.getElementById('s-active').textContent=active;
+  document.getElementById('s-tasks').textContent=activeTasks;
+  document.getElementById('s-present').textContent=todayAtt;
+  document.getElementById('s-salary').textContent='₹'+totalSal.toLocaleString();
+
+  const grid=document.getElementById('emp-grid');
+  if(!employees.length){ grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div style="font-size:36px;opacity:0.5;margin-bottom:10px">👷</div><div style="font-size:14px;color:var(--text2)">कोई Employee नहीं</div></div>`; return; }
+  const curMonth=new Date().toISOString().substring(0,7);
+  grid.innerHTML=employees.map((e,i)=>{
+    const empTasks=tasks.filter(t=>t.employee_id===e.id&&t.status!=='Done').length;
+    const doneTasks=tasks.filter(t=>t.employee_id===e.id&&t.status==='Done').length;
+    const attData=attendance[e.id]||{};
+    const present=Object.entries(attData).filter(([d,v])=>d.startsWith(curMonth)&&v==='present').length;
+    const statusClass=e.status==='Active'?'active-e':e.status==='On Leave'?'leave-e':'inactive-e';
+    const badgeCls=e.status==='Active'?'badge-active':e.status==='On Leave'?'badge-leave':'badge-inactive';
+    return `<div class="emp-card ${statusClass}">
+      <div class="emp-top">
+        <div class="emp-avatar" style="${avStyle(e.name)}">${initials(e.name)}</div>
+        <div style="flex:1"><div class="emp-name">${e.name}</div><div class="emp-role">${e.role}</div></div>
+        <span class="badge ${badgeCls}">${e.status}</span>
+      </div>
+      <div class="emp-stats">
+        <div class="emp-stat"><div class="emp-stat-val" style="color:var(--yellow)">${empTasks}</div><div class="emp-stat-lbl">Tasks</div></div>
+        <div class="emp-stat"><div class="emp-stat-val" style="color:var(--green)">${doneTasks}</div><div class="emp-stat-lbl">Done</div></div>
+        <div class="emp-stat"><div class="emp-stat-val" style="color:var(--blue)">${present}</div><div class="emp-stat-lbl">Present</div></div>
+      </div>
+      <div class="emp-actions">
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('attendance',document.querySelectorAll('.sidebar-item')[1]);setTimeout(()=>{document.getElementById('att-emp-sel').value=${e.id};renderAttendance();},100)">📅 Att.</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTaskModal(${e.id})">+ Task</button>
+        <button class="act-btn" onclick="openEmpModal(${e.id})">✏️</button>
+        <button class="act-btn del" onclick="deleteEmp(${e.id},'${e.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── EMP MODAL ───
+function openEmpModal(id=null){
+  editEmpId=id;
+  document.getElementById('emp-modal-title').textContent=id?'Employee Edit':'नया Employee';
+  if(id){
+    const e=employees.find(x=>x.id===id); if(!e) return;
+    document.getElementById('e-name').value=e.name;
+    document.getElementById('e-role').value=e.role;
+    document.getElementById('e-phone').value=e.phone||'';
+    document.getElementById('e-join').value=e.join_date||'';
+    document.getElementById('e-status').value=e.status;
+    document.getElementById('e-sal-type').value=e.salary_type||'Fixed';
+    document.getElementById('e-salary').value=e.salary||'';
+    document.getElementById('e-daily').value=e.daily_wage||'';
+    document.getElementById('e-bank').value=e.bank||'';
+    document.getElementById('e-ifsc').value=e.ifsc||'';
+    document.getElementById('e-address').value=e.address||'';
+    toggleSalFields();
+  } else {
+    ['e-name','e-phone','e-salary','e-daily','e-bank','e-ifsc','e-address'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('e-role').value='Technician';
+    document.getElementById('e-status').value='Active';
+    document.getElementById('e-sal-type').value='Fixed';
+    document.getElementById('e-join').value=today();
+    toggleSalFields();
+  }
+  document.getElementById('emp-modal').classList.add('open');
+}
+
+function toggleSalFields(){
+  const t=document.getElementById('e-sal-type').value;
+  document.getElementById('fixed-grp').style.display=t==='Fixed'?'flex':'none';
+  document.getElementById('daily-grp').style.display=t==='Daily'?'flex':'none';
+}
+
+async function saveEmployee(){
+  const name=document.getElementById('e-name').value.trim();
+  if(!name){toast('❌','नाम ज़रूरी है!');return;}
+  const btn=document.getElementById('emp-save-btn');
+  btn.textContent='⏳...'; btn.disabled=true;
+  const data={
+    name, role:document.getElementById('e-role').value,
+    phone:document.getElementById('e-phone').value,
+    join_date:document.getElementById('e-join').value||null,
+    status:document.getElementById('e-status').value,
+    salary_type:document.getElementById('e-sal-type').value,
+    salary:parseFloat(document.getElementById('e-salary').value)||0,
+    daily_wage:parseFloat(document.getElementById('e-daily').value)||0,
+    bank:document.getElementById('e-bank').value,
+    ifsc:document.getElementById('e-ifsc').value,
+    address:document.getElementById('e-address').value
+  };
+  try {
+    if(editEmpId){ const {error}=await db.from('employees').update(data).eq('id',editEmpId); if(error) throw error; toast('✅',`${name} updated!`); }
+    else { const {error}=await db.from('employees').insert([data]); if(error) throw error; toast('✅',`${name} जोड़ा गया!`); }
+    closeModal('emp-modal'); await loadAll();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+  finally { btn.textContent='💾 Save'; btn.disabled=false; }
+}
+
+async function deleteEmp(id,name){
+  if(!confirm(`"${name}" delete करें?`)) return;
+  try { const {error}=await db.from('employees').delete().eq('id',id); if(error) throw error; toast('🗑️',`${name} deleted`); await loadAll(); }
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── ATTENDANCE ───
+async function renderAttendance(){
+  const empId=parseInt(document.getElementById('att-emp-sel').value);
+  const month=document.getElementById('att-month-sel').value;
+  if(!empId||!month) return;
+  const [y,m]=month.split('-').map(Number);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const firstDay=new Date(y,m-1,1).getDay();
+  const todayStr=today();
+  document.getElementById('att-month-label').textContent=new Date(month+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'});
+  const attData=attendance[empId]||{};
+  let present=0,absent=0,half=0,leave=0;
+  Object.entries(attData).forEach(([d,v])=>{ if(!d.startsWith(month)) return; if(v==='present')present++; else if(v==='absent')absent++; else if(v==='half')half++; else if(v==='leave')leave++; });
+  document.getElementById('att-present').textContent=present;
+  document.getElementById('att-absent').textContent=absent;
+  document.getElementById('att-half').textContent=half;
+  document.getElementById('att-leave').textContent=leave;
+  const cal=document.getElementById('att-calendar');
+  const icons={present:'✅',absent:'❌',half:'🌗',leave:'🏖️'};
+  let html='';
+  for(let i=0;i<firstDay;i++) html+='<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${month}-${String(d).padStart(2,'0')}`;
+    const val=attData[ds]||'';
+    const isFuture=ds>todayStr;
+    html+=`<div class="att-day ${val} ${isFuture?'future':''}" onclick="${isFuture?'':` markAtt(${empId},'${ds}')`}">
+      <div class="att-day-num">${d}</div>
+      <div class="att-day-icon">${icons[val]||''}</div>
+    </div>`;
+  }
+  cal.innerHTML=html;
+}
+
+async function markAtt(empId,dateStr){
+  const cycle=['','present','absent','half','leave'];
+  if(!attendance[empId]) attendance[empId]={};
+  const cur=attendance[empId][dateStr]||'';
+  const next=cycle[(cycle.indexOf(cur)+1)%cycle.length];
+  try {
+    if(next){
+      await db.from('attendance').upsert({employee_id:empId,date:dateStr,status:next},{onConflict:'employee_id,date'});
+      attendance[empId][dateStr]=next;
+    } else {
+      await db.from('attendance').delete().eq('employee_id',empId).eq('date',dateStr);
+      delete attendance[empId][dateStr];
+    }
+    renderAttendance();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── TASKS ───
+function renderTaskFilters(){
+  const sel=document.getElementById('task-emp-filter');
+  const prev=sel.value;
+  sel.innerHTML='<option value="">सभी Employees</option>'+employees.map(e=>`<option value="${e.id}" ${e.id==prev?'selected':''}>${e.name}</option>`).join('');
+}
+
+function renderTasks(){
+  const empF=document.getElementById('task-emp-filter')?.value;
+  const statusF=document.getElementById('task-status-filter')?.value;
+  let list=[...tasks];
+  if(empF) list=list.filter(t=>t.employee_id==empF);
+  if(statusF) list=list.filter(t=>t.status===statusF);
+  const empMap=employees.reduce((m,e)=>{m[e.id]=e.name;return m;},{});
+  const pColor={Normal:'var(--text3)',High:'var(--yellow)',Urgent:'var(--red)'};
+  const sBadge={Pending:'badge-pending','In Progress':'badge-progress',Done:'badge-done'};
+  const container=document.getElementById('tasks-list');
+  container.innerHTML=list.length?list.map(t=>{
+    const overdue=t.due_date&&t.due_date<today()&&t.status!=='Done';
+    return `<div class="task-card" style="${overdue?'border-color:var(--red)':''}">
+      <div class="task-top">
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:13px">${t.type} — ${t.description?.substring(0,60)||''}${(t.description||'').length>60?'...':''}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px">
+            👷 ${empMap[t.employee_id]||'?'} &nbsp;|&nbsp; 📅 <span style="color:${overdue?'var(--red)':'inherit'}">${t.due_date||'—'}</span>
+            ${t.incentive?` &nbsp;|&nbsp; 🎁 ₹${t.incentive}`:''}
+            &nbsp;|&nbsp; <span style="color:${pColor[t.priority]};font-weight:600">${t.priority}</span>
+          </div>
+          ${t.last_note?`<div style="font-size:12px;color:var(--text2);margin-top:5px;background:var(--bg3);padding:6px 9px;border-radius:6px">💬 ${t.last_note}</div>`:''}
+        </div>
+        <div style="display:flex;gap:5px;align-items:flex-start;flex-shrink:0">
+          <span class="badge ${sBadge[t.status]||''}">${t.status}</span>
+          <button class="act-btn" onclick="openUpdateTask(${t.id})">✏️</button>
+          <button class="act-btn del" onclick="deleteTask(${t.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''):`<div class="empty-state"><div style="font-size:36px;opacity:0.5;margin-bottom:10px">📋</div><div style="font-size:14px;color:var(--text2)">कोई Task नहीं</div></div>`;
+}
+
+function openTaskModal(empId=null){
+  document.getElementById('t-emp').innerHTML=employees.filter(e=>e.status==='Active').map(e=>`<option value="${e.id}" ${e.id===empId?'selected':''}>${e.name}</option>`).join('');
+  ['t-desc','t-incentive'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('t-due').value='';
+  document.getElementById('t-priority').value='Normal';
+  document.getElementById('t-type').value='Site Visit';
+  document.getElementById('task-modal').classList.add('open');
+}
+
+async function saveTask(){
+  const empId=parseInt(document.getElementById('t-emp').value);
+  const desc=document.getElementById('t-desc').value.trim();
+  if(!empId){toast('❌','Employee चुनें!');return;}
+  if(!desc){toast('❌','Details ज़रूरी है!');return;}
+  const btn=document.getElementById('task-save-btn');
+  btn.textContent='⏳...'; btn.disabled=true;
+  try {
+    const {error}=await db.from('tasks').insert([{
+      employee_id:empId, description:desc,
+      type:document.getElementById('t-type').value,
+      due_date:document.getElementById('t-due').value||null,
+      priority:document.getElementById('t-priority').value,
+      incentive:parseFloat(document.getElementById('t-incentive').value)||0,
+      status:'Pending', date:today()
+    }]);
+    if(error) throw error;
+    toast('✅','Task assigned!');
+    closeModal('task-modal');
+    await loadAll();
+    renderTasks();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+  finally { btn.textContent='✅ Assign'; btn.disabled=false; }
+}
+
+function openUpdateTask(id){
+  updateTaskId=id;
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  document.getElementById('tu-status').value=t.status;
+  document.getElementById('tu-notes').value='';
+  document.getElementById('task-update-modal').classList.add('open');
+}
+
+async function updateTask(){
+  const t=tasks.find(x=>x.id===updateTaskId); if(!t) return;
+  const status=document.getElementById('tu-status').value;
+  const note=document.getElementById('tu-notes').value.trim();
+  try {
+    const update={status};
+    if(note) update.last_note=note;
+    if(status==='Done') update.done_date=today();
+    const {error}=await db.from('tasks').update(update).eq('id',updateTaskId);
+    if(error) throw error;
+    toast('✅','Task updated!');
+    closeModal('task-update-modal');
+    await loadAll();
+    renderTasks();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+async function deleteTask(id){
+  if(!confirm('Task delete करें?')) return;
+  try { const {error}=await db.from('tasks').delete().eq('id',id); if(error) throw error; toast('🗑️','Deleted'); await loadAll(); renderTasks(); }
+  catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+// ─── SALARY ───
+function renderSalary(){
+  const empId=parseInt(document.getElementById('sal-emp-sel').value);
+  const month=document.getElementById('sal-month-sel').value;
+  const container=document.getElementById('salary-view');
+  if(!empId||!month){ container.innerHTML='<div class="empty-state"><div style="font-size:36px;opacity:0.5">💰</div><div style="font-size:14px;color:var(--text2);margin-top:10px">Employee और Month चुनें</div></div>'; return; }
+  const e=employees.find(x=>x.id===empId); if(!e) return;
+  const attData=attendance[empId]||{};
+  const daysInMonth=new Date(...month.split('-').map((v,i)=>i===1?parseInt(v):parseInt(v)),0).getDate();
+  let present=0,half=0,absent=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${month}-${String(d).padStart(2,'0')}`;
+    const v=attData[ds]||'';
+    if(v==='present')present++; else if(v==='half')half++; else if(v==='absent')absent++;
+  }
+  let base=e.salary_type==='Fixed'?e.salary||0:(e.daily_wage||0)*(present+half*0.5);
+  const monthAdj=salaryAdj.filter(a=>a.employee_id===empId&&a.month===month);
+  const bonus=monthAdj.filter(a=>a.type==='bonus').reduce((s,a)=>s+a.amount,0);
+  const advance=monthAdj.filter(a=>a.type==='advance').reduce((s,a)=>s+a.amount,0);
+  const deduction=monthAdj.filter(a=>a.type==='deduction').reduce((s,a)=>s+a.amount,0);
+  const overtime=monthAdj.filter(a=>a.type==='overtime').reduce((s,a)=>s+a.amount,0);
+  const taskInc=tasks.filter(t=>t.employee_id===empId&&t.status==='Done'&&(t.done_date||'').startsWith(month)).reduce((s,t)=>s+(t.incentive||0),0);
+  const absentDed=e.salary_type==='Fixed'&&daysInMonth>0?Math.round(absent*(e.salary/daysInMonth)):0;
+  const net=Math.max(0,base+bonus+overtime+taskInc-deduction-advance-absentDed);
+
+  container.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="salary-card">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px">📊 Attendance</div>
+          <div class="sal-row"><span style="color:var(--text2)">Working Days</span><span>${daysInMonth}</span></div>
+          <div class="sal-row"><span style="color:var(--text2)">✅ Present</span><span style="color:var(--green)">${present}</span></div>
+          <div class="sal-row"><span style="color:var(--text2)">🌗 Half Day</span><span style="color:var(--yellow)">${half}</span></div>
+          <div class="sal-row"><span style="color:var(--text2)">❌ Absent</span><span style="color:var(--red)">${absent}</span></div>
+        </div>
+        <div class="salary-card">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px">💰 Breakdown</div>
+          <div class="sal-row"><span style="color:var(--text2)">Base Salary</span><span>₹${base.toLocaleString()}</span></div>
+          ${absentDed>0?`<div class="sal-row"><span style="color:var(--text2)">➖ Absent Deduction</span><span style="color:var(--red)">-₹${absentDed.toLocaleString()}</span></div>`:''}
+          ${bonus>0?`<div class="sal-row"><span style="color:var(--text2)">🎁 Bonus</span><span style="color:var(--green)">+₹${bonus.toLocaleString()}</span></div>`:''}
+          ${taskInc>0?`<div class="sal-row"><span style="color:var(--text2)">⭐ Task Incentive</span><span style="color:var(--green)">+₹${taskInc.toLocaleString()}</span></div>`:''}
+          ${overtime>0?`<div class="sal-row"><span style="color:var(--text2)">⏰ Overtime</span><span style="color:var(--green)">+₹${overtime.toLocaleString()}</span></div>`:''}
+          ${deduction>0?`<div class="sal-row"><span style="color:var(--text2)">➖ Deduction</span><span style="color:var(--red)">-₹${deduction.toLocaleString()}</span></div>`:''}
+          ${advance>0?`<div class="sal-row"><span style="color:var(--text2)">💸 Advance</span><span style="color:var(--red)">-₹${advance.toLocaleString()}</span></div>`:''}
+        </div>
+        <div class="sal-total">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700">Net Salary</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:var(--accent)">₹${net.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-ghost" onclick="openAdj(${empId},'${month}')">+ Adjustment</button>
+          <button class="btn btn-primary" onclick="printSlip(${empId},'${month}',${base},${bonus},${taskInc},${overtime},${deduction},${advance},${absentDed},${net})">🖨️ Slip</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px">📋 Adjustments</div>
+        ${monthAdj.length?monthAdj.map(a=>`
+          <div class="salary-card" style="padding:10px 14px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between">
+              <div><div style="font-size:13px;color:var(--text);font-weight:500">${a.type==='bonus'?'🎁':a.type==='advance'?'💸':a.type==='overtime'?'⏰':'➖'} ${a.type}</div>
+              <div style="font-size:11px;color:var(--text3)">${a.reason||'—'}</div></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${['bonus','overtime'].includes(a.type)?'var(--green)':'var(--red)'}">
+                ${['bonus','overtime'].includes(a.type)?'+':'-'}₹${a.amount.toLocaleString()}
+              </span>
+            </div>
+          </div>`).join(''):`<div class="empty-state" style="padding:20px"><div style="font-size:12px">कोई adjustment नहीं</div></div>`}
+      </div>
+    </div>`;
+}
+
+function openAdj(empId,month){
+  adjEmpId=empId; adjMonth=month;
+  ['adj-amount'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('adj-reason').value='';
+  document.getElementById('adj-type').value='bonus';
+  document.getElementById('adj-modal').classList.add('open');
+}
+
+async function saveAdjustment(){
+  const amount=parseFloat(document.getElementById('adj-amount').value)||0;
+  if(!amount){toast('❌','Amount ज़रूरी है!');return;}
+  try {
+    const {error}=await db.from('salary_adjustments').insert([{
+      employee_id:adjEmpId, month:adjMonth,
+      type:document.getElementById('adj-type').value,
+      amount, reason:document.getElementById('adj-reason').value, date:today()
+    }]);
+    if(error) throw error;
+    toast('✅','Adjustment saved!');
+    closeModal('adj-modal');
+    await loadAll();
+    renderSalary();
+  } catch(err){
+    // Always hide loaders
+    try{[\'page-loader\',\'loading\'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=\'none\';});[\'main-content\',\'app\'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display===\'none\')el.style.display=\'block\';});}catch(_){}; toast('❌','Error: '+err.message); }
+}
+
+function printSlip(empId,month,base,bonus,taskInc,overtime,deduction,advance,absentDed,net){
+  const e=employees.find(x=>x.id===empId); if(!e) return;
+  const monthLabel=new Date(month+'-01').toLocaleDateString('hi-IN',{month:'long',year:'numeric'});
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>body{font-family:'Plus Jakarta Sans','Outfit',sans-serif;padding:32px;max-width:600px;margin:auto;}</style></head><body>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #FF6B2B;">
+      <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#FF6B2B;">📹 RK Infotech</div>
+      <div style="font-size:13px;color:#777;">Salary Slip — ${monthLabel}</div></div>
+    </div>
+    <table style="width:100%;font-size:13px;margin-bottom:16px;">
+      <tr><td style="padding:4px 0;color:#777;width:40%">नाम</td><td><strong>${e.name}</strong></td></tr>
+      <tr><td style="color:#777">Role</td><td>${e.role}</td></tr>
+      <tr><td style="color:#777">Phone</td><td>${e.phone||'—'}</td></tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;">
+      <thead><tr style="background:#f5f5f5"><th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#777">Description</th><th style="padding:8px 12px;text-align:right;font-size:11px;text-transform:uppercase;color:#777">Amount</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px">Base Salary</td><td style="padding:8px 12px;text-align:right">₹${base.toLocaleString()}</td></tr>
+        ${bonus>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:green">+ Bonus</td><td style="padding:8px 12px;text-align:right;color:green">₹${bonus.toLocaleString()}</td></tr>`:''}
+        ${taskInc>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:green">+ Task Incentive</td><td style="padding:8px 12px;text-align:right;color:green">₹${taskInc.toLocaleString()}</td></tr>`:''}
+        ${overtime>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:green">+ Overtime</td><td style="padding:8px 12px;text-align:right;color:green">₹${overtime.toLocaleString()}</td></tr>`:''}
+        ${absentDed>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:red">- Absent Deduction</td><td style="padding:8px 12px;text-align:right;color:red">-₹${absentDed.toLocaleString()}</td></tr>`:''}
+        ${deduction>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:red">- Deduction</td><td style="padding:8px 12px;text-align:right;color:red">-₹${deduction.toLocaleString()}</td></tr>`:''}
+        ${advance>0?`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 12px;color:red">- Advance</td><td style="padding:8px 12px;text-align:right;color:red">-₹${advance.toLocaleString()}</td></tr>`:''}
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;background:#fff3ee;border:1px solid #FF6B2B;border-radius:8px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#FF6B2B;">
+      <span>Net Salary</span><span>₹${net.toLocaleString()}</span>
+    </div>
+    <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:12px;color:#999;">
+      <div>Employee Signature: _________________</div>
+      <div>Authorized: _________________</div>
+    </div>
+    <script>window.print();<\/script></body></html>`);
+}
+
+// ─── MODAL ───
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el=>{ el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }); });
+
+// ─── TOAST ───
+let toastT;
+function toast(icon,msg){ document.getElementById('toast-icon').textContent=icon; document.getElementById('toast-msg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000); }
+
+// ─── INIT ───
+loadAll();
+</script>
+</body>
+</html>
